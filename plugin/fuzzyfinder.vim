@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks(at)gmail(dot)com>
-" Version: 2.7, for Vim 7.1
+" Version: 2.7.1, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -203,6 +203,9 @@
 "   Matt Tolton
 "
 " ChangeLog: ------------------------------------------------------------ {{{1
+"   2.7.1:
+"     - Fixed a bug related to floating-point support.
+"
 "   2.7:
 "     - Added support for GetLatestVimScripts.
 "
@@ -829,7 +832,7 @@ function! g:FuzzyFinderMode.Base.evaluate_matching_rate(expr, pattern)
     return self.matching_rate_base
   endif
 
-  let rate = 0.0
+  let rate = 0
   let rate_increment = (self.matching_rate_base * 9) / (len(a:pattern) * 10) " zero divide ok
   let matched = 1
 
