@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks(at)gmail(dot)com>
-" Version: 2.7.1, for Vim 7.1
+" Version: 2.6.1, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -203,10 +203,8 @@
 "   Matt Tolton
 "
 " ChangeLog: ------------------------------------------------------------ {{{1
-"   2.7.1:
+"   2.6.1:
 "     - Fixed a bug related to floating-point support.
-"
-"   2.7:
 "     - Added support for GetLatestVimScripts.
 "
 "   2.6:
