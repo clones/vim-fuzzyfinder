@@ -204,8 +204,7 @@
 "
 " ChangeLog: ------------------------------------------------------------ {{{1
 "   2.6.2:
-"     - Fixed not to miss changes in options when updates the information
-"       file.
+"     - Fixed not to miss changes in options when updates the MRU information.
 "
 "   2.6.1:
 "     - Fixed a bug related to floating-point support.
