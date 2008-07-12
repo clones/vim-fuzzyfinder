@@ -364,8 +364,6 @@
 " INCLUDE GUARD: ======================================================== {{{1
 if exists('loaded_fuzzyfinder') || v:version < 701
   finish
-elseif 
-  finish
 endif
 let loaded_fuzzyfinder = 1
 
