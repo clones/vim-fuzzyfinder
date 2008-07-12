@@ -3,8 +3,8 @@
 "                   buffer/file/MRU/command/favorite/tag/etc.
 "=============================================================================
 "
-" Author:  Takeshi NISHIDA <ns9tks(at)gmail(dot)com>
-" Version: 2.6.2, for Vim 7.1
+" Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
+" Version: 2.7, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -203,6 +203,9 @@
 "   Matt Tolton
 "
 " ChangeLog: ------------------------------------------------------------ {{{1
+"   2.7:
+"     - TODO
+"
 "   2.6.2:
 "     - Fixed not to miss changes in options when updates the MRU information.
 "
@@ -359,10 +362,9 @@
 "=============================================================================
 
 " INCLUDE GUARD: ======================================================== {{{1
-if v:version < 701
-  echoerr "Sorry, Fuzzyfinder doesn't support this version of Vim."
+if exists('loaded_fuzzyfinder') || v:version < 701
   finish
-elseif exists('loaded_fuzzyfinder')
+elseif 
   finish
 endif
 let loaded_fuzzyfinder = 1
