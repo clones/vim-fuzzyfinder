@@ -38,10 +38,10 @@
 "   Fuzzyfinder has some modes:
 "     - Buffer mode
 "     - File mode
+"     - Directory mode (yet another :cd command)
 "     - MRU-file mode (most recently used files)
 "     - MRU-command mode (most recently used command-lines)
 "     - Favorite-file mode
-"     - Directory mode (yet another :cd command)
 "     - Tag mode (yet another :tag command)
 "     - Tagged-file mode (files which are included in current tags)
 "
@@ -58,10 +58,10 @@
 "
 "       :FuzzyFinderBuffer      - launchs buffer-mode Fuzzyfinder.
 "       :FuzzyFinderFile        - launchs file-mode Fuzzyfinder.
+"       :FuzzyFinderDir         - launchs directory-mode Fuzzyfinder.
 "       :FuzzyFinderMruFile     - launchs MRU-file-mode Fuzzyfinder.
 "       :FuzzyFinderMruCmd      - launchs MRU-command-mode Fuzzyfinder.
 "       :FuzzyFinderFavFile     - launchs favorite-file-mode Fuzzyfinder.
-"       :FuzzyFinderDir         - launchs directory-mode Fuzzyfinder.
 "       :FuzzyFinderTag         - launchs tag-mode Fuzzyfinder.
 "       :FuzzyFinderTaggedFile  - launchs tagged-file-mode Fuzzyfinder.
 "
@@ -177,7 +177,7 @@
 "
 "-----------------------------------------------------------------------------
 " Setting Example:
-"   let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'MruFile':{}, 'MruCmd':{}, 'FavFile':{}, 'Dir':{}, 'Tag':{}, 'TaggedFile':{}}
+"   let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{}, 'MruFile':{}, 'MruCmd':{}, 'FavFile':{}, 'Tag':{}, 'TaggedFile':{}}
 "   let g:FuzzyFinderOptions.Base.ignore_case = 1
 "   let g:FuzzyFinderOptions.Base.abbrev_map  = {
 "         \   '\C^VR' : [
@@ -192,10 +192,10 @@
 "   nnoremap <silent> <C-n>      :FuzzyFinderBuffer<CR>
 "   nnoremap <silent> <C-p>      :FuzzyFinderFile<CR>
 "   nnoremap <silent> <C-p>      :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
+"   nnoremap <silent> <C-f><C-d> :FuzzyFinderDir <C-r>=fnamemodify('.', ':p')<CR><CR>
 "   nnoremap <silent> <C-f><C-n> :FuzzyFinderMruFile<CR>
 "   nnoremap <silent> <C-f><C-p> :FuzzyFinderMruCmd<CR>
 "   nnoremap <silent> <C-f><C-f> :FuzzyFinderFavFile<CR>
-"   nnoremap <silent> <C-f><C-d> :FuzzyFinderDir <C-r>=fnamemodify('.', ':p')<CR><CR>
 "   nnoremap <silent> <C-f><C-t> :FuzzyFinderTag!<CR>
 "   nnoremap <silent> <C-f><C-g> :FuzzyFinderTaggedFile<CR>
 "   nnoremap <silent> <C-]>      :FuzzyFinderTag! <C-r>=expand('<cword>')<CR><CR>
@@ -877,7 +877,7 @@ function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, matching_limit
     echo 'Caching file list...'
 
     let self.cache[key] = filter(s:EnumExpandedDirEntries(a:dir, a:excluded, self.path_separator), 'len(v:val.suffix)')
-    call insert(self.cache[key], { 'head' : s:SplitPath(a:dir).head, 'tail' : '', 'suffix' : '' })
+    call insert(self.cache[key], { 'head' : matchstr(s:SplitPath(a:dir).head, '^.*[^/\\]'), 'tail' : '', 'suffix' : '' })
     call s:ExtendIndexToEach(self.cache[key], 1)
   endif
   echo 'Filtering file list...'
@@ -939,9 +939,9 @@ function! g:FuzzyFinderMode.Buffer.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(s:GetNonCurrentBuffers(self.excluded_indicator),
-        \           '(v:val.index == patterns.base || v:val.path =~ patterns.re)'),
-        \    'self.format_completion_item(v:val.path, v:val.index, v:val.ind . v:val.path, "", a:base, 1)')
+  let result = filter(s:GetNonCurrentBuffers(self.excluded_indicator),
+        \             '(v:val.index == patterns.base || v:val.path =~ patterns.re)')
+  return map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.ind . v:val.path, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
@@ -967,15 +967,37 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
 
+  echo '[' . self.to_key() . '] pattern:' . patterns.head.base . patterns.tail.wi . (self.migemo_support ? ' + migemo' : '')
+
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, self.matching_limit)
 
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
 
+  return map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
+endfunction
+
+"-----------------------------------------------------------------------------
+let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
+
+function! g:FuzzyFinderMode.Dir.on_complete(base)
+  let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
+
   echo '[' . self.to_key() . '] pattern:' . patterns.head.base . patterns.tail.wi . (self.migemo_support ? ' + migemo' : '')
 
+  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, 0)
+
   return map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
+endfunction
+
+function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
+  return ':cd ' . escape(a:expr, ' ') . [
+        \   "\<CR>",
+        \   "",
+        \   "",
+        \   "",
+        \ ][a:mode]
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -986,8 +1008,8 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(copy(self.cache), 'v:val.index == patterns.base || v:val.path =~ patterns.re'),
-        \    'self.format_completion_item(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
+  let result = filter(copy(self.cache), 'v:val.index == patterns.base || v:val.path =~ patterns.re')
+  return map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
@@ -1026,8 +1048,8 @@ function! g:FuzzyFinderMode.MruCmd.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(copy(self.cache), 'v:val.index == patterns.base || v:val.command =~ patterns.re'),
-        \    'self.format_completion_item(v:val.command, v:val.index, v:val.command, v:val.time, a:base, 0)')
+  let result = filter(copy(self.cache), 'v:val.index == patterns.base || v:val.command =~ patterns.re')
+  return map(result, 'self.format_completion_item(v:val.command, v:val.index, v:val.command, v:val.time, a:base, 0)')
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
@@ -1068,8 +1090,8 @@ function! g:FuzzyFinderMode.FavFile.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(copy(self.cache), 'v:val.index == patterns.base || v:val.path =~ patterns.re'),
-        \    'self.format_completion_item(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
+  let result = filter(copy(self.cache), 'v:val.index == patterns.base || v:val.path =~ patterns.re')
+  return map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.FavFile.on_mode_enter()
@@ -1091,50 +1113,18 @@ function! g:FuzzyFinderMode.FavFile.add(in_file, adds)
 endfunction
 
 "-----------------------------------------------------------------------------
-let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
-
-function! g:FuzzyFinderMode.Dir.on_complete(base)
-  let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
-
-  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, 0)
-
-  "if len(patterns.tail.base) == 0
-  "  call insert(result, { 'index': 0, 'path' : patterns.head.base })
-  "endif
-
-  call map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
-
-  if len(patterns.tail.base) == 0
-    let result[0].word = matchstr(result[0].word, '^.*[^/\\]')
-  endif
-
-  echo '[' . self.to_key() . '] pattern:' . patterns.head.base . patterns.tail.wi . (self.migemo_support ? ' + migemo' : '')
-
-  return result
-endfunction
-
-function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
-  return ':cd ' . escape(a:expr, ' ') . [
-        \   "\<CR>",
-        \   "",
-        \   "",
-        \   "",
-        \ ][a:mode]
-endfunction
-
-"-----------------------------------------------------------------------------
 let g:FuzzyFinderMode.Tag = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Tag.on_complete(base)
   let patterns = self.make_pattern(a:base)
+
+  echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
   let result = self.find_tag(patterns.re, self.matching_limit)
 
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
-
-  echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
   return map(result,  'self.format_completion_item(v:val, -1, v:val, "", a:base, 1)')
 endfunction
@@ -1175,14 +1165,14 @@ let g:FuzzyFinderMode.TaggedFile = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
 
+  echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
+
   echo 'Making tagged file list...'
   let result = self.find_tagged_file(patterns.re, self.matching_limit)
 
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
-
-  echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
   return map(result,  'self.format_completion_item(v:val, -1, v:val, "", a:base, 1)')
 endfunction
@@ -1372,7 +1362,7 @@ let user_options = (exists('g:FuzzyFinderOptions') ? g:FuzzyFinderOptions : {})
 " }}}2
 
 " Initializes g:FuzzyFinderOptions.
-let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'MruFile':{}, 'MruCmd':{}, 'FavFile':{}, 'Dir':{}, 'Tag':{}, 'TaggedFile':{}}
+let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{}, 'MruFile':{}, 'MruCmd':{}, 'FavFile':{}, 'Tag':{}, 'TaggedFile':{}}
 "-----------------------------------------------------------------------------
 " [All Mode] This is mapped to select completion item or finish input and
 " open a buffer/file in previous window.
@@ -1424,6 +1414,12 @@ let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|(
 " process is aborted.
 let g:FuzzyFinderOptions.File.matching_limit = 200
 "-----------------------------------------------------------------------------
+" [Directory Mode] It disables all functions of this mode if zero was set.
+let g:FuzzyFinderOptions.Dir.mode_available = 1
+" [Directory Mode] The items matching this are excluded from the completion
+" list.
+let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
+"-----------------------------------------------------------------------------
 " [Mru-File Mode] It disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
 " [Mru-File Mode] The items matching this are excluded from the completion
@@ -1454,12 +1450,6 @@ let g:FuzzyFinderOptions.FavFile.mode_available = 1
 " [Favorite-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
 let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
-"-----------------------------------------------------------------------------
-" [Directory Mode] It disables all functions of this mode if zero was set.
-let g:FuzzyFinderOptions.Dir.mode_available = 1
-" [Directory Mode] The items matching this are excluded from the completion
-" list.
-let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 "-----------------------------------------------------------------------------
 " [Tag Mode] It disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
@@ -1500,10 +1490,10 @@ cmap <silent> <expr> <CR> <SID>OnCmdCR()
 
 command! -bang -narg=? -complete=buffer FuzzyFinderBuffer      call g:FuzzyFinderMode.Buffer.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderFile        call g:FuzzyFinderMode.File.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderMruFile     call g:FuzzyFinderMode.MruFile.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderMruCmd      call g:FuzzyFinderMode.MruCmd.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderFavFile     call g:FuzzyFinderMode.FavFile.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderEditInfo    call s:InfoFileManager.edit()
