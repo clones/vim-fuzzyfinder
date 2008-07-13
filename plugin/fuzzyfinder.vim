@@ -517,6 +517,21 @@ function! s:ExpandEx(dir)
   return split(join(map(s:CartesianProduct(lists), 'expand(join(v:val, ""))'), "\n"), "\n")
 endfunction
 
+function! s:EnumExpandedDirEntries(dir, excluded, path_separator)
+  let dirs = s:ExpandEx(a:dir)
+  let entries = s:Concat(map(copy(dirs), 'split(glob(v:val . ".*"), "\n") + ' .
+        \                                  'split(glob(v:val . "*" ), "\n")'))
+  if len(dirs) <= 1
+    call map(entries, 'extend(s:SplitPath(v:val), { "suffix" : (isdirectory(v:val) ? a:path_separator : ""), "head" : a:dir })')
+  else
+    call map(entries, 'extend(s:SplitPath(v:val), { "suffix" : (isdirectory(v:val) ? a:path_separator : "") })')
+  endif
+  if len(a:excluded)
+    call filter(entries, '(v:val.head . v:val.tail . v:val.suffix) !~ a:excluded')
+  endif
+  return entries
+endfunction
+
 " returns { head, tail }
 function! s:SplitPath(path)
   let dir = matchstr(a:path, '^.*[/\\]')
@@ -524,11 +539,6 @@ function! s:SplitPath(path)
         \   'head' : dir,
         \   'tail' : a:path[strlen(dir):]
         \ }
-endfunction
-
-function! s:MultiGlob(dirs)
-    return s:Concat(map(copy(a:dirs), 'split(glob(v:val . ".*"), "\n") + ' .
-          \                           'split(glob(v:val . "*" ), "\n")'))
 endfunction
 
 " returns a list of { index, ind, path }
@@ -730,7 +740,7 @@ function! g:FuzzyFinderMode.Base.deserialize_info(lines)
 endfunction
 
 function! g:FuzzyFinderMode.Base.complete(findstart, base)
-  if a:findstart 
+  if a:findstart
     return 0
   elseif  !self.exists_prompt(a:base) || len(self.remove_prompt(a:base)) < self.min_length
     return []
@@ -738,6 +748,7 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
 
   call s:HighlightError(0)
 
+  " FIXME: ExpandAbbrevMap duplicates index
   let result = []
   for expanded_base in s:ExpandAbbrevMap(self.remove_prompt(a:base), self.abbrev_map)
     let result += self.on_complete(expanded_base)
@@ -848,31 +859,31 @@ endfunction
 " glob with caching-feature, etc.
 function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, matching_limit)
   let key = fnamemodify(a:dir, ':p')
-
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]')
     echo 'Caching file list...'
-    let dirs = s:ExpandEx(a:dir)
-    if len(dirs) <= 1
-      let self.cache[key] = map(s:MultiGlob(dirs),
-            \ 'extend(s:SplitPath(v:val), {"head" : a:dir, "suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
-    else
-      let self.cache[key] = map(s:MultiGlob(dirs),
-            \ 'extend(s:SplitPath(v:val), {"suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
-    endif
-
-    if len(a:excluded)
-      call filter(self.cache[key], '(v:val.head . v:val.tail . v:val.suffix) !~ a:excluded')
-    endif
+    let self.cache[key] = s:EnumExpandedDirEntries(a:dir, a:excluded, self.path_separator)
+    call s:ExtendIndexToEach(self.cache[key], 1)
   endif
-
   echo 'Filtering file list...'
   return map(s:FilterEx(self.cache[key], 'v:val.tail =~ ' . string(a:file), a:matching_limit),
-        \    'v:val.head . v:val.tail . v:val.suffix')
+        \ '{ "index" : v:val.index, "path" : (v:val.head . v:val.tail . v:val.suffix) }')
 endfunction
 
-"-----------------------------------------------------------------------------
-" MISC
+function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, matching_limit)
+  let key = fnamemodify(a:dir, ':p')
+  call extend(self, { 'cache' : {} }, 'keep')
+  if !exists('self.cache[key]')
+    echo 'Caching file list...'
+
+    let self.cache[key] = filter(s:EnumExpandedDirEntries(a:dir, a:excluded, self.path_separator), 'len(v:val.suffix)')
+    call insert(self.cache[key], { 'head' : s:SplitPath(a:dir).head, 'tail' : '', 'suffix' : '' })
+    call s:ExtendIndexToEach(self.cache[key], 1)
+  endif
+  echo 'Filtering file list...'
+  return map(s:FilterEx(self.cache[key], 'v:val.tail =~ ' . string(a:file), a:matching_limit),
+        \ '{ "index" : v:val.index, "path" : (v:val.head . v:val.tail . v:val.suffix) }')
+endfunction
 
 function! g:FuzzyFinderMode.Base.empty_cache_if_existed(force)
   if exists('self.cache') && (a:force || !exists('self.lasting_cache') || !self.lasting_cache)
@@ -964,9 +975,7 @@ function! g:FuzzyFinderMode.File.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.head.base . patterns.tail.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(result, 'self.format_completion_item(v:val, -1, v:val, "", a:base, 1)')
-
-  return result
+  return map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1087,14 +1096,13 @@ let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Dir.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
 
-  let result = filter(self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, 0),
-        \             'v:val =~ ''[/\\]$''')
+  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, 0)
 
-  if len(patterns.tail.base) == 0
-    call insert(result, patterns.head.base)
-  endif
+  "if len(patterns.tail.base) == 0
+  "  call insert(result, { 'index': 0, 'path' : patterns.head.base })
+  "endif
 
-  call map(result, 'self.format_completion_item(v:val, -1, v:val, "", a:base, 1)')
+  call map(result, 'self.format_completion_item(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
 
   if len(patterns.tail.base) == 0
     let result[0].word = matchstr(result[0].word, '^.*[^/\\]')
@@ -1504,3 +1512,4 @@ command! -bang -narg=0                  FuzzyFinderRemoveCache for m in s:GetAva
 
 " }}}1
 "=============================================================================
+" vim: set fdm=marker:
