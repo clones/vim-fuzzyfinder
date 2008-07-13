@@ -515,12 +515,23 @@ function! s:ExpandEx(dir)
 endfunction
 
 "-----------------------------------------------------------------------------
+" returns { head, tail }
 function! s:SplitPath(path)
   let dir = matchstr(a:path, '^.*[/\\]')
-  return [dir, a:path[strlen(dir):]]
+  return  {
+        \   'head' : dir,
+        \   'tail' : a:path[strlen(dir):]
+        \ }
 endfunction
 
 "-----------------------------------------------------------------------------
+function! s:MultiGlob(dirs)
+    return s:Concat(map(copy(a:dirs), 'split(glob(v:val . ".*"), "\n") + ' .
+          \                           'split(glob(v:val . "*" ), "\n")'))
+endfunction
+
+"-----------------------------------------------------------------------------
+" returns a list of { nr, ind, path }
 function! s:GetBuffers()
   redir => buffers | silent buffers! | redir END
   return map(map(split(buffers, "\n"),
@@ -814,8 +825,8 @@ function! g:FuzzyFinderMode.Base.format_completion_item(expr, number_str, abbr, 
   if      (number >= 0 && str2nr(number) == str2nr(a:entered)) || (a:expr == a:entered)
     let rate = self.matching_rate_base
   elseif a:evals_path_tail
-    let rate = self.evaluate_matching_rate(s:SplitPath(matchstr(a:expr, '^.*[^/\\]'))[1],
-          \                                s:SplitPath(a:entered)[1])
+    let rate = self.evaluate_matching_rate(s:SplitPath(matchstr(a:expr, '^.*[^/\\]')).tail,
+          \                                s:SplitPath(a:entered).tail)
   else
     let rate = self.evaluate_matching_rate(a:expr, a:entered)
   endif
@@ -871,23 +882,22 @@ function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, matching_limit)
   if !exists('self.cache[key]')
     echo 'Caching file list...'
     let dirs = s:ExpandEx(a:dir)
-    let self.cache[key] = s:Concat(map(copy(dirs), 'split(glob(v:val . ".*"), "\n") + ' .
-          \                            'split(glob(v:val . "*" ), "\n")'))
+    let self.cache[key] = s:MultiGlob(dirs)
 
     if len(dirs) <= 1
-      call map(self.cache[key], '[a:dir, s:SplitPath(v:val)[1], (isdirectory(v:val) ? self.path_separator : '''')]')
+      call map(self.cache[key], 'extend(s:SplitPath(v:val), {"head" : a:dir, "suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
     else
-      call map(self.cache[key], 's:SplitPath(v:val) + [(isdirectory(v:val) ? self.path_separator : '''')]')
+      call map(self.cache[key], 'extend(s:SplitPath(v:val), {"suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
     endif
 
     if len(a:excluded)
-      call filter(self.cache[key], 'v:val[0] . v:val[1] . v:val[2] !~ a:excluded')
+      call filter(self.cache[key], '(v:val.head . v:val.tail . v:val.suffix) !~ a:excluded')
     endif
   endif
 
   echo 'Filtering file list...'
-  return map(s:FilterEx(self.cache[key], 'v:val[1] =~ ' . string(a:file), a:matching_limit),
-        \    'v:val[0] . v:val[1] . v:val[2]')
+  return map(s:FilterEx(self.cache[key], 'v:val.tail =~ ' . string(a:file), a:matching_limit),
+        \    'v:val.head . v:val.tail . v:val.suffix')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -989,13 +999,13 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
 
-  let result = self.glob_ex(patterns[0].base, patterns[1].re, self.excluded_path, self.matching_limit)
+  let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, self.matching_limit)
 
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
 
-  echo '[' . self.to_key() . '] pattern:' . patterns[0].base . patterns[1].wi . (self.migemo_support ? ' + migemo' : '')
+  echo '[' . self.to_key() . '] pattern:' . patterns.head.base . patterns.tail.wi . (self.migemo_support ? ' + migemo' : '')
 
   return map(result, 'self.format_completion_item(v:val, -1, v:val, "", a:base, 1)')
 
@@ -1137,20 +1147,20 @@ let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Dir.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
 
-  let result = filter(self.glob_ex(patterns[0].base, patterns[1].re, self.excluded_path, 0),
+  let result = filter(self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, 0),
         \             'v:val =~ ''[/\\]$''')
 
-  if len(patterns[1].base) == 0
-    call insert(result, patterns[0].base)
+  if len(patterns.tail.base) == 0
+    call insert(result, patterns.head.base)
   endif
 
   call map(result, 'self.format_completion_item(v:val, -1, v:val, "", a:base, 1)')
 
-  if len(patterns[1].base) == 0
+  if len(patterns.tail.base) == 0
     let result[0].word = matchstr(result[0].word, '^.*[^/\\]')
   endif
 
-  echo '[' . self.to_key() . '] pattern:' . patterns[0].base . patterns[1].wi . (self.migemo_support ? ' + migemo' : '')
+  echo '[' . self.to_key() . '] pattern:' . patterns.head.base . patterns.tail.wi . (self.migemo_support ? ' + migemo' : '')
 
   return result
 endfunction
