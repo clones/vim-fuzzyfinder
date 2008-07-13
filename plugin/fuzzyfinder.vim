@@ -462,11 +462,10 @@ function! s:FilterEx(in, expr, limit)
 endfunction
 
 "-----------------------------------------------------------------------------
-function! s:MakeNumberedList(in, first)
+function! s:ExtendIndexToEach(in, offset)
   for i in range(len(a:in))
-    let a:in[i] = [i + a:first, a:in[i]]
+    let a:in[i].index = i + a:offset
   endfor
-
   return a:in
 endfunction
 
@@ -531,14 +530,14 @@ function! s:MultiGlob(dirs)
 endfunction
 
 "-----------------------------------------------------------------------------
-" returns a list of { nr, ind, path }
-function! s:GetBuffers()
+" returns a list of { index, ind, path }
+function! s:GetNonCurrentBuffers(excluded_indicator)
   redir => buffers | silent buffers! | redir END
-  return map(map(split(buffers, "\n"),
-        \        'matchlist(v:val, ''^\s*\(\d*\)\([^"]*\)"\([^"]*\)".*$'')'),
-        \    '{ ''nr''   : v:val[1], ' .
-        \    '  ''ind''  : v:val[2], ' .
-        \    '  ''path'' : fnamemodify(v:val[3], '':~:.'') }')
+  let ex_ind = (len(a:excluded_indicator) ? a:excluded_indicator : '$^')
+  return filter(map(map(split(buffers, "\n"),
+        \               'matchlist(v:val, ''^\s*\(\d*\)\([^"]*\)"\([^"]*\)".*$'')'),
+        \           '{ "index" : v:val[1],  "ind" : v:val[2],  "path" : fnamemodify(v:val[3], ":~:.") }'),
+        \       'v:val.index != bufnr("%") && v:val.ind !~ ex_ind')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -882,12 +881,12 @@ function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, matching_limit)
   if !exists('self.cache[key]')
     echo 'Caching file list...'
     let dirs = s:ExpandEx(a:dir)
-    let self.cache[key] = s:MultiGlob(dirs)
-
     if len(dirs) <= 1
-      call map(self.cache[key], 'extend(s:SplitPath(v:val), {"head" : a:dir, "suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
+      let self.cache[key] = map(s:MultiGlob(dirs),
+            \ 'extend(s:SplitPath(v:val), {"head" : a:dir, "suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
     else
-      call map(self.cache[key], 'extend(s:SplitPath(v:val), {"suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
+      let self.cache[key] = map(s:MultiGlob(dirs),
+            \ 'extend(s:SplitPath(v:val), {"suffix" : (isdirectory(v:val) ? self.path_separator : "")})')
     endif
 
     if len(a:excluded)
@@ -968,19 +967,18 @@ function! g:FuzzyFinderMode.Buffer.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(s:GetBuffers(),
-        \           'v:val.nr != bufnr(''%'') && v:val.ind !~ self.excluded_indicator && ' .
-        \           '(v:val.nr == patterns.base || v:val.path =~ patterns.re)'),
-        \    'self.format_completion_item(v:val.path, v:val.nr, v:val.ind . v:val.path, "", a:base, 1)')
+  return map(filter(s:GetNonCurrentBuffers(self.excluded_indicator),
+        \           '(v:val.index == patterns.base || v:val.path =~ patterns.re)'),
+        \    'self.format_completion_item(v:val.path, v:val.index, v:val.ind . v:val.path, "", a:base, 1)')
 endfunction
 
 "-----------------------------------------------------------------------------
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " attempts to convert the path to the number for handling unnamed buffer
   let buf = escape(a:expr, ' ')
-  for buf_info in s:GetBuffers()
+  for buf_info in s:GetNonCurrentBuffers(self.excluded_indicator)
     if buf == escape(buf_info.path, ' ')
-      let buf = buf_info.nr
+      let buf = buf_info.index
       break
     endif
   endfor
@@ -1021,15 +1019,14 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(copy(self.cache), 'v:val[0] == patterns.base || v:val[1].path =~ patterns.re'),
-        \    'self.format_completion_item(v:val[1].path, v:val[0], v:val[1].path, v:val[1].time, a:base, 1)')
+  return map(filter(copy(self.cache), 'v:val.index == patterns.base || v:val.path =~ patterns.re'),
+        \    'self.format_completion_item(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
 endfunction
 
 "-----------------------------------------------------------------------------
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
-  let self.cache = s:MakeNumberedList(map(copy(self.info),
-        \                                 '{ ''path'' : fnamemodify(v:val.path, '':~:.''),' .
-        \                                 '  ''time'' : strftime(self.time_format, v:val.time) }'), 1)
+  let self.cache = s:ExtendIndexToEach(map(copy(self.info),
+        \ '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }'), 1)
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1067,8 +1064,8 @@ function! g:FuzzyFinderMode.MruCmd.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(copy(self.cache), 'v:val[0] == patterns.base || v:val[1].command =~ patterns.re'),
-        \    'self.format_completion_item(v:val[1].command, v:val[0], v:val[1].command, v:val[1].time, a:base, 0)')
+  return map(filter(copy(self.cache), 'v:val.index == patterns.base || v:val.command =~ patterns.re'),
+        \    'self.format_completion_item(v:val.command, v:val.index, v:val.command, v:val.time, a:base, 0)')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1084,9 +1081,8 @@ endfunction
 
 "-----------------------------------------------------------------------------
 function! g:FuzzyFinderMode.MruCmd.on_mode_enter()
-  let self.cache = s:MakeNumberedList(map(copy(self.info),
-        \                                 '{ ''command'' : v:val.command,' .
-        \                                 '  ''time'' : strftime(self.time_format, v:val.time) }'), 1)
+  let self.cache = s:ExtendIndexToEach(map(copy(self.info),
+        \ '{ "command" : v:val.command, "time" : strftime(self.time_format, v:val.time) }'), 1)
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1115,15 +1111,14 @@ function! g:FuzzyFinderMode.FavFile.on_complete(base)
 
   echo '[' . self.to_key() . '] pattern:' . patterns.wi . (self.migemo_support ? ' + migemo' : '')
 
-  return map(filter(copy(self.cache), 'v:val[0] == patterns.base || v:val[1].path =~ patterns.re'),
-        \    'self.format_completion_item(v:val[1].path, v:val[0], v:val[1].path, v:val[1].time, a:base, 1)')
+  return map(filter(copy(self.cache), 'v:val.index == patterns.base || v:val.path =~ patterns.re'),
+        \    'self.format_completion_item(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
 endfunction
 
 "-----------------------------------------------------------------------------
 function! g:FuzzyFinderMode.FavFile.on_mode_enter()
-  let self.cache = s:MakeNumberedList(map(copy(self.info),
-        \                                 '{ ''path'' : fnamemodify(v:val.path, '':~:.''),' .
-        \                                 '  ''time'' : strftime(self.time_format, v:val.time) }'), 1)
+  let self.cache = s:ExtendIndexToEach(map(copy(self.info),
+        \ '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }'), 1)
 endfunction
 
 "-----------------------------------------------------------------------------
