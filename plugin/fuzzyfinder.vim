@@ -83,11 +83,12 @@
 "     If too many items (200, by default) were matched, the completion is
 "     aborted to reduce nonresponse.
 "
-"     If entered pattern matched the item exactly, the item is shown first.
-"     Same applies to the item number in the buffer/MRU/favorite mode. The
-"     item whose file name has longer prefix matching is placed upper. The
-"     item which matched more sequentially is placed upper. It lets the first
-"     item into selected in completion menu.
+"     If an item were matched with entered pattern exactly, it is shown first.
+"     The item whose file name has longer prefix matching is placed upper.
+"     Also, an item which matched more sequentially is placed upper. The item
+"     whose index were matched with a number suffixed with entered pattern is
+"     placed lower. the first item in the completion menu will be selected
+"     automatically.
 "
 "     You can open a selected item in various ways:
 "       <CR>  - opens in a previous window.
@@ -212,8 +213,9 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.7:
-"     - TODO
-"     - :cd 後に file mode がおかしくなるのを修正 した (おかしかった？)
+"     - Changed to find an item whose index is matched with the number
+"       suffixed with entered pattern.
+"     - Fixed the cache bug after changing current directroy in File mode.
 "
 "   2.6.2:
 "     - Fixed not to miss changes in options when updates the MRU information.
