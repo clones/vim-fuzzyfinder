@@ -861,7 +861,7 @@ function! g:FuzzyFinderMode.Base.make_pattern(base)
 endfunction
 
 " glob with caching-feature, etc.
-function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, matching_limit)
+function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, index, matching_limit)
   let key = fnamemodify(a:dir, ':p')
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]')
@@ -875,7 +875,7 @@ function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, matching_limit)
         \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
 endfunction
 
-function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, matching_limit)
+function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, index, matching_limit)
   let key = fnamemodify(a:dir, ':p')
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]')
@@ -969,7 +969,7 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
-  let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, self.matching_limit)
+  let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
   call s:EchoOnComplete(self.to_key(), patterns.head.base . patterns.tail.wi, self.migemo_support)
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
@@ -982,7 +982,7 @@ let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Dir.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
-  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, 0)
+  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), 0)
   call s:EchoOnComplete(self.to_key(), patterns.head.base . patterns.tail.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
 endfunction
