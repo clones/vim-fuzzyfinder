@@ -212,6 +212,9 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   x.x:
+"     - Fixed to be able to open folds when <CR> is entered in a commandline.
+"
 "   2.7:
 "     - Changed to find an item whose index is matched with the number
 "       suffixed with entered pattern.
@@ -397,8 +400,9 @@ function! s:OnCmdCR()
     call m.on_command_pre(getcmdtype() . getcmdline())
   endfor
 
+  let suffix = (getcmdtype() == '/' || getcmdtype() == '?' ? 'zv' : '' )
   " this is not mapped again (:help recursive_mapping)
-  return "\<CR>"
+  return "\<CR>" . suffix
 endfunction
 
 "-----------------------------------------------------------------------------
