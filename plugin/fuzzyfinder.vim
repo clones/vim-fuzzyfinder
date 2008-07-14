@@ -160,7 +160,7 @@
 
 "     :FuzzyFinderEditInfo command is helpful in editing your information
 "     file. This command reads the information file in new unnamed buffer.
-"     Close the buffer and the information file will be updated.
+"     Write the buffer and the information file will be updated.
 "
 "   About Cache:
 "     Once a cache was created, It is not updated automatically to improve
@@ -585,7 +585,7 @@ function! s:EnumExpandedDirsEntries(dir, excluded)
   return entries
 endfunction
 
-" returns { head, tail }
+" "foo/bar/hoge" -> { head: "foo/bar/", tail: "hoge" }
 function! s:SplitPath(path)
   let dir = matchstr(a:path, '^.*[/\\]')
   return  {
@@ -1186,6 +1186,22 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, matching_limit)
 endfunction
 
 "-----------------------------------------------------------------------------
+" sets or restores temporary options
+let s:OptionManager = { 'originals' : {} }
+
+function! s:OptionManager.set(name, value)
+  call extend(self.originals, { a:name : eval('&' . a:name) }, 'keep')
+  execute printf('let &%s = a:value', a:name)
+endfunction
+
+function! s:OptionManager.restore_all()
+  for [name, value] in items(self.originals)
+    execute printf('let &%s = value', name)
+  endfor
+  let self.originals = {}
+endfunction
+
+"-----------------------------------------------------------------------------
 " manages buffer/window for fuzzyfinder
 let s:WindowManager = { 'buf_nr' : -1 }
 
@@ -1235,22 +1251,6 @@ function! s:WindowManager.deactivate()
 endfunction
 
 "-----------------------------------------------------------------------------
-" sets or restores temporary options
-let s:OptionManager = { 'originals' : {} }
-
-function! s:OptionManager.set(name, value)
-  call extend(self.originals, { a:name : eval('&' . a:name) }, 'keep')
-  execute printf('let &%s = a:value', a:name)
-endfunction
-
-function! s:OptionManager.restore_all()
-  for [name, value] in items(self.originals)
-    execute printf('let &%s = value', name)
-  endfor
-  let self.originals = {}
-endfunction
-
-"-----------------------------------------------------------------------------
 let s:InfoFileManager = { 'originals' : {} }
 
 function! s:InfoFileManager.load()
@@ -1291,32 +1291,31 @@ endfunction
 function! s:InfoFileManager.edit()
 
   new +file\ [FuzzyfinderInfo]
+  let self.bufnr = bufnr('%')
 
   setlocal filetype=vim
   setlocal bufhidden=delete
-  setlocal buftype=nofile
+  setlocal buftype=acwrite
   setlocal noswapfile
-  "setlocal nobuflisted
 
   augroup FuzzyfinderInfo
     autocmd!
-    autocmd BufWinLeave <buffer> call s:InfoFileManager.on_buf_win_leave()
+    autocmd BufWriteCmd <buffer> call s:InfoFileManager.on_buf_write_cmd()
   augroup END
 
   execute '0read ' . expand(self.get_info_file())
+  setlocal nomodified
 
-  echo 'Close this window to apply changes.'
 endfunction
 
-function! s:InfoFileManager.on_buf_win_leave()
-  echohl Question
-  if input('Apply changes? [y/n]: ', 'y') ==? 'y'
-    for m in s:GetAvailableModes()
-      call m.deserialize_info(getline(1, '$'))
-    endfor
-    call self.save()
-  endif
-  echohl None
+function! s:InfoFileManager.on_buf_write_cmd()
+  for m in s:GetAvailableModes()
+    call m.deserialize_info(getline(1, '$'))
+  endfor
+  call self.save()
+  setlocal nomodified
+  execute printf('%dbdelete! ', self.bufnr)
+  echo "Information file updated"
 endfunction
 
 function! s:InfoFileManager.get_info_version_line()
