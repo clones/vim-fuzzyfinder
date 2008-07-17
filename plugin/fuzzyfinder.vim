@@ -217,6 +217,8 @@
 "       history.
 "     - Fixed a bug that folds could not open with <CR> in a command-line when
 "       searching.
+"     - Removed 'excluded_indicator' option. Now a completion list in Buffer
+"       mode is the same as a result of :buffers.
 "
 "   2.7:
 "     - Changed to find an item whose index is matched with the number
@@ -605,14 +607,20 @@ function! s:SplitPath(path)
         \ }
 endfunction
 
+" line of :buffer -> { index, ind, path }
+function! s:ParseBufferLine(line)
+  let parsed = matchlist(a:line, '^\s*\(\d*\)\([^"]*\)"\([^"]*\)".*$')
+  return  {
+        \   'index' : str2nr(parsed[1]),
+        \   'ind'   : parsed[2],
+        \   'path'  : fnamemodify(parsed[3], ':~:.')
+        \ }
+endfunction
+
 " returns a list of { index, ind, path }
-function! s:GetNonCurrentBuffers(excluded_indicator)
-  redir => buffers | silent buffers! | redir END
-  let ex_ind = (len(a:excluded_indicator) ? a:excluded_indicator : '$^')
-  return filter(map(map(split(buffers, "\n"),
-        \               'matchlist(v:val, ''^\s*\(\d*\)\([^"]*\)"\([^"]*\)".*$'')'),
-        \           '{ "index" : str2nr(v:val[1]),  "ind" : v:val[2],  "path" : fnamemodify(v:val[3], ":~:.") }'),
-        \       'v:val.index != bufnr("%") && v:val.ind !~ ex_ind')
+function! s:GetNonCurrentBuffers()
+  redir => bufs | silent buffers | redir END
+  return filter(map(split(bufs, "\n"), 's:ParseBufferLine(v:val)'), 'v:val.index != bufnr("%")')
 endfunction
 
 function! s:GetTagList(tagfile)
@@ -956,14 +964,14 @@ let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
-  let result = s:FilterMatching(s:GetNonCurrentBuffers(self.excluded_indicator), 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
+  let result = s:FilterMatching(s:GetNonCurrentBuffers(), 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.ind . v:val.path, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " attempts to convert the path to the number for handling unnamed buffer
   let buf = escape(a:expr, ' ')
-  for buf_info in s:GetNonCurrentBuffers(self.excluded_indicator)
+  for buf_info in s:GetNonCurrentBuffers()
     if buf == escape(buf_info.path, ' ')
       let buf = buf_info.index
       break
@@ -1396,9 +1404,6 @@ let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
 " [Buffer Mode] It disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
-" [Buffer Mode] The items whose :ls-indicators match this are excluded from
-" the completion list.
-let g:FuzzyFinderOptions.Buffer.excluded_indicator = '[u\-]'
 "-----------------------------------------------------------------------------
 " [File Mode] It disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
