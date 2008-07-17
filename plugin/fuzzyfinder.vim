@@ -1418,12 +1418,14 @@ let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
 " [Buffer Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
-" [Buffer Mode] TODO:
+" [Buffer Mode] This is used to sort modes for switching to the next/previous
+" mode.
 let g:FuzzyFinderOptions.Buffer.switch_order = 10
 "-----------------------------------------------------------------------------
 " [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
-" [File Mode] TODO:
+" [File Mode] This is used to sort modes for switching to the next/previous
+" mode.
 let g:FuzzyFinderOptions.File.switch_order = 20
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
@@ -1433,7 +1435,8 @@ let g:FuzzyFinderOptions.File.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
-" [Directory Mode] TODO:
+" [Directory Mode] This is used to sort modes for switching to the
+" next/previous mode.
 let g:FuzzyFinderOptions.Dir.switch_order = 30
 " [Directory Mode] The items matching this are excluded from the completion
 " list.
@@ -1441,7 +1444,8 @@ let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 "-----------------------------------------------------------------------------
 " [Mru-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
-" [Mru-File Mode] TODO:
+" [Mru-File Mode] This is used to sort modes for switching to the
+" next/previous mode.
 let g:FuzzyFinderOptions.MruFile.switch_order = 40
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
@@ -1456,7 +1460,8 @@ let g:FuzzyFinderOptions.MruFile.max_item = 99
 "-----------------------------------------------------------------------------
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
-" [Mru-Cmd Mode] TODO:
+" [Mru-Cmd Mode] This is used to sort modes for switching to the next/previous
+" mode.
 let g:FuzzyFinderOptions.MruCmd.switch_order = 50
 " [Mru-Cmd Mode] The items matching this are excluded from the completion
 " list.
@@ -1470,7 +1475,8 @@ let g:FuzzyFinderOptions.MruCmd.max_item = 99
 " [Favorite-File Mode] This disables all functions of this mode if zero was
 " set.
 let g:FuzzyFinderOptions.FavFile.mode_available = 1
-" [Favorite-File Mode] TODO:
+" [Favorite-File Mode] This is used to sort modes for switching to the
+" next/previous mode.
 let g:FuzzyFinderOptions.FavFile.switch_order = 60
 " [Favorite-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
@@ -1478,7 +1484,8 @@ let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
 "-----------------------------------------------------------------------------
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
-" [Tag Mode] TODO:
+" [Tag Mode] This is used to sort modes for switching to the next/previous
+" mode.
 let g:FuzzyFinderOptions.Tag.switch_order = 70
 " [Tag Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1488,7 +1495,8 @@ let g:FuzzyFinderOptions.Tag.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
-" [Tagged-File Mode] TODO:
+" [Tagged-File Mode] This is used to sort modes for switching to the
+" next/previous mode.
 let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 " [Tagged-File Mode] If a number of matched items was over this, the
 " completion process is aborted.
