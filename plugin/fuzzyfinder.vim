@@ -512,7 +512,7 @@ function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_patter
         \   'word'  : a:expr,
         \   'abbr'  : s:TrimLast((a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr, a:trim_len),
         \   'menu'  : printf('%s[%s]', (len(a:time) ? a:time . ' ' : ''), s:MakeRateStar(rate, 5)),
-        \   'order' : [-rate, (a:number >= 0 ? a:number : a:expr)]
+        \   'ranks' : [-rate, (a:number >= 0 ? a:number : a:expr)]
         \ }
 endfunction
 
@@ -548,8 +548,18 @@ endfunction
 "-----------------------------------------------------------------------------
 " MISC FUNCTIONS:
 
+function! s:IsAvailableMode(mode)
+  return exists('a:mode.mode_available') && a:mode.mode_available
+endfunction
+
 function! s:GetAvailableModes()
-  return filter(values(g:FuzzyFinderMode), 'exists(''v:val.mode_available'') && v:val.mode_available')
+  return filter(values(g:FuzzyFinderMode), 's:IsAvailableMode(v:val)')
+endfunction
+
+function! s:GetSortedAvailableModes()
+  let modes = filter(items(g:FuzzyFinderMode), 's:IsAvailableMode(v:val[1])')
+  let modes = map(modes, 'extend(v:val[1], {"ranks" : [v:val.order, v:val.to_key()] })')
+  return sort(modes, 's:CompareRanks')
 endfunction
 
 function! s:GetSidPrefix()
@@ -653,12 +663,12 @@ function! s:HighlightError(error)
   endif
 endfunction
 
-function! s:SortByMultipleOrder(i1, i2)
-  if exists('a:i1.order') && exists('a:i2.order')
-    for i in range(min([len(a:i1.order), len(a:i2.order)]))
-      if     a:i1.order[i] > a:i2.order[i]
+function! s:CompareRanks(i1, i2)
+  if exists('a:i1.ranks') && exists('a:i2.ranks')
+    for i in range(min([len(a:i1.ranks), len(a:i2.ranks)]))
+      if     a:i1.ranks[i] > a:i2.ranks[i]
         return +1
-      elseif a:i1.order[i] < a:i2.order[i]
+      elseif a:i1.ranks[i] < a:i2.ranks[i]
         return -1
       endif
     endfor
@@ -683,7 +693,7 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, tag_file
   let self.tag_files = a:tag_files " to get local value of current buffer
   let self.last_col = -1
   call s:InfoFileManager.load()
-  if !self.mode_available
+  if !s:IsAvailableMode(self)
     echo 'This mode is not available: ' . self.to_str()
     return
   endif
@@ -836,7 +846,7 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
   for expanded_base in s:ExpandAbbrevMap(self.remove_prompt(a:base), self.abbrev_map)
     let result += self.on_complete(expanded_base)
   endfor
-  call sort(result, 's:SortByMultipleOrder')
+  call sort(result, 's:CompareRanks')
 
   echo '[' . self.to_key() . ']'
 
@@ -1407,9 +1417,13 @@ let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
 " [Buffer Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
+" [Buffer Mode] TODO:
+let g:FuzzyFinderOptions.Buffer.order = 10
 "-----------------------------------------------------------------------------
 " [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
+" [File Mode] TODO:
+let g:FuzzyFinderOptions.File.order = 20
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
 " [File Mode] If a number of matched items was over this, the completion
@@ -1418,12 +1432,16 @@ let g:FuzzyFinderOptions.File.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
+" [Directory Mode] TODO:
+let g:FuzzyFinderOptions.Dir.order = 30
 " [Directory Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 "-----------------------------------------------------------------------------
 " [Mru-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
+" [Mru-File Mode] TODO:
+let g:FuzzyFinderOptions.MruFile.order = 40
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1437,6 +1455,8 @@ let g:FuzzyFinderOptions.MruFile.max_item = 99
 "-----------------------------------------------------------------------------
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
+" [Mru-Cmd Mode] TODO:
+let g:FuzzyFinderOptions.MruCmd.order = 50
 " [Mru-Cmd Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
@@ -1449,12 +1469,16 @@ let g:FuzzyFinderOptions.MruCmd.max_item = 99
 " [Favorite-File Mode] This disables all functions of this mode if zero was
 " set.
 let g:FuzzyFinderOptions.FavFile.mode_available = 1
+" [Favorite-File Mode] TODO:
+let g:FuzzyFinderOptions.FavFile.order = 60
 " [Favorite-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
 let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
 "-----------------------------------------------------------------------------
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
+" [Tag Mode] TODO:
+let g:FuzzyFinderOptions.Tag.order = 70
 " [Tag Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
 " [Tag Mode] If a number of matched items was over this, the completion
@@ -1463,6 +1487,8 @@ let g:FuzzyFinderOptions.Tag.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
+" [Tagged-File Mode] TODO:
+let g:FuzzyFinderOptions.TaggedFile.order = 80
 " [Tagged-File Mode] If a number of matched items was over this, the
 " completion process is aborted.
 let g:FuzzyFinderOptions.TaggedFile.matching_limit = 200
