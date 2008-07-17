@@ -126,9 +126,9 @@
 "
 "   About Usage Of Command Argument:
 "     As an example, if you want to launch file-mode Fuzzyfinder with the
-"     directory of current buffer and not current directory, map as below:
+"     directory of current buffer and not current directory, map like below:
 "
-"       nnoremap <C-p> :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
+"       nnoremap <C-m> :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
 "
 "   About Abbreviations And Multiple Search:
 "     You can use abbreviations and multiple search in each mode. For example,
@@ -188,18 +188,20 @@
 "         \     '$VIM/vimfiles/**',
 "         \   ],
 "         \ }
-"   let g:FuzzyFinderOptions.MruFile.max_item = 400
-"   let g:FuzzyFinderOptions.MruCmd.max_item = 400
+"   let g:FuzzyFinderOptions.MruFile.max_item = 200
+"   let g:FuzzyFinderOptions.MruCmd.max_item = 200
 "   nnoremap <silent> <C-n>      :FuzzyFinderBuffer<CR>
-"   nnoremap <silent> <C-p>      :FuzzyFinderFile<CR>
-"   nnoremap <silent> <C-p>      :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
-"   nnoremap <silent> <C-f><C-d> :FuzzyFinderDir <C-r>=fnamemodify('.', ':p')<CR><CR>
-"   nnoremap <silent> <C-f><C-n> :FuzzyFinderMruFile<CR>
-"   nnoremap <silent> <C-f><C-p> :FuzzyFinderMruCmd<CR>
+"   nnoremap <silent> <C-m>      :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
+"   nnoremap <silent> <C-j>      :FuzzyFinderMruFile<CR>
+"   nnoremap <silent> <C-k>      :FuzzyFinderMruCmd<CR>
+"   nnoremap <silent> <C-p>      :FuzzyFinderDir <C-r>=expand('%:p:~')[:-1-len(expand('%:p:~:t'))]<CR><CR>
+"   nnoremap <silent> <C-f><C-d> :FuzzyFinderDir<CR>
 "   nnoremap <silent> <C-f><C-f> :FuzzyFinderFavFile<CR>
 "   nnoremap <silent> <C-f><C-t> :FuzzyFinderTag!<CR>
 "   nnoremap <silent> <C-f><C-g> :FuzzyFinderTaggedFile<CR>
-"   nnoremap <silent> <C-]>      :FuzzyFinderTag! <C-r>=expand('<cword>')<CR><CR>
+"   noremap  <silent> g]         :FuzzyFinderTag! <C-r>=expand('<cword>')<CR><CR>
+"   nnoremap <silent> <C-f>F     :FuzzyFinderAddFavFile<CR>
+"   nnoremap <silent> <C-f><C-e> :FuzzyFinderEditInfo<CR>
 "
 "-----------------------------------------------------------------------------
 " Special Thanks:
