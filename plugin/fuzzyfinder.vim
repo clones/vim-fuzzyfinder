@@ -466,8 +466,8 @@ endfunction
 " STRING FUNCTIONS:
 
 " trims a:str and add a:mark if a length of a:str is more than a:len
-function! s:TrimTail(str, len)
-  if len(a:str) <= a:len
+function! s:TrimLast(str, len)
+  if a:len <= 0 || len(a:str) <= a:len
     return a:str
   endif
   return a:str[:(a:len - len(s:ABBR_TRIM_MARK) - 1)] . s:ABBR_TRIM_MARK
@@ -508,7 +508,7 @@ function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_patter
   endif
   return  {
         \   'word'  : a:expr,
-        \   'abbr'  : s:TrimTail((a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr, a:trim_len),
+        \   'abbr'  : s:TrimLast((a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr, a:trim_len),
         \   'menu'  : printf('%s[%s]', (len(a:time) ? a:time . ' ' : ''), s:MakeRateStar(rate, 5)),
         \   'order' : [-rate, (a:number >= 0 ? a:number : a:expr)]
         \ }
@@ -1395,28 +1395,29 @@ let g:FuzzyFinderOptions.Base.key_prev_mode = '<C-o>'
 " case.
 let g:FuzzyFinderOptions.Base.key_ignore_case = '<C-t>'
 " [All Mode] This is the file name to write information of the MRU, etc. If
-" "" was set, it does not write to the file.
+" "" was set, Fuzzyfinder does not write to the file.
 let g:FuzzyFinderOptions.Base.info_file = '~/.vimfuzzyfinder'
-" [All Mode] It does not start a completion if a length of entered text is
-" less than this.
+" [All Mode] Fuzzyfinder does not start a completion if a length of entered
+" text is less than this.
 let g:FuzzyFinderOptions.Base.min_length = 0
 " [All Mode] This is a dictionary. Each value must be a list. All matchs of a
 " key in entered text is expanded with the value.
 let g:FuzzyFinderOptions.Base.abbrev_map = {}
-" [All Mode] It ignores case in search patterns if non-zero is set.
+" [All Mode] Fuzzyfinder ignores case in search patterns if non-zero is set.
 let g:FuzzyFinderOptions.Base.ignore_case = 1
-" [All Mode] TODO
+" [All Mode] If a length of completion item is more than this, it is trimmed
+" when shown in completion menu.
 let g:FuzzyFinderOptions.Base.trim_length = 80
-" [All Mode] It does not remove caches of completion lists at the end of
-" explorer to reuse at the next time if non-zero was set.
+" [All Mode] Fuzzyfinder does not remove caches of completion lists at the end
+" of explorer to reuse at the next time if non-zero was set.
 let g:FuzzyFinderOptions.Base.lasting_cache = 1
-" [All Mode] It uses Migemo if non-zero is set.
+" [All Mode] Fuzzyfinder uses Migemo if non-zero is set.
 let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
-" [Buffer Mode] It disables all functions of this mode if zero was set.
+" [Buffer Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
 "-----------------------------------------------------------------------------
-" [File Mode] It disables all functions of this mode if zero was set.
+" [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
@@ -1424,18 +1425,18 @@ let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|(
 " process is aborted.
 let g:FuzzyFinderOptions.File.matching_limit = 200
 "-----------------------------------------------------------------------------
-" [Directory Mode] It disables all functions of this mode if zero was set.
+" [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
 " [Directory Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 "-----------------------------------------------------------------------------
-" [Mru-File Mode] It disables all functions of this mode if zero was set.
+" [Mru-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
-" [Mru-File Mode] It ignores special buffers if non-zero was set.
+" [Mru-File Mode] Fuzzyfinder ignores special buffers if non-zero was set.
 let g:FuzzyFinderOptions.MruFile.no_special_buffer = 1
 " [Mru-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
@@ -1443,7 +1444,7 @@ let g:FuzzyFinderOptions.MruFile.time_format = '(%x %H:%M:%S)'
 " [Mru-File Mode] This is an upper limit of MRU items to be stored.
 let g:FuzzyFinderOptions.MruFile.max_item = 99
 "-----------------------------------------------------------------------------
-" [Mru-Cmd Mode] It disables all functions of this mode if zero was set.
+" [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
 " [Mru-Cmd Mode] The items matching this are excluded from the completion
 " list.
@@ -1454,14 +1455,14 @@ let g:FuzzyFinderOptions.MruCmd.time_format = '(%x %H:%M:%S)'
 " [Mru-Cmd Mode] This is an upper limit of MRU items to be stored.
 let g:FuzzyFinderOptions.MruCmd.max_item = 99
 "-----------------------------------------------------------------------------
-" [Favorite-File Mode] It disables all functions of this mode if zero was
+" [Favorite-File Mode] This disables all functions of this mode if zero was
 " set.
 let g:FuzzyFinderOptions.FavFile.mode_available = 1
 " [Favorite-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
 let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
 "-----------------------------------------------------------------------------
-" [Tag Mode] It disables all functions of this mode if zero was set.
+" [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
 " [Tag Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1469,7 +1470,7 @@ let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
 " process is aborted.
 let g:FuzzyFinderOptions.Tag.matching_limit = 200
 "-----------------------------------------------------------------------------
-" [Tagged-File Mode] It disables all functions of this mode if zero was set.
+" [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
 " [Tagged-File Mode] If a number of matched items was over this, the
 " completion process is aborted.
