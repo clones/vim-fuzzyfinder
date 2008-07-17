@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.7, for Vim 7.1
+" Version: 2.7.1, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -212,8 +212,11 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
-"   x.x:
-"     - Fixed to be able to open folds when <CR> is entered in a commandline.
+"   2.7.1:
+"     - Fixed a bug that entered command did not become the newest in the
+"       history.
+"     - Fixed a bug that folds could not open with <CR> in a command-line when
+"       searching.
 "
 "   2.7:
 "     - Changed to find an item whose index is matched with the number
@@ -399,6 +402,10 @@ function! s:OnCmdCR()
     call m.extend_options()
     call m.on_command_pre(getcmdtype() . getcmdline())
   endfor
+  " lets last entry become the newest in the history
+  if getcmdtype() =~ '[:/=@]'
+    call histadd(getcmdtype(), getcmdline())
+  endif
 
   let suffix = (getcmdtype() == '/' || getcmdtype() == '?' ? 'zv' : '' )
   " this is not mapped again (:help recursive_mapping)
