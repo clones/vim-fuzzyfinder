@@ -611,7 +611,7 @@ function! s:GetNonCurrentBuffers(excluded_indicator)
   let ex_ind = (len(a:excluded_indicator) ? a:excluded_indicator : '$^')
   return filter(map(map(split(buffers, "\n"),
         \               'matchlist(v:val, ''^\s*\(\d*\)\([^"]*\)"\([^"]*\)".*$'')'),
-        \           '{ "index" : v:val[1],  "ind" : v:val[2],  "path" : fnamemodify(v:val[3], ":~:.") }'),
+        \           '{ "index" : str2nr(v:val[1]),  "ind" : v:val[2],  "path" : fnamemodify(v:val[3], ":~:.") }'),
         \       'v:val.index != bufnr("%") && v:val.ind !~ ex_ind')
 endfunction
 
