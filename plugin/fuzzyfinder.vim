@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.7.1, for Vim 7.1
+" Version: 2.8, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -212,7 +212,8 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
-"   2.7.1:
+"   2.8:
+"     - Added 'trim_length' option.
 "     - Fixed a bug that entered command did not become the newest in the
 "       history.
 "     - Fixed a bug that folds could not open with <CR> in a command-line when
@@ -389,32 +390,6 @@ let loaded_fuzzyfinder = 1
 "=============================================================================
 " FUNCTION: {{{1
 "-----------------------------------------------------------------------------
-" CORE FUNCTIONS:
-
-function! s:GetAvailableModes()
-  return filter(values(g:FuzzyFinderMode), 'exists(''v:val.mode_available'') && v:val.mode_available')
-endfunction
-
-function! s:GetSidPrefix()
-  return matchstr(expand('<sfile>'), '<SNR>\d\+_')
-endfunction
-
-function! s:OnCmdCR()
-  for m in s:GetAvailableModes()
-    call m.extend_options()
-    call m.on_command_pre(getcmdtype() . getcmdline())
-  endfor
-  " lets last entry become the newest in the history
-  if getcmdtype() =~ '[:/=@]'
-    call histadd(getcmdtype(), getcmdline())
-  endif
-
-  let suffix = (getcmdtype() == '/' || getcmdtype() == '?' ? 'zv' : '' )
-  " this is not mapped again (:help recursive_mapping)
-  return "\<CR>" . suffix
-endfunction
-
-"-----------------------------------------------------------------------------
 " LIST FUNCTIONS:
 
 function! s:Unique(in)
@@ -488,9 +463,43 @@ function! s:ExtendIndexToEach(in, offset)
 endfunction
 
 "-----------------------------------------------------------------------------
+" STRING FUNCTIONS:
+
+" trims a:str and add a:mark if a length of a:str is more than a:len
+function! s:TrimTail(str, len)
+  if len(a:str) <= a:len
+    return a:str
+  endif
+  return a:str[:(a:len - len(s:ABBR_TRIM_MARK) - 1)] . s:ABBR_TRIM_MARK
+endfunction
+
+" takes suffix numer. if no digits, returns -1
+function! s:SuffixNumber(str)
+  let s = matchstr(a:str, '\d\+$')
+  return (len(s) ? str2nr(s) : -1)
+endfunction
+
+function! s:ConvertWildcardToRegexp(expr)
+  let re = escape(a:expr, '\')
+  for [pat, sub] in [ [ '*', '\\.\\*' ], [ '?', '\\.' ], [ '[', '\\[' ], ]
+    let re = substitute(re, pat, sub, 'g')
+  endfor
+  return '\V' . re
+endfunction
+
+" "foo/bar/hoge" -> { head: "foo/bar/", tail: "hoge" }
+function! s:SplitPath(path)
+  let dir = matchstr(a:path, '^.*[/\\]')
+  return  {
+        \   'head' : dir,
+        \   'tail' : a:path[strlen(dir):]
+        \ }
+endfunction
+
+"-----------------------------------------------------------------------------
 " FUNCTIONS FOR COMPLETION ITEM:
 
-function! s:FormatCompletionItem(expr, number, abbr, time, base_pattern, evals_path_tail)
+function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_pattern, evals_path_tail)
   if a:evals_path_tail
     let rate = s:EvaluateMatchingRate(s:SplitPath(matchstr(a:expr, '^.*[^/\\]')).tail,
           \                           s:SplitPath(a:base_pattern).tail)
@@ -499,7 +508,7 @@ function! s:FormatCompletionItem(expr, number, abbr, time, base_pattern, evals_p
   endif
   return  {
         \   'word'  : a:expr,
-        \   'abbr'  : (a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr,
+        \   'abbr'  : s:TrimTail((a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr, a:trim_len),
         \   'menu'  : printf('%s[%s]', (len(a:time) ? a:time . ' ' : ''), s:MakeRateStar(rate, 5)),
         \   'order' : [-rate, (a:number >= 0 ? a:number : a:expr)]
         \ }
@@ -537,18 +546,27 @@ endfunction
 "-----------------------------------------------------------------------------
 " MISC FUNCTIONS:
 
-" takes suffix numer. if no digits, returns -1
-function! s:SuffixNumber(str)
-  let s = matchstr(a:str, '\d\+$')
-  return (len(s) ? str2nr(s) : -1)
+function! s:GetAvailableModes()
+  return filter(values(g:FuzzyFinderMode), 'exists(''v:val.mode_available'') && v:val.mode_available')
 endfunction
 
-function! s:ConvertWildcardToRegexp(expr)
-  let re = escape(a:expr, '\')
-  for [pat, sub] in [ [ '*', '\\.\\*' ], [ '?', '\\.' ], [ '[', '\\[' ], ]
-    let re = substitute(re, pat, sub, 'g')
+function! s:GetSidPrefix()
+  return matchstr(expand('<sfile>'), '<SNR>\d\+_')
+endfunction
+
+function! s:OnCmdCR()
+  for m in s:GetAvailableModes()
+    call m.extend_options()
+    call m.on_command_pre(getcmdtype() . getcmdline())
   endfor
-  return '\V' . re
+  " lets last entry become the newest in the history
+  if getcmdtype() =~ '[:/=@]'
+    call histadd(getcmdtype(), getcmdline())
+  endif
+
+  let suffix = (getcmdtype() == '/' || getcmdtype() == '?' ? 'zv' : '' )
+  " this is not mapped again (:help recursive_mapping)
+  return "\<CR>" . suffix
 endfunction
 
 function! s:ExpandAbbrevMap(base, abbrev_map)
@@ -596,15 +614,6 @@ function! s:EnumExpandedDirsEntries(dir, excluded)
     call filter(entries, '(v:val.head . v:val.tail . v:val.suffix) !~ a:excluded')
   endif
   return entries
-endfunction
-
-" "foo/bar/hoge" -> { head: "foo/bar/", tail: "hoge" }
-function! s:SplitPath(path)
-  let dir = matchstr(a:path, '^.*[/\\]')
-  return  {
-        \   'head' : dir,
-        \   'tail' : a:path[strlen(dir):]
-        \ }
 endfunction
 
 " line of :buffer -> { index, ind, path }
@@ -965,7 +974,7 @@ function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   let result = s:FilterMatching(s:GetNonCurrentBuffers(), 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.ind . v:val.path, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.ind . v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
@@ -995,7 +1004,7 @@ function! g:FuzzyFinderMode.File.on_complete(base)
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1005,7 +1014,7 @@ function! g:FuzzyFinderMode.Dir.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
   let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), 0)
   call s:EchoOnComplete(self.to_key(), patterns.head.base . patterns.tail.wi, self.migemo_support)
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
@@ -1024,7 +1033,7 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
@@ -1062,7 +1071,7 @@ function! g:FuzzyFinderMode.MruCmd.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'command', patterns.re, s:SuffixNumber(patterns.base), 0)
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
-  return map(result, 's:FormatCompletionItem(v:val.command, v:val.index, v:val.command, v:val.time, a:base, 0)')
+  return map(result, 's:FormatCompletionItem(v:val.command, v:val.index, v:val.command, self.trim_length, v:val.time, a:base, 0)')
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
@@ -1102,7 +1111,7 @@ function! g:FuzzyFinderMode.FavFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, v:val.time, a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.FavFile.on_mode_enter()
@@ -1133,7 +1142,7 @@ function! g:FuzzyFinderMode.Tag.on_complete(base)
     call s:HighlightError(1)
   endif
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
-  return map(result,  's:FormatCompletionItem(v:val, -1, v:val, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Tag.on_open(expr, mode)
@@ -1177,7 +1186,7 @@ function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
     call s:HighlightError(1)
   endif
   call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
-  return map(result,  's:FormatCompletionItem(v:val, -1, v:val, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, matching_limit)
@@ -1396,6 +1405,8 @@ let g:FuzzyFinderOptions.Base.min_length = 0
 let g:FuzzyFinderOptions.Base.abbrev_map = {}
 " [All Mode] It ignores case in search patterns if non-zero is set.
 let g:FuzzyFinderOptions.Base.ignore_case = 1
+" [All Mode] TODO
+let g:FuzzyFinderOptions.Base.trim_length = 80
 " [All Mode] It does not remove caches of completion lists at the end of
 " explorer to reuse at the next time if non-zero was set.
 let g:FuzzyFinderOptions.Base.lasting_cache = 1
@@ -1478,6 +1489,7 @@ call map(copy(g:FuzzyFinderMode), 'v:val.extend_options()')
 
 let s:PATH_SEPARATOR = (has('win32') || has('win64') ? '\' : '/')
 let s:MATCHING_RATE_BASE = 10000000
+let s:ABBR_TRIM_MARK = '...'
 
 augroup FuzzyfinderGlobal
   autocmd!
