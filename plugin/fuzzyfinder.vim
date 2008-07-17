@@ -216,6 +216,7 @@
 " ChangeLog:
 "   2.8:
 "     - Added 'trim_length' option.
+"     - Added 'switch_order' option.
 "     - Fixed a bug that entered command did not become the newest in the
 "       history.
 "     - Fixed a bug that folds could not open with <CR> in a command-line when
@@ -558,7 +559,7 @@ endfunction
 
 function! s:GetSortedAvailableModes()
   let modes = filter(items(g:FuzzyFinderMode), 's:IsAvailableMode(v:val[1])')
-  let modes = map(modes, 'extend(v:val[1], {"ranks" : [v:val.order, v:val.to_key()] })')
+  let modes = map(modes, 'extend(v:val[1], { "ranks" : [v:val[1].switch_order, v:val[0]] })')
   return sort(modes, 's:CompareRanks')
 endfunction
 
@@ -956,7 +957,7 @@ function! g:FuzzyFinderMode.Base.extend_options()
 endfunction
 
 function! g:FuzzyFinderMode.Base.next_mode(rev)
-  let modes = (a:rev ? s:GetAvailableModes() : reverse(s:GetAvailableModes()))
+  let modes = (a:rev ? s:GetSortedAvailableModes() : reverse(s:GetSortedAvailableModes()))
   let m_last = modes[-1]
   for m in modes
     if m is self
@@ -1418,12 +1419,12 @@ let g:FuzzyFinderOptions.Base.migemo_support = 0
 " [Buffer Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
 " [Buffer Mode] TODO:
-let g:FuzzyFinderOptions.Buffer.order = 10
+let g:FuzzyFinderOptions.Buffer.switch_order = 10
 "-----------------------------------------------------------------------------
 " [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
 " [File Mode] TODO:
-let g:FuzzyFinderOptions.File.order = 20
+let g:FuzzyFinderOptions.File.switch_order = 20
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
 " [File Mode] If a number of matched items was over this, the completion
@@ -1433,7 +1434,7 @@ let g:FuzzyFinderOptions.File.matching_limit = 200
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
 " [Directory Mode] TODO:
-let g:FuzzyFinderOptions.Dir.order = 30
+let g:FuzzyFinderOptions.Dir.switch_order = 30
 " [Directory Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
@@ -1441,7 +1442,7 @@ let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 " [Mru-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
 " [Mru-File Mode] TODO:
-let g:FuzzyFinderOptions.MruFile.order = 40
+let g:FuzzyFinderOptions.MruFile.switch_order = 40
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1456,7 +1457,7 @@ let g:FuzzyFinderOptions.MruFile.max_item = 99
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
 " [Mru-Cmd Mode] TODO:
-let g:FuzzyFinderOptions.MruCmd.order = 50
+let g:FuzzyFinderOptions.MruCmd.switch_order = 50
 " [Mru-Cmd Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
@@ -1470,7 +1471,7 @@ let g:FuzzyFinderOptions.MruCmd.max_item = 99
 " set.
 let g:FuzzyFinderOptions.FavFile.mode_available = 1
 " [Favorite-File Mode] TODO:
-let g:FuzzyFinderOptions.FavFile.order = 60
+let g:FuzzyFinderOptions.FavFile.switch_order = 60
 " [Favorite-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
 let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
@@ -1478,7 +1479,7 @@ let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
 " [Tag Mode] TODO:
-let g:FuzzyFinderOptions.Tag.order = 70
+let g:FuzzyFinderOptions.Tag.switch_order = 70
 " [Tag Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
 " [Tag Mode] If a number of matched items was over this, the completion
@@ -1488,7 +1489,7 @@ let g:FuzzyFinderOptions.Tag.matching_limit = 200
 " [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
 " [Tagged-File Mode] TODO:
-let g:FuzzyFinderOptions.TaggedFile.order = 80
+let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 " [Tagged-File Mode] If a number of matched items was over this, the
 " completion process is aborted.
 let g:FuzzyFinderOptions.TaggedFile.matching_limit = 200
