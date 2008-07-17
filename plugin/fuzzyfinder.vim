@@ -645,10 +645,6 @@ function! s:GetTaggedFileList(tagfile)
   return result
 endfunction
 
-function! s:EchoOnComplete(mode, pattern, migemo)
-  echo '[' . a:mode . ']' . a:pattern . (a:migemo ? ' + migemo' : '')
-endfunction
-
 function! s:HighlightError(error)
   if a:error
     syntax match Error  /^.*$/
@@ -842,6 +838,7 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
   endfor
   call sort(result, 's:SortByMultipleOrder')
 
+  echo '[' . self.to_key() . ']'
 
   if empty(result)
     call s:HighlightError(1)
@@ -974,7 +971,6 @@ let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   let result = s:FilterMatching(s:GetNonCurrentBuffers(), 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.ind . v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
@@ -1002,7 +998,6 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
-  call s:EchoOnComplete(self.to_key(), patterns.head.base . patterns.tail.wi, self.migemo_support)
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
@@ -1015,7 +1010,6 @@ let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Dir.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
   let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), 0)
-  call s:EchoOnComplete(self.to_key(), patterns.head.base . patterns.tail.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
 
@@ -1034,7 +1028,6 @@ let g:FuzzyFinderMode.MruFile = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.MruFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
-  call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
@@ -1072,7 +1065,6 @@ let g:FuzzyFinderMode.MruCmd = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.MruCmd.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'command', patterns.re, s:SuffixNumber(patterns.base), 0)
-  call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val.command, v:val.index, v:val.command, self.trim_length, v:val.time, a:base, 0)')
 endfunction
 
@@ -1112,7 +1104,6 @@ let g:FuzzyFinderMode.FavFile = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.FavFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
-  call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
@@ -1143,7 +1134,6 @@ function! g:FuzzyFinderMode.Tag.on_complete(base)
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
-  call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
 
@@ -1187,7 +1177,6 @@ function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   if len(result) >= self.matching_limit
     call s:HighlightError(1)
   endif
-  call s:EchoOnComplete(self.to_key(), patterns.wi, self.migemo_support)
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
 
