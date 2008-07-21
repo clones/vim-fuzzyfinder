@@ -1262,6 +1262,12 @@ function! s:WindowManager.activate(complete_func)
   setlocal nocursorcolumn " for highlighting
   let &l:completefunc = a:complete_func
 
+  " TODO
+  " sign unplace *
+  " execute printf("sign define Fuzzyfinder_Sign text=%d texthl=Search"  , self.buf_nr)
+  " execute printf("sign place 1 line=1 name=Fuzzyfinder_Sign buffer=%d" , self.buf_nr)
+  ":exe ':sign place 2 line=23 name=piet file=' . expand("%:p")
+
   redraw " for 'lazyredraw'
 
   " suspend autocomplpop.vim
