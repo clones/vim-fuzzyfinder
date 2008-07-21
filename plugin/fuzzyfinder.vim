@@ -702,12 +702,14 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, tag_file
   call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
   call s:OptionManager.set('completeopt', 'menuone')
   call s:OptionManager.set('ignorecase', self.ignore_case)
+  call s:OptionManager.set('updatetime', 500) " TODO
 
   " local autocommands
   augroup FuzzyfinderLocal
     autocmd!
-    execute 'autocmd CursorMovedI <buffer>        call ' . self.to_str('on_cursor_moved_i()')
-    execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
+    execute 'autocmd CursorMovedI <buffer>       call ' . self.to_str('on_cursor_moved_i()')
+    execute 'autocmd CursorHoldI <buffer>        call ' . self.to_str('on_cursor_hold_i()')
+    execute 'autocmd InsertLeave <buffer> nested call ' . self.to_str('on_insert_leave()'  )
   augroup END
 
   " local mapping
@@ -734,6 +736,27 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, tag_file
   call feedkeys("A", 'n') " startinsert! does not work in InsertLeave handler
 endfunction
 
+function! g:FuzzyFinderMode.Base.on_cursor_hold_i()
+  return
+"TODO
+  let ln = getline('.')
+  let cl = col('.')
+  if !self.exists_prompt(ln)
+    " if command prompt is removed
+    call setline('.', self.prompt . ln)
+    call feedkeys(repeat("\<Right>", len(self.prompt)), 'n')
+  elseif cl <= len(self.prompt)
+    " if the cursor is moved before command prompt
+    call feedkeys(repeat("\<Right>", len(self.prompt) - cl + 1), 'n')
+  elseif cl > strlen(ln) && cl != self.last_col
+    " if the cursor is placed on the end of the line and has been actually moved.
+    let self.last_col = cl
+    "call complete(1, self.complete(0, getline(".")))
+    call feedkeys("\<C-x>\<C-u>", 'n')
+  endif
+endfunction
+
+"TODO
 function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
   let ln = getline('.')
   let cl = col('.')
@@ -817,7 +840,7 @@ function! g:FuzzyFinderMode.Base.on_switch_ignore_case()
   let &ignorecase = !&ignorecase
   echo "ignorecase = " . &ignorecase
   let self.last_col = -1
-  call self.on_cursor_moved_i()
+  call self.on_cursor_moved_i() "TODO
 endfunction
 
 " export string list
