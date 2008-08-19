@@ -1106,6 +1106,7 @@ function! g:FuzzyFinderMode.MruCmd.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
+  redraw
   " use feedkeys to remap <CR>
   return a:expr . [
         \   "\<C-r>=feedkeys(\"\\<CR>\", 'm')?'':''\<CR>",
