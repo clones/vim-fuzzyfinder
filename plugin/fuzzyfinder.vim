@@ -214,8 +214,8 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
-"   x.x:
-"     - TODO:
+"   2.8.1:
+"     - Fixed a bug caused by the non-escaped buffer name "[Fuzzyfinder]".
 "     - Fixed a command to open in a new tab page in Buffer mode.
 "   2.8:
 "     - Added 'trim_length' option.
@@ -705,14 +705,12 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, tag_file
   call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
   call s:OptionManager.set('completeopt', 'menuone')
   call s:OptionManager.set('ignorecase', self.ignore_case)
-  call s:OptionManager.set('updatetime', 500) " TODO
 
   " local autocommands
   augroup FuzzyfinderLocal
     autocmd!
-    execute 'autocmd CursorMovedI <buffer>       call ' . self.to_str('on_cursor_moved_i()')
-    execute 'autocmd CursorHoldI <buffer>        call ' . self.to_str('on_cursor_hold_i()')
-    execute 'autocmd InsertLeave <buffer> nested call ' . self.to_str('on_insert_leave()'  )
+    execute 'autocmd CursorMovedI <buffer>        call ' . self.to_str('on_cursor_moved_i()')
+    execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
   augroup END
 
   " local mapping
@@ -739,27 +737,6 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, tag_file
   call feedkeys("A", 'n') " startinsert! does not work in InsertLeave handler
 endfunction
 
-function! g:FuzzyFinderMode.Base.on_cursor_hold_i()
-  return
-"TODO
-  let ln = getline('.')
-  let cl = col('.')
-  if !self.exists_prompt(ln)
-    " if command prompt is removed
-    call setline('.', self.prompt . ln)
-    call feedkeys(repeat("\<Right>", len(self.prompt)), 'n')
-  elseif cl <= len(self.prompt)
-    " if the cursor is moved before command prompt
-    call feedkeys(repeat("\<Right>", len(self.prompt) - cl + 1), 'n')
-  elseif cl > strlen(ln) && cl != self.last_col
-    " if the cursor is placed on the end of the line and has been actually moved.
-    let self.last_col = cl
-    "call complete(1, self.complete(0, getline(".")))
-    call feedkeys("\<C-x>\<C-u>", 'n')
-  endif
-endfunction
-
-"TODO
 function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
   let ln = getline('.')
   let cl = col('.')
@@ -843,7 +820,7 @@ function! g:FuzzyFinderMode.Base.on_switch_ignore_case()
   let &ignorecase = !&ignorecase
   echo "ignorecase = " . &ignorecase
   let self.last_col = -1
-  call self.on_cursor_moved_i() "TODO
+  call self.on_cursor_moved_i()
 endfunction
 
 " export string list
@@ -1267,10 +1244,12 @@ function! s:WindowManager.activate(complete_func)
   let cwd = getcwd()
 
   if !bufexists(self.buf_nr)
-    leftabove 1new +file\ [Fuzzyfinder]
+    leftabove 1new
+    file \[Fuzzyfinder]
     let self.buf_nr = bufnr('%')
   elseif bufwinnr(self.buf_nr) == -1
-    execute 'leftabove 1split | buffer ' . self.buf_nr
+    leftabove 1split
+    execute self.buf_nr . 'buffer'
     delete _
   elseif bufwinnr(self.buf_nr) != bufwinnr('%')
     execute bufwinnr(self.buf_nr) . 'wincmd w'
@@ -1288,12 +1267,6 @@ function! s:WindowManager.activate(complete_func)
   setlocal nocursorline   " for highlighting
   setlocal nocursorcolumn " for highlighting
   let &l:completefunc = a:complete_func
-
-  " TODO
-  " sign unplace *
-  " execute printf("sign define Fuzzyfinder_Sign text=%d texthl=Search"  , self.buf_nr)
-  " execute printf("sign place 1 line=1 name=Fuzzyfinder_Sign buffer=%d" , self.buf_nr)
-  ":exe ':sign place 2 line=23 name=piet file=' . expand("%:p")
 
   redraw " for 'lazyredraw'
 
