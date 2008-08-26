@@ -214,6 +214,9 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   x.x:
+"     - TODO:
+"     - Fixed a command to open in a new tab page in Buffer mode.
 "   2.8:
 "     - Added 'trim_length' option.
 "     - Added 'switch_order' option.
@@ -999,7 +1002,7 @@ function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   return [ ':buffer ',
         \  ':sbuffer ',
         \  ':vertical :sbuffer ',
-        \  ':tab :sbuffer',
+        \  ':tab :sbuffer ',
         \ ][a:mode] . buf . "\<CR>"
 endfunction
 
@@ -1080,6 +1083,7 @@ function! g:FuzzyFinderMode.MruCmd.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
+  redraw
   " use feedkeys to remap <CR>
   return a:expr . [
         \   "\<C-r>=feedkeys(\"\\<CR>\", 'm')?'':''\<CR>",
