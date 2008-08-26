@@ -214,8 +214,8 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
-"   x.x:
-"     - TODO:
+"   2.8.1:
+"     - Fixed a bug caused by the non-escaped buffer name "[Fuzzyfinder]".
 "     - Fixed a command to open in a new tab page in Buffer mode.
 "   2.8:
 "     - Added 'trim_length' option.
@@ -1244,10 +1244,12 @@ function! s:WindowManager.activate(complete_func)
   let cwd = getcwd()
 
   if !bufexists(self.buf_nr)
-    leftabove 1new +file\ [Fuzzyfinder]
+    leftabove 1new
+    file \[Fuzzyfinder]
     let self.buf_nr = bufnr('%')
   elseif bufwinnr(self.buf_nr) == -1
-    execute 'leftabove 1split | buffer ' . self.buf_nr
+    leftabove 1split
+    execute self.buf_nr . 'buffer'
     delete _
   elseif bufwinnr(self.buf_nr) != bufwinnr('%')
     execute bufwinnr(self.buf_nr) . 'wincmd w'
