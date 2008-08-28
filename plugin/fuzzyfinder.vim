@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.8.1, for Vim 7.1
+" Version: 2.x TODO, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -214,6 +214,10 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"
+"   2.x: TODO
+"     - Fixed a bug that entered pattern was not been escaped.
+"
 "   2.8.1:
 "     - Fixed a bug caused by the non-escaped buffer name "[Fuzzyfinder]".
 "     - Fixed a command to open in a new tab page in Buffer mode.
@@ -458,7 +462,7 @@ endfunction
 
 " 
 function! s:FilterMatching(entries, key, pattern, index, limit)
-  return s:FilterEx(a:entries, 'v:val[''' . a:key . '''] =~ ''' . a:pattern . ''' || v:val.index == ' . a:index, a:limit)
+  return s:FilterEx(a:entries, 'v:val[''' . a:key . '''] =~ ' . string(a:pattern) . ' || v:val.index == ' . a:index, a:limit)
 endfunction
 
 function! s:ExtendIndexToEach(in, offset)
