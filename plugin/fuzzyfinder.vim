@@ -217,6 +217,7 @@
 "
 "   2.x: TODO
 "     - Fixed a bug that entered pattern was not been escaped.
+"     - Fixed not to insert "zv" with c/pattern command in Normal mode
 "
 "   2.8.1:
 "     - Fixed a bug caused by the non-escaped buffer name "[Fuzzyfinder]".
