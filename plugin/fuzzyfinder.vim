@@ -218,7 +218,7 @@
 "   2.9:
 "     - Enhanced <BS> behavior in Fuzzyfinder and added 'smart_bs' option.
 "     - Fixed a bug that entered pattern was not been escaped.
-"     - Fixed not to insert "zv" with c/pattern command in Normal mode
+"     - Fixed not to insert "zv" with "c/pattern<CR>" command in Normal mode.
 "     - Avoid the slow down problem caused by filereadable() check for the MRU
 "       information in BufEnter/BufWritePost.
 "
