@@ -584,9 +584,8 @@ function! s:OnCmdCR()
     call histadd(getcmdtype(), getcmdline())
   endif
 
-  let suffix = (getcmdtype() == '/' || getcmdtype() == '?' ? 'zv' : '' )
   " this is not mapped again (:help recursive_mapping)
-  return "\<CR>" . suffix
+  return "\<CR>"
 endfunction
 
 function! s:ExpandAbbrevMap(base, abbrev_map)
