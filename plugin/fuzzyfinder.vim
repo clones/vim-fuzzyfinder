@@ -218,6 +218,8 @@
 "   2.x: TODO
 "     - Fixed a bug that entered pattern was not been escaped.
 "     - Fixed not to insert "zv" with c/pattern command in Normal mode
+"     - Avoid the slow down problem caused by filereadable() check for the MRU
+"       information in BufEnter/BufWritePost.
 "
 "   2.8.1:
 "     - Fixed a bug caused by the non-escaped buffer name "[Fuzzyfinder]".
@@ -1050,7 +1052,7 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
-  let self.cache = s:ExtendIndexToEach(map(copy(self.info),
+  let self.cache = s:ExtendIndexToEach(map(filter(copy(self.info), 'filereadable(v:val.path)'),
         \ '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }'), 1)
 endfunction
 
@@ -1063,17 +1065,16 @@ function! g:FuzzyFinderMode.MruFile.on_buf_write_post()
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.update_info()
+  if self.no_special_buffer && !empty(&buftype)
+    return
+  endif
   call s:InfoFileManager.load()
-
-  let item = {
-        \   'path' : (!self.no_special_buffer || empty(&buftype) ? expand('%:p') : ''),
-        \   'time' : localtime()
-        \ }
-
-  let self.info = filter(insert(filter(self.info,'v:val.path != item.path'), item),
-        \                'v:val.path !~ self.excluded_path && filereadable(v:val.path)'
+  let new_item = { 'path' : expand('%:p'), 'time' : localtime() }
+  let self.info = filter(insert(filter(self.info,
+        \                              'v:val.path != new_item.path'),
+        \                       new_item),
+        \                'v:val.path !~ self.excluded_path'
         \               )[0 : self.max_item - 1]
-
   call s:InfoFileManager.save()
 endfunction
 
