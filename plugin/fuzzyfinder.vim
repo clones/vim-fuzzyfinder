@@ -858,24 +858,18 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
   elseif  !self.exists_prompt(a:base) || len(self.remove_prompt(a:base)) < self.min_length
     return []
   endif
-
   call s:HighlightPrompt(self.prompt)
-
   " FIXME: ExpandAbbrevMap duplicates index
   let result = []
   for expanded_base in s:ExpandAbbrevMap(self.remove_prompt(a:base), self.abbrev_map)
     let result += self.on_complete(expanded_base)
   endfor
   call sort(result, 's:CompareRanks')
-
-  echo '[' . self.to_key() . ']'
-
   if empty(result)
     call s:HighlightError()
   else
     call feedkeys("\<C-p>\<Down>", 'n')
   endif
-
   return result
 endfunction
 
