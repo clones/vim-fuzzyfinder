@@ -668,12 +668,14 @@ function! s:GetTaggedFileList(tagfile)
   return result
 endfunction
 
-function! s:HighlightError(error)
-  if a:error
-    syntax match Error  /^.*$/
-  else
-    syntax match Normal /^.*$/
-  endif
+function! s:HighlightPrompt(prompt)
+  syntax clear
+  execute 'syntax match Question ' . '/^\V' . escape(a:prompt, '\') . '/'
+endfunction
+
+function! s:HighlightError()
+  syntax clear
+  syntax match Error  /^.*$/
 endfunction
 
 function! s:CompareRanks(i1, i2)
@@ -857,7 +859,7 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
     return []
   endif
 
-  call s:HighlightError(0)
+  call s:HighlightPrompt(self.prompt)
 
   " FIXME: ExpandAbbrevMap duplicates index
   let result = []
@@ -869,7 +871,7 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
   echo '[' . self.to_key() . ']'
 
   if empty(result)
-    call s:HighlightError(1)
+    call s:HighlightError()
   else
     call feedkeys("\<C-p>\<Down>", 'n')
   endif
@@ -1031,7 +1033,7 @@ function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
   if len(result) >= self.matching_limit
-    call s:HighlightError(1)
+    call s:HighlightError()
   endif
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
@@ -1164,7 +1166,7 @@ function! g:FuzzyFinderMode.Tag.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = self.find_tag(patterns.re, self.matching_limit)
   if len(result) >= self.matching_limit
-    call s:HighlightError(1)
+    call s:HighlightError()
   endif
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
@@ -1207,7 +1209,7 @@ function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   echo 'Making tagged file list...'
   let result = self.find_tagged_file(patterns.re, self.matching_limit)
   if len(result) >= self.matching_limit
-    call s:HighlightError(1)
+    call s:HighlightError()
   endif
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
