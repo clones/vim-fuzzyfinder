@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.9, for Vim 7.1
+" Version: 2.10, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -214,6 +214,8 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.10:
+"     - Added 'prompt' option.
 "
 "   2.9:
 "     - Enhanced <BS> behavior in Fuzzyfinder and added 'smart_bs' option.
@@ -749,8 +751,9 @@ function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
   let cl = col('.')
   if !self.exists_prompt(ln)
     " if command prompt is removed
-    call setline('.', self.prompt . ln)
-    call feedkeys(repeat("\<Right>", len(self.prompt)), 'n')
+    "call setline('.', self.prompt . ln)
+    call setline('.', self.restore_prompt(ln))
+    call feedkeys(repeat("\<Right>", len(getline('.')) - len(ln)), 'n')
   elseif cl <= len(self.prompt)
     " if the cursor is moved before command prompt
     call feedkeys(repeat("\<Right>", len(self.prompt) - cl + 1), 'n')
@@ -989,6 +992,10 @@ endfunction
 
 function! g:FuzzyFinderMode.Base.remove_prompt(in)
   return a:in[(self.exists_prompt(a:in) ? strlen(self.prompt) : 0):]
+endfunction
+
+function! g:FuzzyFinderMode.Base.restore_prompt(in)
+  return self.prompt . matchstr(a:in, '\%[' . self.prompt . ']\zs.*')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1434,6 +1441,8 @@ let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
 " [Buffer Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
+" [Buffer Mode] The prompt string.
+let g:FuzzyFinderOptions.Buffer.prompt = 'Buffer>'
 " [Buffer Mode] Pressing <BS> after a path separator deletes one directory
 " name if non-zero is set.
 let g:FuzzyFinderOptions.Buffer.smart_bs = 1
@@ -1443,6 +1452,8 @@ let g:FuzzyFinderOptions.Buffer.switch_order = 10
 "-----------------------------------------------------------------------------
 " [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
+" [File Mode] The prompt string.
+let g:FuzzyFinderOptions.File.prompt = 'File>'
 " [File Mode] Pressing <BS> after a path separator deletes one directory name
 " if non-zero is set.
 let g:FuzzyFinderOptions.File.smart_bs = 1
@@ -1457,6 +1468,8 @@ let g:FuzzyFinderOptions.File.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
+" [Directory Mode] The prompt string.
+let g:FuzzyFinderOptions.Dir.prompt = 'Dir>'
 " [Directory Mode] Pressing <BS> after a path separator deletes one directory
 " name if non-zero is set.
 let g:FuzzyFinderOptions.Dir.smart_bs = 1
@@ -1469,6 +1482,8 @@ let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 "-----------------------------------------------------------------------------
 " [Mru-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
+" [Mru-File Mode] The prompt string.
+let g:FuzzyFinderOptions.MruFile.prompt = 'MruFile>'
 " [Mru-File Mode] Pressing <BS> after a path separator deletes one directory
 " name if non-zero is set.
 let g:FuzzyFinderOptions.MruFile.smart_bs = 1
@@ -1488,6 +1503,8 @@ let g:FuzzyFinderOptions.MruFile.max_item = 99
 "-----------------------------------------------------------------------------
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
+" [Mru-Cmd Mode] The prompt string.
+let g:FuzzyFinderOptions.MruCmd.prompt = 'MruCmd>'
 " [Mru-Cmd Mode] Pressing <BS> after a path separator deletes one directory
 " name if non-zero is set.
 let g:FuzzyFinderOptions.MruCmd.smart_bs = 0
@@ -1506,6 +1523,8 @@ let g:FuzzyFinderOptions.MruCmd.max_item = 99
 " [Favorite-File Mode] This disables all functions of this mode if zero was
 " set.
 let g:FuzzyFinderOptions.FavFile.mode_available = 1
+" [Favorite-File Mode] The prompt string.
+let g:FuzzyFinderOptions.FavFile.prompt = 'FavFile>'
 " [Favorite-File Mode] Pressing <BS> after a path separator deletes one
 " directory name if non-zero is set.
 let g:FuzzyFinderOptions.FavFile.smart_bs = 1
@@ -1518,6 +1537,8 @@ let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
 "-----------------------------------------------------------------------------
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
+" [Tag Mode] The prompt string.
+let g:FuzzyFinderOptions.Tag.prompt = 'Tag>'
 " [Tag Mode] Pressing <BS> after a path separator deletes one directory name
 " if non-zero is set.
 let g:FuzzyFinderOptions.Tag.smart_bs = 0
@@ -1532,6 +1553,8 @@ let g:FuzzyFinderOptions.Tag.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
+" [Tagged-File Mode] The prompt string.
+let g:FuzzyFinderOptions.TaggedFile.prompt = 'TaggedFile>'
 " [Tagged-File Mode] Pressing <BS> after a path separator deletes one
 " directory name if non-zero is set.
 let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
@@ -1541,9 +1564,6 @@ let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 " [Tagged-File Mode] If a number of matched items was over this, the
 " completion process is aborted.
 let g:FuzzyFinderOptions.TaggedFile.matching_limit = 200
-
-" hidden options -------------------------------------------------------- {{{2
-let g:FuzzyFinderOptions.Base.prompt = '>'
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
