@@ -218,6 +218,7 @@
 "     - Added 'prompt' option.
 "     - Added 'prompt_highlight' option.
 "     - Removed g:FuzzyFinderOptions.MruFile.no_special_buffer option.
+"     - Changed not to show a current buffer in a completion menu.
 "
 "   2.9:
 "     - Enhanced <BS> behavior in Fuzzyfinder and added 'smart_bs' option.
@@ -654,9 +655,9 @@ function! s:ParseBufferLine(line)
 endfunction
 
 " returns a list of { index, ind, path }
-function! s:GetNonCurrentBuffers()
+function! s:GetNonCurrentBuffers(cur_bufnr)
   redir => bufs | silent buffers | redir END
-  return filter(map(split(bufs, "\n"), 's:ParseBufferLine(v:val)'), 'v:val.index != bufnr("%")')
+  return filter(map(split(bufs, "\n"), 's:ParseBufferLine(v:val)'), 'v:val.index != a:cur_bufnr')
 endfunction
 
 function! s:GetTagList(tagfile)
@@ -704,10 +705,11 @@ endfunction
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderMode = { 'Base' : {} }
 
-function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, tag_files)
+function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_bufnr, tag_files)
   " initializes this object
   call self.extend_options()
   let self.partial_matching = a:partial_matching
+  let self.prev_bufnr = a:prev_bufnr
   let self.tag_files = a:tag_files " to get local value of current buffer
   let self.last_col = -1
   call s:InfoFileManager.load()
@@ -779,7 +781,7 @@ function! g:FuzzyFinderMode.Base.on_insert_leave()
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch(self.remove_prompt(text), self.partial_matching, self.tag_files)
+    call m.launch(self.remove_prompt(text), self.partial_matching, self.prev_bufnr, self.tag_files)
     unlet s:reserved_switch_mode
   else
     if exists('s:reserved_command')
@@ -1002,14 +1004,15 @@ let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(s:GetNonCurrentBuffers(), 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
+  let result = s:FilterMatching(s:GetNonCurrentBuffers(self.prev_bufnr),
+        \                       'path', patterns.re, s:SuffixNumber(patterns.base), 0)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.ind . v:val.path, self.trim_length, "", a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " attempts to convert the path to the number for handling unnamed buffer
   let buf = escape(a:expr, ' ')
-  for buf_info in s:GetNonCurrentBuffers()
+  for buf_info in s:GetNonCurrentBuffers(self.prev_bufnr)
     if buf == escape(buf_info.path, ' ')
       let buf = buf_info.index
       break
@@ -1029,6 +1032,8 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
+  let cur_path = fnamemodify(bufname(self.prev_bufnr), ':~:.')
+  let result = filter(result, 'v:val.path != cur_path')
   if len(result) >= self.matching_limit
     call s:HighlightError()
   endif
@@ -1063,8 +1068,11 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
-  let self.cache = s:ExtendIndexToEach(map(filter(copy(self.info), 'filereadable(v:val.path)'),
-        \ '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }'), 1)
+  let cur_path = fnamemodify(bufname(self.prev_bufnr), ':~:.')
+  let self.cache = filter(copy(self.info), 'filereadable(v:val.path)')
+  let self.cache = map(self.cache, '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
+  let self.cache = filter(self.cache, 'v:val.path != cur_path')
+  let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_buf_enter()
@@ -1600,14 +1608,14 @@ augroup END
 " cnoremap has a problem, which doesn't expand cabbrev.
 cmap <silent> <expr> <CR> <SID>OnCmdCR()
 
-command! -bang -narg=? -complete=buffer FuzzyFinderBuffer      call g:FuzzyFinderMode.Buffer.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderFile        call g:FuzzyFinderMode.File.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderMruFile     call g:FuzzyFinderMode.MruFile.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderMruCmd      call g:FuzzyFinderMode.MruCmd.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderFavFile     call g:FuzzyFinderMode.FavFile.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=buffer FuzzyFinderBuffer      call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=file   FuzzyFinderFile        call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch       (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=file   FuzzyFinderMruFile     call g:FuzzyFinderMode.MruFile.launch   (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=file   FuzzyFinderMruCmd      call g:FuzzyFinderMode.MruCmd.launch    (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=file   FuzzyFinderFavFile     call g:FuzzyFinderMode.FavFile.launch   (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderEditInfo    call s:InfoFileManager.edit()
 command! -bang -narg=? -complete=file   FuzzyFinderAddFavFile  call g:FuzzyFinderMode.FavFile.add(<q-args>, 1)
 command! -bang -narg=0                  FuzzyFinderRemoveCache for m in s:GetAvailableModes() | call m.empty_cache_if_existed(1) | endfor
