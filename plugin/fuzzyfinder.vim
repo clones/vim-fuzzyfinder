@@ -1440,7 +1440,7 @@ let g:FuzzyFinderOptions.Base.migemo_support = 0
 " [Buffer Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Buffer.mode_available = 1
 " [Buffer Mode] The prompt string.
-let g:FuzzyFinderOptions.Buffer.prompt = 'Buffer>'
+let g:FuzzyFinderOptions.Buffer.prompt = '>Buffer>'
 " [Buffer Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Buffer.prompt_highlight = 'Question'
 " [Buffer Mode] Pressing <BS> after a path separator deletes one directory
@@ -1453,7 +1453,7 @@ let g:FuzzyFinderOptions.Buffer.switch_order = 10
 " [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
 " [File Mode] The prompt string.
-let g:FuzzyFinderOptions.File.prompt = 'File>'
+let g:FuzzyFinderOptions.File.prompt = '>File>'
 " [File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.File.prompt_highlight = 'Question'
 " [File Mode] Pressing <BS> after a path separator deletes one directory name
@@ -1471,7 +1471,7 @@ let g:FuzzyFinderOptions.File.matching_limit = 200
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
 " [Directory Mode] The prompt string.
-let g:FuzzyFinderOptions.Dir.prompt = 'Dir>'
+let g:FuzzyFinderOptions.Dir.prompt = '>Dir>'
 " [Directory Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Dir.prompt_highlight = 'Question'
 " [Directory Mode] Pressing <BS> after a path separator deletes one directory
@@ -1487,7 +1487,7 @@ let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
 " [Mru-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruFile.mode_available = 1
 " [Mru-File Mode] The prompt string.
-let g:FuzzyFinderOptions.MruFile.prompt = 'MruFile>'
+let g:FuzzyFinderOptions.MruFile.prompt = '>MruFile>'
 " [Mru-File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.MruFile.prompt_highlight = 'Question'
 " [Mru-File Mode] Pressing <BS> after a path separator deletes one directory
@@ -1510,7 +1510,7 @@ let g:FuzzyFinderOptions.MruFile.max_item = 99
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
 " [Mru-Cmd Mode] The prompt string.
-let g:FuzzyFinderOptions.MruCmd.prompt = 'MruCmd>'
+let g:FuzzyFinderOptions.MruCmd.prompt = '>MruCmd>'
 " [Mru-Cmd Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.MruCmd.prompt_highlight = 'Question'
 " [Mru-Cmd Mode] Pressing <BS> after a path separator deletes one directory
@@ -1532,7 +1532,7 @@ let g:FuzzyFinderOptions.MruCmd.max_item = 99
 " set.
 let g:FuzzyFinderOptions.FavFile.mode_available = 1
 " [Favorite-File Mode] The prompt string.
-let g:FuzzyFinderOptions.FavFile.prompt = 'FavFile>'
+let g:FuzzyFinderOptions.FavFile.prompt = '>FavFile>'
 " [Favorite-File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.FavFile.prompt_highlight = 'Question'
 " [Favorite-File Mode] Pressing <BS> after a path separator deletes one
@@ -1548,7 +1548,7 @@ let g:FuzzyFinderOptions.FavFile.time_format = '(%x %H:%M:%S)'
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
 " [Tag Mode] The prompt string.
-let g:FuzzyFinderOptions.Tag.prompt = 'Tag>'
+let g:FuzzyFinderOptions.Tag.prompt = '>Tag>'
 " [Tag Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Tag.prompt_highlight = 'Question'
 " [Tag Mode] Pressing <BS> after a path separator deletes one directory name
@@ -1566,7 +1566,7 @@ let g:FuzzyFinderOptions.Tag.matching_limit = 200
 " [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
 " [Tagged-File Mode] The prompt string.
-let g:FuzzyFinderOptions.TaggedFile.prompt = 'TaggedFile>'
+let g:FuzzyFinderOptions.TaggedFile.prompt = '>TaggedFile>'
 " [Tagged-File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.TaggedFile.prompt_highlight = 'Question'
 " [Tagged-File Mode] Pressing <BS> after a path separator deletes one
