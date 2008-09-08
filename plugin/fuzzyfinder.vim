@@ -217,6 +217,7 @@
 "   2.10:
 "     - Added 'prompt' option.
 "     - Added 'prompt_highlight' option.
+"     - Removed g:FuzzyFinderOptions.MruFile.no_special_buffer option.
 "
 "   2.9:
 "     - Enhanced <BS> behavior in Fuzzyfinder and added 'smart_bs' option.
@@ -1075,7 +1076,7 @@ function! g:FuzzyFinderMode.MruFile.on_buf_write_post()
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.update_info()
-  if self.no_special_buffer && !empty(&buftype)
+  if !empty(&buftype)
     return
   endif
   call s:InfoFileManager.load()
@@ -1499,8 +1500,6 @@ let g:FuzzyFinderOptions.MruFile.switch_order = 40
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
-" [Mru-File Mode] Fuzzyfinder ignores special buffers if non-zero was set.
-let g:FuzzyFinderOptions.MruFile.no_special_buffer = 1
 " [Mru-File Mode] This is a string to format registered time. See :help
 " strftime() for details.
 let g:FuzzyFinderOptions.MruFile.time_format = '(%x %H:%M:%S)'
