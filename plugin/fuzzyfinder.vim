@@ -215,10 +215,10 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.10:
+"     - Changed not to show a current buffer in a completion menu.
 "     - Added 'prompt' option.
 "     - Added 'prompt_highlight' option.
 "     - Removed g:FuzzyFinderOptions.MruFile.no_special_buffer option.
-"     - Changed not to show a current buffer in a completion menu.
 "
 "   2.9:
 "     - Enhanced <BS> behavior in Fuzzyfinder and added 'smart_bs' option.
@@ -1032,8 +1032,7 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
-  let cur_path = fnamemodify(bufname(self.prev_bufnr), ':~:.')
-  let result = filter(result, 'v:val.path != cur_path')
+  let result = filter(result, 'bufnr(v:val.path) != self.prev_bufnr')
   if len(result) >= self.matching_limit
     call s:HighlightError()
   endif
@@ -1068,10 +1067,9 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
-  let cur_path = fnamemodify(bufname(self.prev_bufnr), ':~:.')
   let self.cache = filter(copy(self.info), 'filereadable(v:val.path)')
   let self.cache = map(self.cache, '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
-  let self.cache = filter(self.cache, 'v:val.path != cur_path')
+  let self.cache = filter(self.cache, 'bufnr(v:val.path) != self.prev_bufnr')
   let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
@@ -1147,8 +1145,9 @@ function! g:FuzzyFinderMode.FavFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.FavFile.on_mode_enter()
-  let self.cache = s:ExtendIndexToEach(map(copy(self.info),
-        \ '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }'), 1)
+  let self.cache = map(copy(self.info), '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
+  let self.cache = filter(self.cache, 'bufnr(v:val.path) != self.prev_bufnr')
+  let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
 function! g:FuzzyFinderMode.FavFile.add(in_file, adds)
