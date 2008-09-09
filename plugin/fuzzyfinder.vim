@@ -518,6 +518,10 @@ function! s:SplitPath(path)
         \ }
 endfunction
 
+function! s:EscapeFilename(fn)
+  return escape(a:fn, " \t\n*?[{`$\\%#'\"|!<")
+endfunction
+
 "-----------------------------------------------------------------------------
 " FUNCTIONS FOR COMPLETION ITEM:
 
@@ -831,7 +835,7 @@ function! g:FuzzyFinderMode.Base.on_open(expr, mode)
         \   ':split ',
         \   ':vsplit ',
         \   ':tabedit ',
-        \ ][a:mode] . escape(a:expr, ' ') . "\<CR>"
+        \ ][a:mode] . s:EscapeFilename(a:expr) . "\<CR>"
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_switch_mode(next_prev)
@@ -1013,19 +1017,14 @@ endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " attempts to convert the path to the number for handling unnamed buffer
-  let buf = escape(a:expr, ' ')
-  for buf_info in s:GetNonCurrentBuffers(self.prev_bufnr)
-    if buf == escape(buf_info.path, ' ')
-      let buf = buf_info.index
-      break
-    endif
-  endfor
-
-  return [ ':buffer ',
-        \  ':sbuffer ',
-        \  ':vertical :sbuffer ',
-        \  ':tab :sbuffer ',
-        \ ][a:mode] . buf . "\<CR>"
+  " (bufnr("[No Name]") doesn't work.)
+  let bufnr = filter(s:GetNonCurrentBuffers(self.prev_bufnr), 'v:val.path == a:expr')[0].index
+  return printf([
+        \   ':%sbuffer',
+        \   ':%ssbuffer',
+        \   ':vertical :%ssbuffer',
+        \   ':tab :%ssbuffer',
+        \ ][a:mode] . "\<CR>", bufnr)
 endfunction
 
 "-----------------------------------------------------------------------------
