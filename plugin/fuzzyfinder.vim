@@ -520,7 +520,7 @@ function! s:SplitPath(path)
 endfunction
 
 function! s:EscapeFilename(fn)
-  return escape(a:fn, " \t\n*?[{`$\\%#'\"|!<")
+  return escape(a:fn, " \t\n*?[{`$%#'\"|!<")
 endfunction
 
 "-----------------------------------------------------------------------------
