@@ -106,6 +106,9 @@
 "     If you want to temporarily change whether or not to ignore case, use
 "     <C-t>. This key mapping is customizable.
 "
+"   To Hide The Completion Temporarily Menu In Fuzzyfinder:
+"     You can close it by <C-e> and reopen it by <C-x><C-u>.
+"
 "   About Highlighting:
 "     Fuzzyfinder highlights the buffer with "Error" group when the completion
 "     item was not found or the completion process was aborted.
@@ -673,7 +676,6 @@ endfunction
 
 function! s:HighlightPrompt(prompt, highlight)
   syntax clear
-  execute 'syntax match Question ' . '/^\V' . escape(a:prompt, '\') . '/'
   execute printf('syntax match %s /^\V%s/', a:highlight, escape(a:prompt, '\'))
 endfunction
 
