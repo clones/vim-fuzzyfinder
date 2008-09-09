@@ -219,6 +219,7 @@
 " ChangeLog:
 "   2.10:
 "     - Changed not to show a current buffer in a completion menu.
+"     - Fixed a bug that a filename to open was not been escaped.
 "     - Added 'prompt' option.
 "     - Added 'prompt_highlight' option.
 "     - Removed g:FuzzyFinderOptions.MruFile.no_special_buffer option.
