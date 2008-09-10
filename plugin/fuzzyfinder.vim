@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.10, for Vim 7.1
+" Version: 2.11, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -217,6 +217,9 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.11:
+"     - Fixed a bug that a prompt string was excessively inserted.
+"
 "   2.10:
 "     - Changed not to show a current buffer in a completion menu.
 "     - Fixed a bug that a filename to open was not been escaped.
@@ -1002,8 +1005,13 @@ function! g:FuzzyFinderMode.Base.remove_prompt(in)
   return a:in[(self.exists_prompt(a:in) ? strlen(self.prompt) : 0):]
 endfunction
 
+"TODO
 function! g:FuzzyFinderMode.Base.restore_prompt(in)
-  return self.prompt . matchstr(a:in, '\%[' . self.prompt . ']\zs.*')
+  let i = 0
+  while i < len(self.prompt) && i < len(a:in) && self.prompt[i] ==# a:in[i]
+    let i += 1
+  endwhile
+  return self.prompt . a:in[i : ]
 endfunction
 
 "-----------------------------------------------------------------------------
