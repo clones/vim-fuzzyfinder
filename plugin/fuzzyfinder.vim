@@ -218,6 +218,9 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.11:
+"     - Changed that a dot sequence of entered pattern is expanded to parent
+"       directroies in File/Dir mode.
+"       E.g.: "foo/...bar" -> "foo/../../bar"
 "     - Fixed a bug that a prompt string was excessively inserted.
 "
 "   2.10:
@@ -524,6 +527,12 @@ endfunction
 
 function! s:EscapeFilename(fn)
   return escape(a:fn, " \t\n*?[{`$%#'\"|!<")
+endfunction
+
+" "foo/.../bar/...hoge" -> "foo/.../bar/../../hoge"
+function! s:ExpandTailDotSequenceToParentDir(base)
+  return substitute(a:base, '^\(.*[/\\]\)\?\zs\.\(\.\+\)\ze[^/\\]*$',
+        \           '\=repeat(".." . s:PATH_SEPARATOR, len(submatch(2)))', '')
 endfunction
 
 "-----------------------------------------------------------------------------
@@ -1005,7 +1014,6 @@ function! g:FuzzyFinderMode.Base.remove_prompt(in)
   return a:in[(self.exists_prompt(a:in) ? strlen(self.prompt) : 0):]
 endfunction
 
-"TODO
 function! g:FuzzyFinderMode.Base.restore_prompt(in)
   let i = 0
   while i < len(self.prompt) && i < len(a:in) && self.prompt[i] ==# a:in[i]
@@ -1040,22 +1048,24 @@ endfunction
 let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.File.on_complete(base)
-  let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
+  let base = s:ExpandTailDotSequenceToParentDir(a:base)
+  let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
   let result = filter(result, 'bufnr(v:val.path) != self.prev_bufnr')
   if len(result) >= self.matching_limit
     call s:HighlightError()
   endif
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
 endfunction
 
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Dir.on_complete(base)
-  let patterns = map(s:SplitPath(a:base), 'self.make_pattern(v:val)')
+  let base = s:ExpandTailDotSequenceToParentDir(a:base)
+  let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
   let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), 0)
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
