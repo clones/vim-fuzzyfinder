@@ -218,8 +218,8 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.12:
-"     - Changed to be able to show completion items in the used order in
-"       Buffer mode.
+"     - Changed to be able to show completion items in the order of recently
+"       used in Buffer mode.
 "     - Added g:FuzzyFinderOptions.Buffer.mru_order option.
 "
 "   2.11:
@@ -1499,7 +1499,8 @@ let g:FuzzyFinderOptions.Buffer.prompt_highlight = 'Question'
 " [Buffer Mode] Pressing <BS> after a path separator deletes one directory
 " name if non-zero is set.
 let g:FuzzyFinderOptions.Buffer.smart_bs = 1
-" [Buffer Mode] TODO
+" [Buffer Mode] The completion items is sorted in the order of recently used
+" if non-zero is set.
 let g:FuzzyFinderOptions.Buffer.mru_order = 1
 " [Buffer Mode] This is used to sort modes for switching to the next/previous
 " mode.
