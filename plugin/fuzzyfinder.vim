@@ -1109,7 +1109,8 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
-  let self.cache = filter(copy(self.info), 'filereadable(v:val.path)')
+  let self.cache = copy(self.info)
+  "let self.cache = filter(self.cache, 'filereadable(v:val.path)')
   let self.cache = map(self.cache, '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
   let self.cache = filter(self.cache, 'bufnr(v:val.path) != self.prev_bufnr')
   let self.cache = s:ExtendIndexToEach(self.cache, 1)
@@ -1124,7 +1125,7 @@ function! g:FuzzyFinderMode.MruFile.on_buf_write_post()
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.update_info()
-  if !empty(&buftype)
+  if !empty(&buftype) || !filereadable(expand('%'))
     return
   endif
   call s:InfoFileManager.load()
@@ -1310,7 +1311,7 @@ function! s:WindowManager.activate(complete_func)
 
   if !bufexists(self.buf_nr)
     leftabove 1new
-    file \[Fuzzyfinder]
+    file `='[Fuzzyfinder]'`
     let self.buf_nr = bufnr('%')
   elseif bufwinnr(self.buf_nr) == -1
     leftabove 1split
@@ -1391,7 +1392,8 @@ endfunction
 
 function! s:InfoFileManager.edit()
 
-  new +file\ [FuzzyfinderInfo]
+  new
+  file `='[FuzzyfinderInfo]'`
   let self.bufnr = bufnr('%')
 
   setlocal filetype=vim
