@@ -496,6 +496,14 @@ function! s:ExtendIndexToEach(in, offset)
   return a:in
 endfunction
 
+function! s:UpdateMruList(mrulist, new_item, key, max_item, excluded)
+  let result = copy(a:mrulist)
+  let result = filter(result,'v:val[a:key] != a:new_item[a:key]')
+  let result = insert(result, a:new_item)
+  let result = filter(result, 'v:val[a:key] !~ a:excluded')
+  return result[0 : a:max_item - 1]
+endfunction
+
 "-----------------------------------------------------------------------------
 " STRING FUNCTIONS:
 
@@ -1129,12 +1137,8 @@ function! g:FuzzyFinderMode.MruFile.update_info()
     return
   endif
   call s:InfoFileManager.load()
-  let new_item = { 'path' : expand('%:p'), 'time' : localtime() }
-  let self.info = filter(insert(filter(self.info,
-        \                              'v:val.path != new_item.path'),
-        \                       new_item),
-        \                'v:val.path !~ self.excluded_path'
-        \               )[0 : self.max_item - 1]
+  let self.info = s:UpdateMruList(self.info, { 'path' : expand('%:p'), 'time' : localtime() },
+        \                         'path', self.max_item, self.excluded_path)
   call s:InfoFileManager.save()
 endfunction
 
@@ -1169,12 +1173,8 @@ endfunction
 
 function! g:FuzzyFinderMode.MruCmd.update_info(cmd)
   call s:InfoFileManager.load()
-
-  let item = { 'command' : a:cmd, 'time' : localtime() }
-
-  let self.info = filter(insert(filter(self.info,'v:val.command != item.command'), item),
-        \                'v:val.command !~ self.excluded_command')[0 : self.max_item - 1]
-
+  let self.info = s:UpdateMruList(self.info, { 'command' : a:cmd, 'time' : localtime() },
+        \                         'command', self.max_item, self.excluded_command)
   call s:InfoFileManager.save()
 endfunction
 
