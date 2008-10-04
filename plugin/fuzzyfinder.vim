@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.12, for Vim 7.1
+" Version: 2.13, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -128,10 +128,15 @@
 "     project mode.
 "
 "   About Usage Of Command Argument:
-"     As an example, if you want to launch file-mode Fuzzyfinder with the
-"     directory of current buffer and not current directory, map like below:
+"     As an example, if you want to launch file-mode Fuzzyfinder with the full
+"     path of current directory, map like below:
 "
-"       nnoremap <C-m> :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
+"       nnoremap <C-p> :FuzzyFinderFile <C-r>=fnamemodify(getcwd(), ':p')<CR><CR>
+"
+"     Instead, if you want the directory of current buffer and not current
+"     directory:
+"
+"       nnoremap <C-p> :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
 "
 "   About Abbreviations And Multiple Search:
 "     You can use abbreviations and multiple search in each mode. For example,
@@ -217,6 +222,10 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.13:
+"     - Fixed a bug that a directory disappeared when a file in that directroy
+"       was being opened in File/Mru-File mode.
+"
 "   2.12:
 "     - Changed to be able to show completion items in the order of recently
 "       used in Buffer mode.
@@ -1081,7 +1090,7 @@ function! g:FuzzyFinderMode.File.on_complete(base)
   let base = s:ExpandTailDotSequenceToParentDir(a:base)
   let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
   let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
-  let result = filter(result, 'bufnr(v:val.path) != self.prev_bufnr')
+  let result = filter(result, 'bufnr("^" . v:val.path . "$") != self.prev_bufnr')
   if len(result) >= self.matching_limit
     call s:HighlightError()
   endif
@@ -1118,9 +1127,9 @@ endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
   let self.cache = copy(self.info)
-  "let self.cache = filter(self.cache, 'filereadable(v:val.path)')
+  let self.cache = filter(self.cache, 'bufnr("^" . v:val.path . "$") != self.prev_bufnr')
+  let self.cache = filter(self.cache, 'filereadable(v:val.path)')
   let self.cache = map(self.cache, '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
-  let self.cache = filter(self.cache, 'bufnr(v:val.path) != self.prev_bufnr')
   let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
@@ -1133,7 +1142,8 @@ function! g:FuzzyFinderMode.MruFile.on_buf_write_post()
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.update_info()
-  if !empty(&buftype) || !filereadable(expand('%'))
+  "if !empty(&buftype) || !filereadable(expand('%'))
+  if !empty(&buftype)
     return
   endif
   call s:InfoFileManager.load()
@@ -1188,8 +1198,9 @@ function! g:FuzzyFinderMode.FavFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.FavFile.on_mode_enter()
-  let self.cache = map(copy(self.info), '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
-  let self.cache = filter(self.cache, 'bufnr(v:val.path) != self.prev_bufnr')
+  let self.cache = copy(self.info)
+  let self.cache = filter(self.cache, 'bufnr("^" . v:val.path . "$") != self.prev_bufnr')
+  let self.cache = map(self.cache, '{ "path" : fnamemodify(v:val.path, ":~:."), "time" : strftime(self.time_format, v:val.time) }')
   let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
