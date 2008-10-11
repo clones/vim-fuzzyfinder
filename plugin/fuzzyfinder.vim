@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.13, for Vim 7.1
+" Version: 2.14, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -222,6 +222,10 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.14:
+"     - Changed to show buffer status in Buffer mode.
+"     - TODO
+"
 "   2.13:
 "     - Fixed a bug that a directory disappeared when a file in that directroy
 "       was being opened in File/Mru-File mode.
@@ -686,6 +690,18 @@ function! s:EnumExpandedDirsEntries(dir, excluded)
   return entries
 endfunction
 
+function! s:GetBufIndicator(nr)
+  if !getbufvar(a:nr, '&modifiable')
+    return '[-]'
+  elseif getbufvar(a:nr, '&modified')
+    return '[+]'
+  elseif getbufvar(a:nr, '&readonly')
+    return '[R]'
+  else
+    return '   '
+  endif
+endfunction
+
 function! s:GetTagList(tagfile)
   return map(readfile(a:tagfile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
 endfunction
@@ -1038,7 +1054,7 @@ let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
   let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
-  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
+  return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.abbr, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
@@ -1075,10 +1091,12 @@ function! g:FuzzyFinderMode.Buffer.update_buf_times()
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.make_item(nr)
+  let path = (empty(bufname(a:nr)) ? '[No Name]' : fnamemodify(bufname(a:nr), ':~:.'))
   return  {
         \   'index'  : a:nr,
         \   'buf_nr' : a:nr,
-        \   'path'   : empty(bufname(a:nr)) ? '[No Name]' : fnamemodify(bufname(a:nr), ':~:.'),
+        \   'path'   : path,
+        \   'abbr'   : s:GetBufIndicator(a:nr) . ' ' . path,
         \   'time'   : (exists('self.buf_times[a:nr]') ? strftime(self.time_format, self.buf_times[a:nr]) : ''),
         \ }
 endfunction
