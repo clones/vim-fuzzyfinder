@@ -435,9 +435,7 @@ let loaded_fuzzyfinder = 1
 
 " }}}1
 "=============================================================================
-" FUNCTION: {{{1
-"-----------------------------------------------------------------------------
-" LIST FUNCTIONS:
+" FUNCTIONS: LIST ------------------------------------------------------- {{{1
 
 function! s:Unique(in)
   let sorted = sort(a:in)
@@ -517,8 +515,7 @@ function! s:UpdateMruList(mrulist, new_item, key, max_item, excluded)
   return result[0 : a:max_item - 1]
 endfunction
 
-"-----------------------------------------------------------------------------
-" STRING FUNCTIONS:
+" FUNCTIONS: STRING ----------------------------------------------------- {{{1
 
 " trims a:str and add a:mark if a length of a:str is more than a:len
 function! s:TrimLast(str, len)
@@ -561,8 +558,7 @@ function! s:ExpandTailDotSequenceToParentDir(base)
         \           '\=repeat(".." . s:PATH_SEPARATOR, len(submatch(2)))', '')
 endfunction
 
-"-----------------------------------------------------------------------------
-" FUNCTIONS FOR COMPLETION ITEM:
+" FUNCTIONS: COMPLETION ITEM: ------------------------------------------- {{{1
 
 function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_pattern, evals_path_tail)
   if a:evals_path_tail
@@ -608,8 +604,7 @@ function! s:MakeRateStar(rate, base)
   return repeat('*', len) . repeat('.', a:base - len)
 endfunction
 
-"-----------------------------------------------------------------------------
-" MISC FUNCTIONS:
+" FUNCTIONS: MISC ------------------------------------------------------- {{{1
 
 function! s:IsAvailableMode(mode)
   return exists('a:mode.mode_available') && a:mode.mode_available
@@ -746,8 +741,7 @@ endfunction
 
 " }}}1
 "=============================================================================
-" OBJECT: {{{1
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.Base ---------------------------------------- {{{1
 let g:FuzzyFinderMode = { 'Base' : {} }
 
 function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_bufnr, tag_files)
@@ -1048,7 +1042,7 @@ function! g:FuzzyFinderMode.Base.restore_prompt(in)
   return self.prompt . a:in[i : ]
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.Buffer -------------------------------------- {{{1
 let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
@@ -1101,7 +1095,7 @@ function! g:FuzzyFinderMode.Buffer.make_item(nr)
         \ }
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.File ---------------------------------------- {{{1
 let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.File.on_complete(base)
@@ -1115,7 +1109,7 @@ function! g:FuzzyFinderMode.File.on_complete(base)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.Dir ----------------------------------------- {{{1
 let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Dir.on_complete(base)
@@ -1134,7 +1128,7 @@ function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
         \ ][a:mode]
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.MruFile ------------------------------------- {{{1
 let g:FuzzyFinderMode.MruFile = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.MruFile.on_complete(base)
@@ -1170,7 +1164,7 @@ function! g:FuzzyFinderMode.MruFile.update_info()
   call s:InfoFileManager.save()
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.MruCmd -------------------------------------- {{{1
 let g:FuzzyFinderMode.MruCmd = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.MruCmd.on_complete(base)
@@ -1206,7 +1200,7 @@ function! g:FuzzyFinderMode.MruCmd.update_info(cmd)
   call s:InfoFileManager.save()
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.FavFile ------------------------------------- {{{1
 let g:FuzzyFinderMode.FavFile = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.FavFile.on_complete(base)
@@ -1235,7 +1229,7 @@ function! g:FuzzyFinderMode.FavFile.add(in_file, adds)
   call s:InfoFileManager.save()
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.Tag ----------------------------------------- {{{1
 let g:FuzzyFinderMode.Tag = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Tag.on_complete(base)
@@ -1277,7 +1271,7 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, matching_limit)
   return s:FilterEx(self.cache[key].data, 'v:val =~ ' . string(a:pattern), a:matching_limit)
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: g:FuzzyFinderMode.TaggedFile ---------------------------------- {{{1
 let g:FuzzyFinderMode.TaggedFile = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
@@ -1314,7 +1308,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, matching_limit)
 
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: s:OptionManager ----------------------------------------------- {{{1
 " sets or restores temporary options
 let s:OptionManager = { 'originals' : {} }
 
@@ -1330,7 +1324,7 @@ function! s:OptionManager.restore_all()
   let self.originals = {}
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: s:WindowManager ----------------------------------------------- {{{1
 " manages buffer/window for fuzzyfinder
 let s:WindowManager = { 'buf_nr' : -1 }
 
@@ -1381,7 +1375,7 @@ function! s:WindowManager.deactivate()
   execute self.prev_winnr . 'wincmd w'
 endfunction
 
-"-----------------------------------------------------------------------------
+" OBJECT: s:InfoFileManager --------------------------------------------- {{{1
 let s:InfoFileManager = { 'originals' : {} }
 
 function! s:InfoFileManager.load()
