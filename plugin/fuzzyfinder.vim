@@ -229,7 +229,6 @@
 "       entered in Buffer mode. Thanks Maxim Kim.
 "     - Added 'enumerating_limit' option. Thanks id:secondlife.
 "     - Removed 'matching_limit' option. Use 'enumerating_limit' instead.
-"     - TODO
 "
 "   2.13:
 "     - Fixed a bug that a directory disappeared when a file in that directroy
