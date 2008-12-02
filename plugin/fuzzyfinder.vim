@@ -674,10 +674,10 @@ function! s:EnumExpandedDirsEntries(dir, excluded)
   let dirs = s:ExpandEx(a:dir)
   let entries = s:Concat(map(copy(dirs), 'split(glob(v:val . ".*"), "\n") + ' .
         \                                'split(glob(v:val . "*" ), "\n")'))
-  if len(dirs) <= 1
-    call map(entries, 'extend(s:SplitPath(v:val), { "suffix" : (isdirectory(v:val) ? s:PATH_SEPARATOR : ""), "head" : a:dir })')
-  else
+  if len(dirs) > 1
     call map(entries, 'extend(s:SplitPath(v:val), { "suffix" : (isdirectory(v:val) ? s:PATH_SEPARATOR : "") })')
+  else
+    call map(entries, 'extend(s:SplitPath(v:val), { "suffix" : (isdirectory(v:val) ? s:PATH_SEPARATOR : ""), "head" : a:dir })')
   endif
   if len(a:excluded)
     call filter(entries, '(v:val.head . v:val.tail . v:val.suffix) !~ a:excluded')
