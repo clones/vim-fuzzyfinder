@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.14, for Vim 7.1
+" Version: 2.15, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -80,8 +80,8 @@
 "     length of entered pattern is more than setting value. By default, it is
 "     shown at the beginning.
 "
-"     If too many items (200, by default) were matched, the completion is
-"     aborted to reduce nonresponse.
+"     The number of items shown in the completion menu is limited (50, by
+"     default) to speed up the response time.
 "
 "     If an item were matched with entered pattern exactly, it is shown first.
 "     The item whose file name has longer prefix matching is placed upper.
@@ -223,6 +223,9 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.15:
+"     - TODO:
+"
 "   2.14:
 "     - Changed to show buffer status in Buffer mode.
 "     - Fixed a bug that an error occurs when nonexistent buffer-name was
