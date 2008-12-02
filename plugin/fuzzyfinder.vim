@@ -171,8 +171,9 @@
 "     Write the buffer and the information file will be updated.
 "
 "   About Cache:
-"     Once a cache was created, It is not updated automatically to improve
-"     response by default. To update it, use :FuzzyFinderRemoveCache command.
+"     Once a cache was created, It is not automatically updated to speed up
+"     the response time by default. To update it, use :FuzzyFinderRemoveCache
+"     command.
 "
 "   About Migemo:
 "     Migemo is a search method for Japanese language.
@@ -224,6 +225,8 @@
 " ChangeLog:
 "   2.14:
 "     - Changed to show buffer status in Buffer mode.
+"     - Added 'enumerating_limit' option.
+"     - Removed 'matching_limit' option. Use 'enumerating_limit' instead.
 "     - TODO
 "
 "   2.13:
@@ -570,7 +573,7 @@ function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_patter
   return  {
         \   'word'  : a:expr,
         \   'abbr'  : s:TrimLast((a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr, a:trim_len),
-        \   'menu'  : printf('%s[%s]', (len(a:time) ? a:time . ' ' : ''), s:MakeRateStar(rate, 5)),
+        \   'menu'  : a:time,
         \   'ranks' : [-rate, (a:number >= 0 ? a:number : a:expr)]
         \ }
 endfunction
@@ -597,11 +600,6 @@ function! s:EvaluateMatchingRate(expr, pattern)
     endif
   endfor
   return rate
-endfunction
-
-function! s:MakeRateStar(rate, base)
-  let len = (a:base * a:rate) / s:MATCHING_RATE_BASE
-  return repeat('*', len) . repeat('.', a:base - len)
 endfunction
 
 " FUNCTIONS: MISC ------------------------------------------------------- {{{1
@@ -826,6 +824,7 @@ function! g:FuzzyFinderMode.Base.on_insert_leave()
     if exists('s:reserved_command')
       call feedkeys(self.on_open(s:reserved_command[0], s:reserved_command[1]), 'n')
       unlet s:reserved_command
+      redraw!
     endif
   endif
 endfunction
@@ -909,9 +908,10 @@ function! g:FuzzyFinderMode.Base.complete(findstart, base)
     let result += self.on_complete(expanded_base)
   endfor
   call sort(result, 's:CompareRanks')
-  if empty(result)
+  if empty(result) || len(result) >= self.enumerating_limit
     call s:HighlightError()
-  else
+  endif
+  if !empty(result)
     call feedkeys("\<C-p>\<Down>", 'n')
   endif
   return result
@@ -958,7 +958,7 @@ function! g:FuzzyFinderMode.Base.make_pattern(base)
 endfunction
 
 " glob with caching-feature, etc.
-function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, index, matching_limit)
+function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, index, limit)
   let key = fnamemodify(a:dir, ':p')
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]')
@@ -967,12 +967,11 @@ function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, index, matching_li
     call s:ExtendIndexToEach(self.cache[key], 1)
   endif
   echo 'Filtering file list...'
-  "return map(s:FilterEx(self.cache[key], 'v:val.tail =~ ' . string(a:file), a:matching_limit),
-  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:matching_limit),
+  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit),
         \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
 endfunction
 
-function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, index, matching_limit)
+function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, index, limit)
   let key = fnamemodify(a:dir, ':p')
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]')
@@ -983,8 +982,7 @@ function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, index, matchin
     call s:ExtendIndexToEach(self.cache[key], 1)
   endif
   echo 'Filtering file list...'
-  "return map(s:FilterEx(self.cache[key], 'v:val.tail =~ ' . string(a:file), a:matching_limit),
-  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:matching_limit),
+  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit),
         \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
 endfunction
 
@@ -1047,7 +1045,7 @@ let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
+  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.abbr, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
@@ -1101,11 +1099,8 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let base = s:ExpandTailDotSequenceToParentDir(a:base)
   let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
-  let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.matching_limit)
+  let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.enumerating_limit)
   let result = filter(result, 'bufnr("^" . v:val.path . "$") != self.prev_bufnr')
-  if len(result) >= self.matching_limit
-    call s:HighlightError()
-  endif
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
 endfunction
 
@@ -1115,7 +1110,7 @@ let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Dir.on_complete(base)
   let base = s:ExpandTailDotSequenceToParentDir(a:base)
   let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
-  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), 0)
+  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
 endfunction
 
@@ -1133,7 +1128,7 @@ let g:FuzzyFinderMode.MruFile = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.MruFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
+  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
@@ -1169,12 +1164,11 @@ let g:FuzzyFinderMode.MruCmd = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.MruCmd.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'command', patterns.re, s:SuffixNumber(patterns.base), 0)
+  let result = s:FilterMatching(self.cache, 'command', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.command, v:val.index, v:val.command, self.trim_length, v:val.time, a:base, 0)')
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
-  redraw
   " use feedkeys to remap <CR>
   return a:expr . [
         \   "\<C-r>=feedkeys(\"\\<CR>\", 'm')?'':''\<CR>",
@@ -1205,7 +1199,7 @@ let g:FuzzyFinderMode.FavFile = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.FavFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), 0)
+  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
@@ -1234,10 +1228,7 @@ let g:FuzzyFinderMode.Tag = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Tag.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = self.find_tag(patterns.re, self.matching_limit)
-  if len(result) >= self.matching_limit
-    call s:HighlightError()
-  endif
+  let result = self.find_tag(patterns.re, self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
 
@@ -1250,7 +1241,7 @@ function! g:FuzzyFinderMode.Tag.on_open(expr, mode)
         \ ][a:mode] . a:expr . "\<CR>"
 endfunction
 
-function! g:FuzzyFinderMode.Tag.find_tag(pattern, matching_limit)
+function! g:FuzzyFinderMode.Tag.find_tag(pattern, limit)
   if !len(self.tag_files)
     return []
   endif
@@ -1268,7 +1259,7 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, matching_limit)
   endif
 
   echo 'Filtering tag list...'
-  return s:FilterEx(self.cache[key].data, 'v:val =~ ' . string(a:pattern), a:matching_limit)
+  return s:FilterEx(self.cache[key].data, 'v:val =~ ' . string(a:pattern), a:limit)
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.TaggedFile ---------------------------------- {{{1
@@ -1277,14 +1268,11 @@ let g:FuzzyFinderMode.TaggedFile = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
   echo 'Making tagged file list...'
-  let result = self.find_tagged_file(patterns.re, self.matching_limit)
-  if len(result) >= self.matching_limit
-    call s:HighlightError()
-  endif
+  let result = self.find_tagged_file(patterns.re, self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
 endfunction
 
-function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, matching_limit)
+function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, limit)
   if !len(self.tag_files)
     return []
   endif
@@ -1304,7 +1292,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, matching_limit)
   echo 'Filtering tagged-file list...'
   return s:FilterEx(map(self.cache[key].data, 'fnamemodify(v:val, '':.'')'),
         \               'v:val =~ ' . string(a:pattern),
-        \           a:matching_limit)
+        \           a:limit)
 
 endfunction
 
@@ -1506,6 +1494,9 @@ let g:FuzzyFinderOptions.Base.ignore_case = 1
 " [All Mode] This is a string to format time string. See :help strftime() for
 " details.
 let g:FuzzyFinderOptions.Base.time_format = '(%x %H:%M:%S)'
+" [All Mode] To speed up the response time, Fuzzyfinder ends enumerating
+" completion items when found over this.
+let g:FuzzyFinderOptions.Base.enumerating_limit = 50
 " [All Mode] If a length of completion item is more than this, it is trimmed
 " when shown in completion menu.
 let g:FuzzyFinderOptions.Base.trim_length = 80
@@ -1545,9 +1536,6 @@ let g:FuzzyFinderOptions.File.smart_bs = 1
 let g:FuzzyFinderOptions.File.switch_order = 20
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
-" [File Mode] If a number of matched items was over this, the completion
-" process is aborted.
-let g:FuzzyFinderOptions.File.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Directory Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Dir.mode_available = 1
@@ -1629,9 +1617,6 @@ let g:FuzzyFinderOptions.Tag.smart_bs = 0
 let g:FuzzyFinderOptions.Tag.switch_order = 70
 " [Tag Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
-" [Tag Mode] If a number of matched items was over this, the completion
-" process is aborted.
-let g:FuzzyFinderOptions.Tag.matching_limit = 200
 "-----------------------------------------------------------------------------
 " [Tagged-File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
@@ -1645,9 +1630,6 @@ let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
 " [Tagged-File Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
-" [Tagged-File Mode] If a number of matched items was over this, the
-" completion process is aborted.
-let g:FuzzyFinderOptions.TaggedFile.matching_limit = 200
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
