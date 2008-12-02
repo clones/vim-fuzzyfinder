@@ -106,12 +106,12 @@
 "     If you want to temporarily change whether or not to ignore case, use
 "     <C-t>. This key mapping is customizable.
 "
-"   To Hide The Completion Temporarily Menu In Fuzzyfinder:
+"   To Hide The Completion Menu Temporarily In Fuzzyfinder:
 "     You can close it by <C-e> and reopen it by <C-x><C-u>.
 "
 "   About Highlighting:
-"     Fuzzyfinder highlights the buffer with "Error" group when the completion
-"     item was not found or the completion process was aborted.
+"     Fuzzyfinder highlights the buffer with "Error" group when the number of
+"     completion items found is 0 or over enumerating_limit.
 "
 "   About Alternative Approach For Tag Jump:
 "     Following mappings are replacements for :tag and <C-]>:
@@ -1008,7 +1008,6 @@ endfunction
 
 " takes in g:FuzzyFinderOptions
 function! g:FuzzyFinderMode.Base.extend_options()
-  let n = filter(keys(g:FuzzyFinderMode), 'g:FuzzyFinderMode[v:val] is self')[0]
   call extend(self, g:FuzzyFinderOptions.Base, 'force')
   call extend(self, g:FuzzyFinderOptions[self.to_key()], 'force')
 endfunction
