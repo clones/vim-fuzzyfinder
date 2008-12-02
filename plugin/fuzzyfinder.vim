@@ -225,7 +225,9 @@
 " ChangeLog:
 "   2.14:
 "     - Changed to show buffer status in Buffer mode.
-"     - Added 'enumerating_limit' option.
+"     - Fixed a bug that an error occurs when nonexistent buffer-name was
+"       entered in Buffer mode. Thanks Maxim Kim.
+"     - Added 'enumerating_limit' option. Thanks id:secondlife.
 "     - Removed 'matching_limit' option. Use 'enumerating_limit' instead.
 "     - TODO
 "
@@ -1050,13 +1052,17 @@ function! g:FuzzyFinderMode.Buffer.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
-  " attempts to convert the path to the number for handling unnamed buffer
+  " filter the selected item to get the buffer number for handling unnamed buffer
+  call filter(self.cache, 'v:val.path == a:expr')
+  if empty(self.cache)
+    return ''
+  endif
   return printf([
         \   ':%sbuffer',
         \   ':%ssbuffer',
         \   ':vertical :%ssbuffer',
         \   ':tab :%ssbuffer',
-        \ ][a:mode] . "\<CR>", filter(self.cache, 'v:val.path == a:expr')[0].buf_nr)
+        \ ][a:mode] . "\<CR>", self.cache[0].buf_nr)
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_mode_enter()
