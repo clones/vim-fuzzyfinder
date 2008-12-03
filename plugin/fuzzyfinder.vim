@@ -1186,8 +1186,9 @@ function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_mode_enter()
-  let self.cache = s:ExtendIndexToEach(map(copy(self.info),
-        \ '{ "command" : v:val.command, "time" : strftime(self.time_format, v:val.time) }'), 1)
+  let self.cache = copy(self.info)
+  let self.cache = map(self.cache, '{ "command" : v:val.command, "time" : strftime(self.time_format, v:val.time) }')
+  let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_command_pre(cmd)
