@@ -797,7 +797,6 @@ function! s:JumpToBookmark(cmd_open, path, pattern, lnum, range)
   endfor
   call cursor(ln, 0)
   normal zvzz
-  redraw " to clear echo messages
 endfunction
 
 " }}}1
@@ -821,16 +820,15 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_buf
   " before create window
   call self.on_mode_enter()
 
-  call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
   call s:OptionManager.set('completeopt', 'menuone')
   call s:OptionManager.set('ignorecase', self.ignore_case)
+  call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
 
   " local autocommands
   augroup FuzzyfinderLocal
     autocmd!
     execute 'autocmd CursorMovedI <buffer>        call ' . self.to_str('on_cursor_moved_i()')
     execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
-    execute 'autocmd BufEnter     *               call ' . self.to_str('on_buf_leave_post()')
   augroup END
 
   " local mapping
@@ -873,19 +871,12 @@ function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
   endif
 endfunction
 
-" TODO: リファクタリング
 function! g:FuzzyFinderMode.Base.on_insert_leave()
-  call s:OptionManager.restore_all()
   call s:WindowManager.deactivate()
-endfunction
-
-" TODO: リファクタリング
-function! g:FuzzyFinderMode.Base.on_buf_leave_post()
-  autocmd! FuzzyfinderLocal
+  call s:OptionManager.restore_all()
   if exists('s:reserved_command')
     call self.on_open(s:reserved_command[0], s:reserved_command[1])
     unlet s:reserved_command
-    redraw!
   endif
   call self.on_mode_leave()
   call self.empty_cache_if_existed(0)
@@ -911,7 +902,7 @@ function! g:FuzzyFinderMode.Base.on_cr(index, check_dir)
     call feedkeys(printf("\<C-y>\<C-r>=%s(%d, 1) ? '' : ''\<CR>", self.to_str('on_cr'), a:index), 'n')
   elseif !a:check_dir || getline('.') !~ '[/\\]$'
     let s:reserved_command = [self.remove_prompt(getline('.')), a:index]
-    call feedkeys("\<Esc>", 'n')
+    stopinsert
   endif
 endfunction
 
@@ -940,7 +931,7 @@ endfunction
 
 function! g:FuzzyFinderMode.Base.on_switch_mode(next_prev)
   let s:reserved_switch_mode = a:next_prev
-  call feedkeys("\<Esc>", 'n')
+  stopinsert
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_switch_ignore_case()
@@ -1409,7 +1400,6 @@ endfunction
 let s:WindowManager = { 'buf_nr' : -1 }
 
 function! s:WindowManager.activate(complete_func)
-  let self.prev_winnr = winnr()
   let cwd = getcwd()
 
   if !bufexists(self.buf_nr)
@@ -1439,20 +1429,19 @@ function! s:WindowManager.activate(complete_func)
 
   redraw " for 'lazyredraw'
 
-  " suspend autocomplpop.vim
   if exists(':AutoComplPopLock')
+    " suspend autocomplpop.vim
     :AutoComplPopLock
   endif
 endfunction
 
 function! s:WindowManager.deactivate()
-  " resume autocomplpop.vim
   if exists(':AutoComplPopUnlock')
+    " resume autocomplpop.vim
     :AutoComplPopUnlock
   endif
-
-  close
-  execute self.prev_winnr . 'wincmd w'
+  wincmd p
+  execute self.buf_nr . 'bdelete'
 endfunction
 
 " OBJECT: s:InfoFileManager --------------------------------------------- {{{1
