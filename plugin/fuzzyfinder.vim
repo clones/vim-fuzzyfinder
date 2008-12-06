@@ -230,7 +230,7 @@
 "     - TODO:
 "     - Added Bookmark mode.
 "     - Removed Favorite-file mode. Use Bookmark mode instead.
-"     - MRU-command mode で input()の履歴を登録しないよう修正
+"     - Fixed not to record a entry of input() in MRU-command mode.
 "
 "   2.14:
 "     - Changed to show buffer status in Buffer mode.
@@ -683,10 +683,7 @@ function! s:OnCmdCR()
     call m.on_command_pre(getcmdtype() . getcmdline())
   endfor
   " lets last entry become the newest in the history
-  if getcmdtype() =~ '[:/?=]'
-    call histadd(getcmdtype(), getcmdline())
-  endif
-
+  call histadd(getcmdtype(), getcmdline())
   " this is not mapped again (:help recursive_mapping)
   return "\<CR>"
 endfunction
@@ -792,7 +789,7 @@ function! s:JumpToBookmark(cmd_open, path, pattern, lnum, range)
     endif
   endfor
   call cursor(ln, 0)
-  normal zz
+  normal zvzz
   redraw " to clear echo messages
 endfunction
 
@@ -1251,7 +1248,9 @@ function! g:FuzzyFinderMode.MruCmd.on_mode_enter()
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_command_pre(cmd)
-  call self.update_info(a:cmd)
+  if getcmdtype() =~ '^[:/?]'
+    call self.update_info(a:cmd)
+  endif
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.update_info(cmd)
@@ -1300,7 +1299,7 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here()
   call s:InfoFileManager.load()
 
   let item = { 'path' : expand('%:p:~'), 'lnum' : line('.'), 'pattern' : getline('.'), 'time' : localtime() }
-  let item.name = s:InputHl('Bookmark as: ', pathshorten(item.path) . '|' . item.lnum . '| ' . item.pattern, 'Question')
+  let item.name = s:InputHl('Bookmark as:', pathshorten(item.path) . '|' . item.lnum . '| ' . item.pattern, 'Question')
   if item.name =~ '\S'
     call insert(self.info, item)
   else
