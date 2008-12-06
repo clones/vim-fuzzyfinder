@@ -156,10 +156,16 @@
 "       ".vim/plugin/*t*x*t*"
 "
 "   About Bookmark Mode:
-"     TODO:
+"     You can jump to a line you have added to bookmarks beforehand.
+"     Fuzzyfinder adjusts a line number for jump. If a line of bookmarked
+"     position does not match to a pattern when the bookmark was added,
+"     Fuzzyfinder searches a matching line around bookmarked position. So you
+"     can jump to a bookmarked line even if the line is out of bookmarked
+"     position. If you want to jump to bookmarked line number, set
+"     g:FuzzyFinderOptions.Bookmark.searching_range option to 0.
 "
 "   Adding Bookmark:
-"     You can add the cursor line to bookmarks by the following commands:
+"     You can add a cursor line to bookmarks by the following commands:
 "
 "       :FuzzyFinderAddBookmark
 "
@@ -227,7 +233,6 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.15:
-"     - TODO:
 "     - Added Bookmark mode.
 "     - Removed Favorite-file mode. Use Bookmark mode instead.
 "     - Fixed not to record a entry of input() in MRU-command mode.
@@ -774,8 +779,8 @@ function! s:CompareRanks(i1, i2)
   return 0
 endfunction
 
-" opens a:path with a:cmd_open and jumps to the line equal to a:pattern within
-" a:range from a:lnum. if not found, jumps to a:lnum.
+" opens a:path with a:cmd_open and jumps to the line equal to a:pattern from
+" a:lnum within a:range. if not found, jumps to a:lnum.
 function! s:JumpToBookmark(cmd_open, path, pattern, lnum, range)
   execute a:cmd_open . ' ' . s:EscapeFilename(a:path)
   let ln = a:lnum
@@ -1282,7 +1287,7 @@ function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
         \ ][a:mode]
   return  printf(":call %sJumpToBookmark(%s, %s, %s, %d, %d)\<CR>",
         \ s:GetSidPrefix(), string(cmd_open), string(self.cache[0].path),
-        \ string(self.cache[0].pattern), self.cache[0].lnum, self.matching_range)
+        \ string(self.cache[0].pattern), self.cache[0].lnum, self.searching_range)
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_mode_enter()
@@ -1687,8 +1692,9 @@ let g:FuzzyFinderOptions.Bookmark.smart_bs = 0
 " [Bookmark Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.Bookmark.switch_order = 60
-" [Bookmark Mode] TODO
-let g:FuzzyFinderOptions.Bookmark.matching_range = 50
+" [Bookmark Mode] Fuzzyfinder searches a matching line from bookmarked
+" position within this number of lines.
+let g:FuzzyFinderOptions.Bookmark.searching_range = 50
 "-----------------------------------------------------------------------------
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
