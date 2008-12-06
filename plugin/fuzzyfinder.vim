@@ -1283,7 +1283,7 @@ function! g:FuzzyFinderMode.Bookmark.on_mode_enter()
   let self.cache = s:ExtendIndexToEach(self.cache, 1)
 endfunction
 
-function! g:FuzzyFinderMode.Bookmark.bookmark_here()
+function! g:FuzzyFinderMode.Bookmark.bookmark_here(name)
   if !empty(&buftype) || expand('%') !~ '\S'
     call s:EchoHl('Can''t bookmark this buffer.', 'WarningMsg')
     return
@@ -1291,7 +1291,11 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here()
   call s:InfoFileManager.load()
 
   let item = { 'path' : expand('%:p:~'), 'lnum' : line('.'), 'pattern' : getline('.'), 'time' : localtime() }
-  let item.name = s:InputHl('Bookmark as:', pathshorten(item.path) . '|' . item.lnum . '| ' . item.pattern, 'Question')
+  if a:name =~ '\S'
+    let item.name = a:name
+  else
+    let item.name = s:InputHl('Bookmark as:', pathshorten(item.path) . '|' . item.lnum . '| ' . item.pattern, 'Question')
+  endif
   if item.name =~ '\S'
     call insert(self.info, item)
   else
@@ -1743,7 +1747,7 @@ command! -bang -narg=? -complete=file   FuzzyFinderBookmark    call g:FuzzyFinde
 command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
 command! -bang -narg=? -complete=file   FuzzyFinderEditInfo    call s:InfoFileManager.edit()
-command! -bang -narg=? -complete=file   FuzzyFinderAddBookmark call g:FuzzyFinderMode.Bookmark.bookmark_here()
+command! -bang -narg=? -complete=file   FuzzyFinderAddBookmark call g:FuzzyFinderMode.Bookmark.bookmark_here(<q-args>)
 command! -bang -narg=0                  FuzzyFinderRemoveCache for m in s:GetAvailableModes() | call m.empty_cache_if_existed(1) | endfor
 
 " }}}1
