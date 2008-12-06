@@ -1,3 +1,4 @@
+" TODO バッファが変更されてるとエラーがでる
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
@@ -95,6 +96,7 @@
 "       <C-j> - opens in a split window.
 "       <C-k> - opens in a vertical-split window.
 "       <C-]> - opens in a new tab page.
+"     TODO: MRU-command mode と Directory mode
 "     In MRU-command mode, <CR> executes a selected command and others just
 "     put it into a command-line. These key mappings are customizable.
 "
@@ -816,6 +818,9 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_buf
     return
   endif
 
+  " before create window
+  call self.on_mode_enter()
+
   call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
   call s:OptionManager.set('completeopt', 'menuone')
   call s:OptionManager.set('ignorecase', self.ignore_case)
@@ -825,6 +830,7 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_buf
     autocmd!
     execute 'autocmd CursorMovedI <buffer>        call ' . self.to_str('on_cursor_moved_i()')
     execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
+    execute 'autocmd BufEnter     *               call ' . self.to_str('on_buf_leave_post()')
   augroup END
 
   " local mapping
@@ -842,8 +848,6 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_buf
     " hacks to be able to use feedkeys().
     execute printf('inoremap <buffer> <silent> %s <C-r>=%s ? "" : ""<CR>', lhs, rhs)
   endfor
-
-  call self.on_mode_enter()
 
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
@@ -869,24 +873,27 @@ function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
   endif
 endfunction
 
+" TODO: リファクタリング
 function! g:FuzzyFinderMode.Base.on_insert_leave()
-  let text = getline('.')
-  call self.on_mode_leave()
-  call self.empty_cache_if_existed(0)
   call s:OptionManager.restore_all()
   call s:WindowManager.deactivate()
+endfunction
 
+" TODO: リファクタリング
+function! g:FuzzyFinderMode.Base.on_buf_leave_post()
+  autocmd! FuzzyfinderLocal
+  if exists('s:reserved_command')
+    call self.on_open(s:reserved_command[0], s:reserved_command[1])
+    unlet s:reserved_command
+    redraw!
+  endif
+  call self.on_mode_leave()
+  call self.empty_cache_if_existed(0)
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch(self.remove_prompt(text), self.partial_matching, self.prev_bufnr, self.tag_files)
+    call m.launch('', self.partial_matching, self.prev_bufnr, self.tag_files)
     unlet s:reserved_switch_mode
-  else
-    if exists('s:reserved_command')
-      call feedkeys(self.on_open(s:reserved_command[0], s:reserved_command[1]), 'n')
-      unlet s:reserved_command
-      redraw!
-    endif
   endif
 endfunction
 
@@ -923,12 +930,12 @@ function! g:FuzzyFinderMode.Base.on_mode_leave()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_open(expr, mode)
-  return [
+  execute [
         \   ':edit ',
         \   ':split ',
         \   ':vsplit ',
         \   ':tabedit ',
-        \ ][a:mode] . s:EscapeFilename(a:expr) . "\<CR>"
+        \ ][a:mode] . s:EscapeFilename(a:expr)
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_switch_mode(next_prev)
@@ -1050,9 +1057,6 @@ endfunction
 function! g:FuzzyFinderMode.Base.empty_cache_if_existed(force)
   if exists('self.cache') && (a:force || !exists('self.lasting_cache') || !self.lasting_cache)
     unlet self.cache
-    "let self.cache = (type(self.cache) == type({}) ? {} :
-    "      \           type(self.cache) == type([]) ? [] :
-    "      \           type(self.cache) == type('') ? '' : 0)
   endif
 endfunction
 
@@ -1115,12 +1119,12 @@ function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   if empty(self.cache)
     return ''
   endif
-  return printf([
+  execute printf([
         \   ':%sbuffer',
         \   ':%ssbuffer',
         \   ':vertical :%ssbuffer',
         \   ':tab :%ssbuffer',
-        \ ][a:mode] . "\<CR>", self.cache[0].buf_nr)
+        \ ][a:mode], self.cache[0].buf_nr)
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_mode_enter()
@@ -1183,12 +1187,7 @@ function! g:FuzzyFinderMode.Dir.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
-  return ':cd ' . escape(a:expr, ' ') . [
-        \   "\<CR>",
-        \   "",
-        \   "",
-        \   "",
-        \ ][a:mode]
+  execute ':cd ' . escape(a:expr, ' ')
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.MruFile ------------------------------------- {{{1
@@ -1236,14 +1235,18 @@ function! g:FuzzyFinderMode.MruCmd.on_complete(base)
   return map(result, 's:FormatCompletionItem(v:val.command, v:val.index, v:val.command, self.trim_length, v:val.time, a:base, 0)')
 endfunction
 
+" TODO: 検証
 function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
-  " use feedkeys to remap <CR>
-  return a:expr . [
-        \   "\<C-r>=feedkeys(\"\\<CR>\", 'm')?'':''\<CR>",
-        \   "",
-        \   "",
-        \   "",
-        \ ][a:mode]
+  call self.update_info(a:expr)
+  call feedkeys(a:expr . "\<CR>", 'n')
+  " --- OLD ----
+  " " use feedkeys to remap <CR>
+  " return a:expr . [
+  "       \   "\<C-r>=feedkeys(\"\\<CR>\", 'm')?'':''\<CR>",
+  "       \   "",
+  "       \   "",
+  "       \   "",
+  "       \ ][a:mode]
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_mode_enter()
@@ -1285,9 +1288,7 @@ function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
         \   ':vsplit ',
         \   ':tabedit ',
         \ ][a:mode]
-  return  printf(":call %sJumpToBookmark(%s, %s, %s, %d, %d)\<CR>",
-        \ s:GetSidPrefix(), string(cmd_open), string(self.cache[0].path),
-        \ string(self.cache[0].pattern), self.cache[0].lnum, self.searching_range)
+  call s:JumpToBookmark(cmd_open, self.cache[0].path, self.cache[0].pattern, self.cache[0].lnum, self.searching_range)
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_mode_enter()
@@ -1324,12 +1325,12 @@ function! g:FuzzyFinderMode.Tag.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.Tag.on_open(expr, mode)
-  return [
+  execute [
         \   ':tjump ',
         \   ':stjump ',
         \   ':vertical :stjump ',
         \   ':tab :stjump ',
-        \ ][a:mode] . a:expr . "\<CR>"
+        \ ][a:mode] . a:expr
 endfunction
 
 function! g:FuzzyFinderMode.Tag.find_tag(pattern, limit)
@@ -1694,7 +1695,7 @@ let g:FuzzyFinderOptions.Bookmark.smart_bs = 0
 let g:FuzzyFinderOptions.Bookmark.switch_order = 60
 " [Bookmark Mode] Fuzzyfinder searches a matching line from bookmarked
 " position within this number of lines.
-let g:FuzzyFinderOptions.Bookmark.searching_range = 50
+let g:FuzzyFinderOptions.Bookmark.searching_range = 100
 "-----------------------------------------------------------------------------
 " [Tag Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Tag.mode_available = 1
