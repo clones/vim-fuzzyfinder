@@ -891,6 +891,7 @@ function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_insert_leave()
+  let line = getline('.')
   call s:OptionManager.restore_all()
   call s:WindowManager.deactivate()
   if exists('s:reserved_command')
@@ -902,7 +903,7 @@ function! g:FuzzyFinderMode.Base.on_insert_leave()
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch('', self.partial_matching, self.prev_bufnr, self.tag_files)
+    call m.launch(self.remove_prompt(line), self.partial_matching, self.prev_bufnr, self.tag_files)
     unlet s:reserved_switch_mode
   endif
 endfunction
