@@ -823,12 +823,11 @@ endfunction
 " OBJECT: g:FuzzyFinderMode.Base ---------------------------------------- {{{1
 let g:FuzzyFinderMode = { 'Base' : {} }
 
-function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching, prev_bufnr, tag_files)
+function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
   " initializes this object
   call self.extend_options()
   let self.partial_matching = a:partial_matching
-  let self.prev_bufnr = a:prev_bufnr
-  let self.tag_files = a:tag_files " to get local value of current buffer
+  let self.prev_bufnr = bufnr('%')
   let self.last_col = -1
   call s:InfoFileManager.load()
   if !s:IsAvailableMode(self)
@@ -903,7 +902,7 @@ function! g:FuzzyFinderMode.Base.on_insert_leave()
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch(self.remove_prompt(line), self.partial_matching, self.prev_bufnr, self.tag_files)
+    call m.launch(self.remove_prompt(line), self.partial_matching)
     unlet s:reserved_switch_mode
   endif
 endfunction
@@ -1323,6 +1322,10 @@ function! g:FuzzyFinderMode.Tag.on_open(expr, mode)
         \ ][a:mode] . a:expr
 endfunction
 
+function! g:FuzzyFinderMode.Tag.on_mode_enter()
+  let self.tag_files = s:GetCurrentTagFiles()
+endfunction
+
 function! g:FuzzyFinderMode.Tag.find_tag(pattern, limit)
   if !len(self.tag_files)
     return []
@@ -1352,6 +1355,10 @@ function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   echo 'Making tagged file list...'
   let result = self.find_tagged_file(patterns.re, self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val, -1, v:val, self.trim_length, "", a:base, 1)')
+endfunction
+
+function! g:FuzzyFinderMode.TaggedFile.on_mode_enter()
+  let self.tag_files = s:GetCurrentTagFiles()
 endfunction
 
 function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, limit)
@@ -1738,14 +1745,14 @@ augroup END
 " cnoremap has a problem, which doesn't expand cabbrev.
 cmap <silent> <expr> <CR> <SID>OnCmdCR()
 
-command! -bang -narg=? -complete=buffer FuzzyFinderBuffer      call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderFile        call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch       (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderMruFile     call g:FuzzyFinderMode.MruFile.launch   (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderMruCmd      call g:FuzzyFinderMode.MruCmd.launch    (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderBookmark    call g:FuzzyFinderMode.Bookmark.launch  (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
-command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>), bufnr('%'), s:GetCurrentTagFiles())
+command! -bang -narg=? -complete=buffer FuzzyFinderBuffer      call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFile        call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch       (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderMruFile     call g:FuzzyFinderMode.MruFile.launch   (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderMruCmd      call g:FuzzyFinderMode.MruCmd.launch    (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderBookmark    call g:FuzzyFinderMode.Bookmark.launch  (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>))
 command! -bang -narg=? -complete=file   FuzzyFinderEditInfo    call s:InfoFileManager.edit()
 command! -bang -narg=? -complete=file   FuzzyFinderAddBookmark call g:FuzzyFinderMode.Bookmark.bookmark_here(<q-args>)
 command! -bang -narg=0                  FuzzyFinderRemoveCache for m in s:GetAvailableModes() | call m.empty_cache_if_existed(1) | endfor
