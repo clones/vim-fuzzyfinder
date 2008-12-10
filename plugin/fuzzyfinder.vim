@@ -1,10 +1,11 @@
+"TODO: MRUファイルモードでキャッシュ
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.15, for Vim 7.1
+" Version: 2.16, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -230,6 +231,10 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.16:
+"     - Fixed a bug in Bookmark mode that Fuzzyfinder did not jump to the
+"       Bookmarked line number when Bookmarked pattern was not found.
+"
 "   2.15:
 "     - Added Bookmark mode.
 "     - Removed Favorite-file mode. Use Bookmark mode instead.
@@ -631,7 +636,7 @@ function! s:InputHl(prompt, text, hl)
 endfunction
 
 
-" FUNCTIONS: EXPLORER WINDOW -------------------------------------------- {{{1
+" FUNCTIONS: FUZZYFIDNER WINDOW ----------------------------------------- {{{1
 
 function! s:HighlightPrompt(prompt, highlight)
   syntax clear
@@ -777,17 +782,21 @@ function! s:CompareRanks(i1, i2)
   return 0
 endfunction
 
-" opens a:path and jumps to the line equal to a:pattern from a:lnum within
+function! s:GetLinePattern(lnum)
+  return '\C\V\^' . escape(getline(a:lnum), '\') . '\$'
+endfunction
+
+" opens a:path and jumps to the line matching to a:pattern from a:lnum within
 " a:range. if not found, jumps to a:lnum.
 function! s:JumpToBookmark(path, mode, pattern, lnum, range)
   call s:OpenFile(a:path, a:mode)
   let ln = a:lnum
   for i in range(0, a:range)
-    if getline(a:lnum + i) ==# a:pattern
-      let ln = a:lnum + i
+    if a:lnum + i <= line('$') && getline(a:lnum + i) =~ a:pattern
+      let ln += i
       break
-    elseif getline(a:lnum - i) ==# a:pattern
-      let ln = a:lnum - i
+    elseif a:lnum - i >= 1 && getline(a:lnum - i) =~ a:pattern
+      let ln -= i
       break
     endif
   endfor
@@ -1273,6 +1282,10 @@ function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
   if empty(self.cache)
     return ''
   endif
+  " for compatibility
+  if !exists('self.cache[0].regexp')
+    let self.cache[0].pattern = '\C\V\^' . self.cache[0].pattern . '\$'
+  endif
   call s:JumpToBookmark(self.cache[0].path, a:mode, self.cache[0].pattern, self.cache[0].lnum, self.searching_range)
 endfunction
 
@@ -1289,12 +1302,16 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here(name)
   endif
   call s:InfoFileManager.load()
 
-  let item = { 'path' : expand('%:p:~'), 'lnum' : line('.'), 'pattern' : getline('.'), 'time' : localtime() }
-  if a:name =~ '\S'
-    let item.name = a:name
-  else
-    let item.name = s:InputHl('Bookmark as:', pathshorten(item.path) . '|' . item.lnum . '| ' . item.pattern, 'Question')
-  endif
+  let item = {
+        \   'path' : expand('%:p:~'),
+        \   'lnum' : line('.'),
+        \   'pattern' : s:GetLinePattern(line('.')),
+        \   'time' : localtime(),
+        \   'regexp' : 1,
+        \   'name' : (a:name =~ '\S' ? substitute(a:name, '\n', ' ', 'g')
+        \                            : pathshorten(expand('%:p:~')) . '|' . line('.') . '| ' . getline('.')),
+        \ }
+  let item.name = s:InputHl('Bookmark as:', item.name, 'Question')
   if item.name =~ '\S'
     call insert(self.info, item)
   else
