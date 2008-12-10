@@ -1,4 +1,3 @@
-"TODO: MRUファイルモードでキャッシュ
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
@@ -232,6 +231,7 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.16:
+"     - Improved response time by caching in MRU-File mode.
 "     - Fixed a bug in Bookmark mode that Fuzzyfinder did not jump to the
 "       Bookmarked line number when Bookmarked pattern was not found.
 "
@@ -517,8 +517,8 @@ function! s:FilterEx(in, expr, limit)
 endfunction
 
 " 
-function! s:FilterMatching(entries, key, pattern, index, limit)
-  return s:FilterEx(a:entries, 'v:val[''' . a:key . '''] =~ ' . string(a:pattern) . ' || v:val.index == ' . a:index, a:limit)
+function! s:FilterMatching(items, key, pattern, index, limit)
+  return s:FilterEx(a:items, 'v:val[''' . a:key . '''] =~ ' . string(a:pattern) . ' || v:val.index == ' . a:index, a:limit)
 endfunction
 
 function! s:ExtendIndexToEach(in, offset)
@@ -590,7 +590,7 @@ function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_patter
   endif
   return  {
         \   'word'  : a:expr,
-        \   'abbr'  : s:TrimLast((a:number >= 0 ? printf('%2d: ', a:number) : '') . a:abbr, a:trim_len),
+        \   'abbr'  : s:TrimLast((a:number >= 0 ? printf('%3d: ', a:number) : '') . a:abbr, a:trim_len),
         \   'menu'  : a:time,
         \   'ranks' : [-rate, (a:number >= 0 ? a:number : a:expr)]
         \ }
@@ -1123,23 +1123,23 @@ let g:FuzzyFinderMode.Buffer = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Buffer.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  let result = s:FilterMatching(self.items, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.abbr, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " filter the selected item to get the buffer number for handling unnamed buffer
-  call filter(self.cache, 'v:val.path == a:expr')
-  if !empty(self.cache)
-    call s:OpenBuffer(self.cache[0].buf_nr, a:mode)
+  call filter(self.items, 'v:val.path ==# a:expr')
+  if !empty(self.items)
+    call s:OpenBuffer(self.items[0].buf_nr, a:mode)
   endif
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_mode_enter()
-  let self.cache = map(filter(range(1, bufnr('$')), 'buflisted(v:val) && v:val != self.prev_bufnr'),
+  let self.items = map(filter(range(1, bufnr('$')), 'buflisted(v:val) && v:val != self.prev_bufnr'),
         \              'self.make_item(v:val)')
   if self.mru_order
-    call s:ExtendIndexToEach(sort(self.cache, 's:CompareTimeDescending'), 1)
+    call s:ExtendIndexToEach(sort(self.items, 's:CompareTimeDescending'), 1)
   endif
 endfunction
 
@@ -1203,16 +1203,15 @@ let g:FuzzyFinderMode.MruFile = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.MruFile.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  let result = s:FilterMatching(self.items, 'path', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, v:val.time, a:base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_mode_enter()
-  let self.cache = copy(self.info)
-  let self.cache = filter(self.cache, 'bufnr("^" . v:val.path . "$") != self.prev_bufnr')
-  let self.cache = filter(self.cache, 'filereadable(v:val.path)')
-  let self.cache = map(self.cache, 's:ExtendPathRelative(s:ExtendTimeFormatted(v:val, self.time_format))')
-  let self.cache = s:ExtendIndexToEach(self.cache, 1)
+  let self.items = copy(self.info)
+  let self.items = map(self.items, 'self.format_item_using_cache(v:val)')
+  let self.items = filter(self.items, '!empty(v:val)')
+  let self.items = s:ExtendIndexToEach(self.items, 1)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_buf_enter()
@@ -1224,8 +1223,7 @@ function! g:FuzzyFinderMode.MruFile.on_buf_write_post()
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.update_info()
-  "if !empty(&buftype) || !filereadable(expand('%'))
-  if !empty(&buftype)
+  if !empty(&buftype) || expand('%') !~ '\S'
     return
   endif
   call s:InfoFileManager.load()
@@ -1234,12 +1232,28 @@ function! g:FuzzyFinderMode.MruFile.update_info()
   call s:InfoFileManager.save()
 endfunction
 
+" returns empty value if invalid item
+function! g:FuzzyFinderMode.MruFile.format_item_using_cache(item)
+  call extend(self, { 'cache' : {} }, 'keep')
+  call extend(self.cache, { getcwd() : {} }, 'keep')
+  let items = self.cache[getcwd()]
+  if a:item.path !~ '\S'
+    return {}
+  endif
+  if !exists('items[a:item.path]')
+    let items[a:item.path] = (bufnr('^' . a:item.path . '$') == self.prev_bufnr || !filereadable(a:item.path)
+          \ ? {}
+          \ : s:ExtendPathRelative(s:ExtendTimeFormatted(copy(a:item), self.time_format)))
+  endif
+  return items[a:item.path]
+endfunction
+
 " OBJECT: g:FuzzyFinderMode.MruCmd -------------------------------------- {{{1
 let g:FuzzyFinderMode.MruCmd = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.MruCmd.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'command', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  let result = s:FilterMatching(self.items, 'command', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.command, v:val.index, v:val.command, self.trim_length, v:val.time, a:base, 0)')
 endfunction
 
@@ -1250,9 +1264,9 @@ function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_mode_enter()
-  let self.cache = copy(self.info)
-  let self.cache = map(self.cache, 's:ExtendTimeFormatted(v:val, self.time_format)')
-  let self.cache = s:ExtendIndexToEach(self.cache, 1)
+  let self.items = copy(self.info)
+  let self.items = map(self.items, 's:ExtendTimeFormatted(v:val, self.time_format)')
+  let self.items = s:ExtendIndexToEach(self.items, 1)
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_command_pre(cmd)
@@ -1273,26 +1287,26 @@ let g:FuzzyFinderMode.Bookmark = copy(g:FuzzyFinderMode.Base)
 
 function! g:FuzzyFinderMode.Bookmark.on_complete(base)
   let patterns = self.make_pattern(a:base)
-  let result = s:FilterMatching(self.cache, 'name', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  let result = s:FilterMatching(self.items, 'name', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.name, v:val.index, v:val.name, self.trim_length, v:val.time, a:base, 0)')
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
-  call filter(self.cache, 'v:val.name ==# a:expr')
-  if empty(self.cache)
+  call filter(self.items, 'v:val.name ==# a:expr')
+  if empty(self.items)
     return ''
   endif
   " for compatibility
-  if !exists('self.cache[0].regexp')
-    let self.cache[0].pattern = '\C\V\^' . self.cache[0].pattern . '\$'
+  if !exists('self.items[0].regexp')
+    let self.items[0].pattern = '\C\V\^' . self.items[0].pattern . '\$'
   endif
-  call s:JumpToBookmark(self.cache[0].path, a:mode, self.cache[0].pattern, self.cache[0].lnum, self.searching_range)
+  call s:JumpToBookmark(self.items[0].path, a:mode, self.items[0].pattern, self.items[0].lnum, self.searching_range)
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_mode_enter()
-  let self.cache = copy(self.info)
-  let self.cache = map(self.cache, 's:ExtendPathRelative(s:ExtendTimeFormatted(v:val, self.time_format))')
-  let self.cache = s:ExtendIndexToEach(self.cache, 1)
+  let self.items = copy(self.info)
+  let self.items = map(self.items, 's:ExtendPathRelative(s:ExtendTimeFormatted(v:val, self.time_format))')
+  let self.items = s:ExtendIndexToEach(self.items, 1)
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.bookmark_here(name)
@@ -1676,7 +1690,7 @@ let g:FuzzyFinderOptions.MruFile.switch_order = 40
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
 " [Mru-File Mode] This is an upper limit of MRU items to be stored.
-let g:FuzzyFinderOptions.MruFile.max_item = 99
+let g:FuzzyFinderOptions.MruFile.max_item = 200
 "-----------------------------------------------------------------------------
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.MruCmd.mode_available = 1
@@ -1694,7 +1708,7 @@ let g:FuzzyFinderOptions.MruCmd.switch_order = 50
 " list.
 let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
 " [Mru-Cmd Mode] This is an upper limit of MRU items to be stored.
-let g:FuzzyFinderOptions.MruCmd.max_item = 99
+let g:FuzzyFinderOptions.MruCmd.max_item = 200
 "-----------------------------------------------------------------------------
 " [Bookmark Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.Bookmark.mode_available = 1
