@@ -579,6 +579,22 @@ function! s:ExpandTailDotSequenceToParentDir(base)
         \           '\=repeat(".." . s:PATH_SEPARATOR, len(submatch(2)))', '')
 endfunction
 
+function! s:ExistsPrompt(line, prompt)
+  return  strlen(a:line) >= strlen(a:prompt) && a:line[:strlen(a:prompt) -1] ==# a:prompt
+endfunction
+
+function! s:RemovePrompt(line, prompt)
+  return a:line[(s:ExistsPrompt(a:line, a:prompt) ? strlen(a:prompt) : 0):]
+endfunction
+
+function! s:RestorePrompt(line, prompt)
+  let i = 0
+  while i < len(a:prompt) && i < len(a:line) && a:prompt[i] ==# a:line[i]
+    let i += 1
+  endwhile
+  return a:prompt . a:line[i : ]
+endfunction
+
 " FUNCTIONS: COMPLETION ITEM: ------------------------------------------- {{{1
 
 function! s:FormatCompletionItem(expr, number, abbr, trim_len, time, base_pattern, evals_path_tail)
@@ -634,7 +650,6 @@ function! s:InputHl(prompt, text, hl)
   echohl None
   return s
 endfunction
-
 
 " FUNCTIONS: FUZZYFIDNER WINDOW ----------------------------------------- {{{1
 
@@ -698,7 +713,6 @@ endfunction
 
 function! s:ExpandAbbrevMap(base, abbrev_map)
   let result = [a:base]
-
   " expand
   for [pattern, sub_list] in items(a:abbrev_map)
     let exprs = result
@@ -707,7 +721,6 @@ function! s:ExpandAbbrevMap(base, abbrev_map)
       let result += map(copy(sub_list), 'substitute(expr, pattern, v:val, "g")')
     endfor
   endfor
-
   return s:Unique(result)
 endfunction
 
@@ -716,14 +729,12 @@ function! s:ExpandEx(dir)
   if a:dir !~ '\S'
     return ['']
   endif
-
   " [ ["foo/"], ["**/", "./" ], ["bar/"] ]
   let lists = []
   for i in split(a:dir, '[/\\]\zs')
     let m = matchlist(i, '^\*\{2,}\([/\\]*\)$')
     call add(lists, (empty(m) ? [i] : [i, '.' . m[1]]))
   endfor
-
   " expand wlidcards
   return split(join(map(s:CartesianProduct(lists), 'expand(join(v:val, ""))'), "\n"), "\n")
 endfunction
@@ -801,7 +812,7 @@ function! s:JumpToBookmark(path, mode, pattern, lnum, range)
     endif
   endfor
   call cursor(ln, 0)
-  normal zvzz
+  normal! zvzz
 endfunction
 
 function! s:OpenBuffer(nr, mode)
@@ -843,21 +854,16 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
     echo 'This mode is not available: ' . self.to_str()
     return
   endif
-
-  " before create window
-  call self.on_mode_enter()
-
+  call self.on_mode_enter() " before create window
   call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
   call s:OptionManager.set('completeopt', 'menuone')
   call s:OptionManager.set('ignorecase', self.ignore_case)
-
   " local autocommands
   augroup FuzzyfinderLocal
     autocmd!
     execute 'autocmd CursorMovedI <buffer>        call ' . self.to_str('on_cursor_moved_i()')
     execute 'autocmd InsertLeave  <buffer> nested call ' . self.to_str('on_insert_leave()'  )
   augroup END
-
   " local mapping
   for [lhs, rhs] in [
         \   [ self.key_open       , self.to_str('on_cr(0, 0)'            ) ],
@@ -873,7 +879,6 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
     " hacks to be able to use feedkeys().
     execute printf('inoremap <buffer> <silent> %s <C-r>=%s ? "" : ""<CR>', lhs, rhs)
   endfor
-
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
   call setline(1, self.prompt . a:initial_text)
@@ -883,10 +888,8 @@ endfunction
 function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
   let ln = getline('.')
   let cl = col('.')
-  if !self.exists_prompt(ln)
-    " if command prompt is removed
-    "call setline('.', self.prompt . ln)
-    call setline('.', self.restore_prompt(ln))
+  if !s:ExistsPrompt(ln, self.prompt)
+    call setline('.', s:RestorePrompt(ln, self.prompt))
     call feedkeys(repeat("\<Right>", len(getline('.')) - len(ln)), 'n')
   elseif cl <= len(self.prompt)
     " if the cursor is moved before command prompt
@@ -911,7 +914,7 @@ function! g:FuzzyFinderMode.Base.on_insert_leave()
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch(self.remove_prompt(line), self.partial_matching)
+    call m.launch(s:RemovePrompt(line, self.prompt), self.partial_matching)
     unlet s:reserved_switch_mode
   endif
 endfunction
@@ -929,7 +932,7 @@ function! g:FuzzyFinderMode.Base.on_cr(index, check_dir)
   if pumvisible()
     call feedkeys(printf("\<C-y>\<C-r>=%s(%d, 1) ? '' : ''\<CR>", self.to_str('on_cr'), a:index), 'n')
   elseif !a:check_dir || getline('.') !~ '[/\\]$'
-    let s:reserved_command = [self.remove_prompt(getline('.')), a:index]
+    let s:reserved_command = [s:RemovePrompt(getline('.'), self.prompt), a:index]
     call feedkeys("\<Esc>", 'n') " stopinsert behavior is strange...
   endif
 endfunction
@@ -980,13 +983,13 @@ endfunction
 function! g:FuzzyFinderMode.Base.complete(findstart, base)
   if a:findstart
     return 0
-  elseif  !self.exists_prompt(a:base) || len(self.remove_prompt(a:base)) < self.min_length
+  elseif  !s:ExistsPrompt(a:base, self.prompt) || len(s:RemovePrompt(a:base, self.prompt)) < self.min_length
     return []
   endif
   call s:HighlightPrompt(self.prompt, self.prompt_highlight)
   " FIXME: ExpandAbbrevMap duplicates index
   let result = []
-  for expanded_base in s:ExpandAbbrevMap(self.remove_prompt(a:base), self.abbrev_map)
+  for expanded_base in s:ExpandAbbrevMap(s:RemovePrompt(a:base, self.prompt), self.abbrev_map)
     let result += self.on_complete(expanded_base)
   endfor
   call sort(result, 's:CompareRanks')
@@ -1024,48 +1027,15 @@ function! g:FuzzyFinderMode.Base.make_pattern(base)
         let wi .= char
       endif
     endfor
-
     if wi !~ '[*?]$'
       let wi .= '*'
     endif
-
     let re = s:ConvertWildcardToRegexp(wi)
-
     if self.migemo_support && a:base !~ '[^\x01-\x7e]'
       let re .= '\|\m.*' . substitute(migemo(a:base), '\\_s\*', '.*', 'g') . '.*'
     endif
-
     return { 'base': a:base, 'wi':wi, 're': re }
   endif
-endfunction
-
-" glob with caching-feature, etc.
-function! g:FuzzyFinderMode.Base.glob_ex(dir, file, excluded, index, limit)
-  let key = fnamemodify(a:dir, ':p')
-  call extend(self, { 'cache' : {} }, 'keep')
-  if !exists('self.cache[key]')
-    echo 'Caching file list...'
-    let self.cache[key] = s:EnumExpandedDirsEntries(key, a:excluded)
-    call s:ExtendIndexToEach(self.cache[key], 1)
-  endif
-  echo 'Filtering file list...'
-  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit),
-        \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
-endfunction
-
-function! g:FuzzyFinderMode.Base.glob_dir_ex(dir, file, excluded, index, limit)
-  let key = fnamemodify(a:dir, ':p')
-  call extend(self, { 'cache' : {} }, 'keep')
-  if !exists('self.cache[key]')
-    echo 'Caching file list...'
-    let self.cache[key] = filter(s:EnumExpandedDirsEntries(key, a:excluded), 'len(v:val.suffix)')
-    call insert(self.cache[key], { 'head' : key, 'tail' : '..', 'suffix' : s:PATH_SEPARATOR })
-    call insert(self.cache[key], { 'head' : key, 'tail' : '.' , 'suffix' : '' })
-    call s:ExtendIndexToEach(self.cache[key], 1)
-  endif
-  echo 'Filtering file list...'
-  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit),
-        \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
 endfunction
 
 function! g:FuzzyFinderMode.Base.empty_cache_if_existed(force)
@@ -1100,22 +1070,6 @@ function! g:FuzzyFinderMode.Base.next_mode(rev)
   endfor
   return m_last
   " vim crashed using map()
-endfunction
-
-function! g:FuzzyFinderMode.Base.exists_prompt(in)
-  return  strlen(a:in) >= strlen(self.prompt) && a:in[:strlen(self.prompt) -1] ==# self.prompt
-endfunction
-
-function! g:FuzzyFinderMode.Base.remove_prompt(in)
-  return a:in[(self.exists_prompt(a:in) ? strlen(self.prompt) : 0):]
-endfunction
-
-function! g:FuzzyFinderMode.Base.restore_prompt(in)
-  let i = 0
-  while i < len(self.prompt) && i < len(a:in) && self.prompt[i] ==# a:in[i]
-    let i += 1
-  endwhile
-  return self.prompt . a:in[i : ]
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.Buffer -------------------------------------- {{{1
@@ -1179,9 +1133,22 @@ let g:FuzzyFinderMode.File = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.File.on_complete(base)
   let base = s:ExpandTailDotSequenceToParentDir(a:base)
   let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
-  let result = self.glob_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.enumerating_limit)
+  let result = self.cached_glob(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.enumerating_limit)
   let result = filter(result, 'bufnr("^" . v:val.path . "$") != self.prev_bufnr')
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
+endfunction
+
+function! g:FuzzyFinderMode.File.cached_glob(dir, file, excluded, index, limit)
+  let key = fnamemodify(a:dir, ':p')
+  call extend(self, { 'cache' : {} }, 'keep')
+  if !exists('self.cache[key]')
+    echo 'Caching file list...'
+    let self.cache[key] = s:EnumExpandedDirsEntries(key, a:excluded)
+    call s:ExtendIndexToEach(self.cache[key], 1)
+  endif
+  echo 'Filtering file list...'
+  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit),
+        \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.Dir ----------------------------------------- {{{1
@@ -1190,12 +1157,27 @@ let g:FuzzyFinderMode.Dir = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.Dir.on_complete(base)
   let base = s:ExpandTailDotSequenceToParentDir(a:base)
   let patterns = map(s:SplitPath(base), 'self.make_pattern(v:val)')
-  let result = self.glob_dir_ex(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.enumerating_limit)
+  let result = self.cached_glob_dir(patterns.head.base, patterns.tail.re, self.excluded_path, s:SuffixNumber(patterns.tail.base), self.enumerating_limit)
   return map(result, 's:FormatCompletionItem(v:val.path, v:val.index, v:val.path, self.trim_length, "", base, 1)')
 endfunction
 
 function! g:FuzzyFinderMode.Dir.on_open(expr, mode)
   execute ':cd ' . s:EscapeFilename(a:expr)
+endfunction
+
+function! g:FuzzyFinderMode.Dir.cached_glob_dir(dir, file, excluded, index, limit)
+  let key = fnamemodify(a:dir, ':p')
+  call extend(self, { 'cache' : {} }, 'keep')
+  if !exists('self.cache[key]')
+    echo 'Caching file list...'
+    let self.cache[key] = filter(s:EnumExpandedDirsEntries(key, a:excluded), 'len(v:val.suffix)')
+    call insert(self.cache[key], { 'head' : key, 'tail' : '..', 'suffix' : s:PATH_SEPARATOR })
+    call insert(self.cache[key], { 'head' : key, 'tail' : '.' , 'suffix' : '' })
+    call s:ExtendIndexToEach(self.cache[key], 1)
+  endif
+  echo 'Filtering file list...'
+  return map(s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit),
+        \ '{ "index" : v:val.index, "path" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }')
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.MruFile ------------------------------------- {{{1
@@ -1315,7 +1297,6 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here(name)
     return
   endif
   call s:InfoFileManager.load()
-
   let item = {
         \   'path' : expand('%:p:~'),
         \   'lnum' : line('.'),
@@ -1331,7 +1312,6 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here(name)
   else
     call s:EchoHl('Canceled', 'WarningMsg')
   endif
-
   call s:InfoFileManager.save()
 endfunction
 
@@ -1361,9 +1341,7 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, limit)
   if !len(self.tag_files)
     return []
   endif
-
   let key = join(self.tag_files, "\n")
-
   " cache not created or tags file updated? 
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]') || max(map(copy(self.tag_files), 'getftime(v:val) >= self.cache[key].time'))
@@ -1373,7 +1351,6 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, limit)
           \   'data' : s:Unique(s:Concat(map(copy(self.tag_files), 's:GetTagList(v:val)'))),
           \ }
   endif
-
   echo 'Filtering tag list...'
   return s:FilterEx(self.cache[key].data, 'v:val =~ ' . string(a:pattern), a:limit)
 endfunction
@@ -1396,9 +1373,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, limit)
   if !len(self.tag_files)
     return []
   endif
-
   let key = join(self.tag_files, "\n")
-
   " cache not created or tags file updated? 
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]') || max(map(copy(self.tag_files), 'getftime(v:val) >= self.cache[key].time'))
@@ -1408,12 +1383,10 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, limit)
           \   'data' : s:Unique(s:Concat(map(copy(self.tag_files), 's:GetTaggedFileList(v:val)'))),
           \ }
   endif
-
   echo 'Filtering tagged-file list...'
   return s:FilterEx(map(self.cache[key].data, 'fnamemodify(v:val, '':.'')'),
         \               'v:val =~ ' . string(a:pattern),
         \           a:limit)
-
 endfunction
 
 " OBJECT: s:OptionManager ----------------------------------------------- {{{1
@@ -1439,22 +1412,37 @@ let s:WindowManager = { 'buf_nr' : -1 }
 function! s:WindowManager.activate(complete_func)
   "let self.prev_winnr = winnr()
   let cwd = getcwd()
+  let self.buf_nr = s:Open1LineBuffer(self.buf_nr, '[Fuzzyfinder]')
+  call s:SetLocalOptionsForFuzzyfinder(cwd, a:complete_func)
+  redraw " for 'lazyredraw'
+  if exists(':AutoComplPopLock') | execute ':AutoComplPopLock' | endif
+endfunction
 
-  if !bufexists(self.buf_nr)
+function! s:WindowManager.deactivate()
+  if exists(':AutoComplPopUnlock') | execute ':AutoComplPopUnlock' | endif
+  " must close after returning to previous window
+  wincmd p
+  execute self.buf_nr . 'bdelete'
+endfunction
+
+" Returns a buffer number. Creates new buffer if a:buf_nr is a invalid number
+function! s:Open1LineBuffer(buf_nr, buf_name)
+  if !bufexists(a:buf_nr)
     leftabove 1new
-    file `='[Fuzzyfinder]'`
-    let self.buf_nr = bufnr('%')
-  elseif bufwinnr(self.buf_nr) == -1
+    execute printf('file `=%s`', string(a:buf_name))
+  elseif bufwinnr(a:buf_nr) == -1
     leftabove 1split
-    execute self.buf_nr . 'buffer'
+    execute a:buf_nr . 'buffer'
     delete _
-  elseif bufwinnr(self.buf_nr) != bufwinnr('%')
-    execute bufwinnr(self.buf_nr) . 'wincmd w'
+  elseif bufwinnr(a:buf_nr) != bufwinnr('%')
+    execute bufwinnr(a:buf_nr) . 'wincmd w'
   endif
+  return bufnr('%')
+endfunction
 
+function! s:SetLocalOptionsForFuzzyfinder(cwd, complete_func)
   " countermeasure for auto-cd script
-  execute ':lcd ' . cwd
-
+  execute ':lcd ' . a:cwd
   setlocal filetype=fuzzyfinder
   setlocal bufhidden=delete
   setlocal buftype=nofile
@@ -1464,24 +1452,6 @@ function! s:WindowManager.activate(complete_func)
   setlocal nocursorline   " for highlighting
   setlocal nocursorcolumn " for highlighting
   let &l:completefunc = a:complete_func
-
-  redraw " for 'lazyredraw'
-
-  if exists(':AutoComplPopLock')
-    " suspend autocomplpop.vim
-    :AutoComplPopLock
-  endif
-endfunction
-
-function! s:WindowManager.deactivate()
-  if exists(':AutoComplPopUnlock')
-    " resume autocomplpop.vim
-    :AutoComplPopUnlock
-  endif
-  "close
-  "execute self.prev_winnr . 'wincmd w'
-  wincmd p
-  execute self.buf_nr . 'bdelete'
 endfunction
 
 " OBJECT: s:InfoFileManager --------------------------------------------- {{{1
@@ -1491,20 +1461,17 @@ function! s:InfoFileManager.load()
   for m in s:GetAvailableModes()
     let m.info = []
   endfor
-
   try
     let lines = readfile(expand(self.get_info_file()))
   catch /.*/ 
     return
   endtry
-
   " compatibility check
   if !count(lines, self.get_info_version_line())
       call self.warn_old_info()
       let g:FuzzyFinderOptions.Base.info_file = ''
       return
   endif
-
   for m in s:GetAvailableModes()
     call m.deserialize_info(lines)
   endfor
@@ -1515,7 +1482,6 @@ function! s:InfoFileManager.save()
   for m in s:GetAvailableModes()
     let lines += m.serialize_info()
   endfor
-
   try
     call writefile(lines, expand(self.get_info_file()))
   catch /.*/ 
@@ -1523,24 +1489,19 @@ function! s:InfoFileManager.save()
 endfunction
 
 function! s:InfoFileManager.edit()
-
   new
   file `='[FuzzyfinderInfo]'`
   let self.bufnr = bufnr('%')
-
   setlocal filetype=vim
   setlocal bufhidden=delete
   setlocal buftype=acwrite
   setlocal noswapfile
-
   augroup FuzzyfinderInfo
     autocmd!
     autocmd BufWriteCmd <buffer> call s:InfoFileManager.on_buf_write_cmd()
   augroup END
-
   execute '0read ' . expand(self.get_info_file())
   setlocal nomodified
-
 endfunction
 
 function! s:InfoFileManager.on_buf_write_cmd()
