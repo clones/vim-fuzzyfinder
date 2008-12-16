@@ -1212,6 +1212,7 @@ function! g:FuzzyFinderMode.MruFile.update_info()
   let self.info = s:UpdateMruList(self.info, { 'path' : expand('%:p'), 'time' : localtime() },
         \                         'path', self.max_item, self.excluded_path)
   call s:InfoFileManager.save()
+  call self.remove_item_from_cache(expand('%:p'))
 endfunction
 
 " returns empty value if invalid item
@@ -1228,6 +1229,17 @@ function! g:FuzzyFinderMode.MruFile.format_item_using_cache(item)
           \ : s:ExtendPathRelative(s:ExtendTimeFormatted(copy(a:item), self.time_format)))
   endif
   return items[a:item.path]
+endfunction
+
+function! g:FuzzyFinderMode.MruFile.remove_item_from_cache(path)
+  if !exists('self.cache')
+    return
+  endif
+  for items in values(self.cache)
+    if exists('items[a:path]')
+      unlet items[a:path]
+    endif
+  endfor
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.MruCmd -------------------------------------- {{{1
