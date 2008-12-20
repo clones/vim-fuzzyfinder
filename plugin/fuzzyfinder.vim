@@ -1,5 +1,5 @@
 "TODO: ignore garbage of information file.
-"      ex: MruCmd	0
+"      E.g.: MruCmd	0
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
