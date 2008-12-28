@@ -1611,12 +1611,12 @@ let g:FuzzyFinderOptions.Buffer.prompt_highlight = 'Question'
 " [Buffer Mode] Pressing <BS> after a path separator deletes one directory
 " name if non-zero is set.
 let g:FuzzyFinderOptions.Buffer.smart_bs = 1
-" [Buffer Mode] The completion items is sorted in the order of recently used
-" if non-zero is set.
-let g:FuzzyFinderOptions.Buffer.mru_order = 1
 " [Buffer Mode] This is used to sort modes for switching to the next/previous
 " mode.
 let g:FuzzyFinderOptions.Buffer.switch_order = 10
+" [Buffer Mode] The completion items is sorted in the order of recently used
+" if non-zero is set.
+let g:FuzzyFinderOptions.Buffer.mru_order = 1
 "-----------------------------------------------------------------------------
 " [File Mode] This disables all functions of this mode if zero was set.
 let g:FuzzyFinderOptions.File.mode_available = 1
