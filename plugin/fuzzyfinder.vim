@@ -876,7 +876,7 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
     echo 'This mode is not available: ' . self.to_str()
     return
   endif
-  call self.on_mode_enter() " before create window
+  call self.on_mode_enter_pre()
   call s:WindowManager.activate(self.make_complete_func('CompleteFunc'))
   call s:OptionManager.set('completeopt', 'menuone')
   call s:OptionManager.set('ignorecase', self.ignore_case)
@@ -904,6 +904,7 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
   call setline(1, self.prompt . a:initial_text)
+  call self.on_mode_enter_post()
   call feedkeys("A", 'n') " startinsert! does not work in InsertLeave handler
 endfunction
 
@@ -969,7 +970,12 @@ function! g:FuzzyFinderMode.Base.on_bs()
   call feedkeys((pumvisible() ? "\<C-e>" : "") . repeat("\<BS>", bs_count), 'n')
 endfunction
 
-function! g:FuzzyFinderMode.Base.on_mode_enter()
+" Before entering Fuzzyfinder buffer. This function should return in a short time.
+function! g:FuzzyFinderMode.Base.on_mode_enter_pre()
+endfunction
+
+" After entering Fuzzyfinder buffer.
+function! g:FuzzyFinderMode.Base.on_mode_enter_post()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_mode_leave()
@@ -1128,7 +1134,7 @@ function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   endif
 endfunction
 
-function! g:FuzzyFinderMode.Buffer.on_mode_enter()
+function! g:FuzzyFinderMode.Buffer.on_mode_enter_post()
   let self.items = map(filter(range(1, bufnr('$')), 'buflisted(v:val) && v:val != self.prev_bufnr'),
         \              'self.make_item(v:val)')
   if self.mru_order
@@ -1231,7 +1237,7 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
   return map(result,'s:SetRanks(s:SetFormattedAbbr(v:val, "word", self.trim_length), a:base, 1, filterd_stats)')
 endfunction
 
-function! g:FuzzyFinderMode.MruFile.on_mode_enter()
+function! g:FuzzyFinderMode.MruFile.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 'self.format_item_using_cache(v:val)')
   let self.items = filter(self.items, '!empty(v:val)')
@@ -1300,7 +1306,7 @@ function! g:FuzzyFinderMode.MruCmd.on_open(expr, mode)
   call feedkeys(a:expr . "\<CR>", 'n')
 endfunction
 
-function! g:FuzzyFinderMode.MruCmd.on_mode_enter()
+function! g:FuzzyFinderMode.MruCmd.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeAsMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
@@ -1337,7 +1343,7 @@ function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
   call s:JumpToBookmark(self.items[0].path, a:mode, self.items[0].pattern, self.items[0].lnum, self.searching_range)
 endfunction
 
-function! g:FuzzyFinderMode.Bookmark.on_mode_enter()
+function! g:FuzzyFinderMode.Bookmark.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetWordToRelativePath(s:SetFormattedTimeAsMenu(v:val, self.time_format))')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
@@ -1385,7 +1391,7 @@ function! g:FuzzyFinderMode.Tag.on_open(expr, mode)
         \ ][a:mode] . a:expr
 endfunction
 
-function! g:FuzzyFinderMode.Tag.on_mode_enter()
+function! g:FuzzyFinderMode.Tag.on_mode_enter_pre()
   let self.tag_files = s:GetCurrentTagFiles()
 endfunction
 
@@ -1417,7 +1423,7 @@ function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   return map(result,'s:SetRanks(s:SetFormattedAbbr(v:val, "word", self.trim_length), a:base, 1, filterd_stats)')
 endfunction
 
-function! g:FuzzyFinderMode.TaggedFile.on_mode_enter()
+function! g:FuzzyFinderMode.TaggedFile.on_mode_enter_pre()
   let self.tag_files = s:GetCurrentTagFiles()
 endfunction
 
