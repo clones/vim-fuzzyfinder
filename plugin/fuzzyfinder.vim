@@ -1,9 +1,3 @@
-"TODO : - ignore garbage of information file.
-"         E.g.: MruCmd	0
-"       - Learning
-"       - Incompatible change information file
-"       - test bookmark mode. 
-"       - put perfect matching before learning??
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
@@ -79,10 +73,10 @@
 "
 "
 "   In Fuzzyfinder:
-"     The entered pattern is converted to the fuzzy pattern and buffers/files
+"     A entered pattern is converted to a fuzzy pattern and buffers/files
 "     which match the pattern is shown in a completion menu.
 "
-"     A completion menu is shown when you type at the end of the line and the
+"     A completion menu is shown when you type at an end of a line and the
 "     length of entered pattern is more than setting value. By default, it is
 "     shown at the beginning.
 "
@@ -90,11 +84,12 @@
 "     default) to speed up the response time.
 "
 "     If an item were matched with entered pattern exactly, it is shown first.
-"     The item whose file name has longer prefix matching is placed upper.
-"     Also, an item which matched more sequentially is placed upper. The item
-"     whose index were matched with a number suffixed with entered pattern is
-"     placed lower. the first item in the completion menu will be selected
-"     automatically.
+"     A item which has longer prefix matching is placed upper. An item which
+"     matched more sequentially has more priority. A item whose index were
+"     matched with a number suffixed with entered pattern is placed upper.
+"     Plus, Fuzzyfinder has a learning system. An item which has been
+"     completed in the past with a current pattern is placed upper. The first
+"     item in the completion menu will be selected automatically.
 "
 "     You can open a selected item in various ways:
 "       <CR>  - opens in a previous window.
@@ -237,7 +232,10 @@
 "-----------------------------------------------------------------------------
 " ChangeLog:
 "   2.17:
-"     - TODO
+"     - Introduced a learning system for the sorting of completion items.
+"     - Added g:FuzzyFinderOptions.Base.learning_limit option.
+"     - Changed the specification of the information file. Please remove your
+"       information file for Fuzzyfinder.
 "
 "   2.16:
 "     - Improved response time by caching in MRU-File mode.
@@ -1352,15 +1350,15 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
   endif
   call s:InfoFileManager.load()
   let item = {
-        \   'word' : (a:word =~ '\S' ? substitute(a:name, '\n', ' ', 'g')
+        \   'word' : (a:word =~ '\S' ? substitute(a:word, '\n', ' ', 'g')
         \                            : pathshorten(expand('%:p:~')) . '|' . line('.') . '| ' . getline('.')),
         \   'path' : expand('%:p:~'),
         \   'lnum' : line('.'),
         \   'pattern' : s:GetLinePattern(line('.')),
         \   'time' : localtime(),
         \ }
-  let item.name = s:InputHl('Bookmark as:', item.name, 'Question')
-  if item.name =~ '\S'
+  let item.word = s:InputHl('Bookmark as:', item.word, 'Question')
+  if item.word =~ '\S'
     call insert(self.data, item)
   else
     call s:EchoHl('Canceled', 'WarningMsg')
@@ -1627,7 +1625,8 @@ let g:FuzzyFinderOptions.Base.ignore_case = 1
 " [All Mode] This is a string to format time string. See :help strftime() for
 " details.
 let g:FuzzyFinderOptions.Base.time_format = '(%x %H:%M:%S)'
-" [All Mode] TODO each mode
+" [All Mode] This is the ceiling for the number of completion statistics to be
+" stored.
 let g:FuzzyFinderOptions.Base.learning_limit = 100
 " [All Mode] To speed up the response time, Fuzzyfinder ends enumerating
 " completion items when found over this.
@@ -1703,7 +1702,8 @@ let g:FuzzyFinderOptions.MruFile.switch_order = 40
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
-" [Mru-File Mode] This is an upper limit of MRU items to be stored.
+" [Mru-File Mode] This is the ceiling for the number of MRU items to be
+" stored.
 let g:FuzzyFinderOptions.MruFile.max_item = 200
 "-----------------------------------------------------------------------------
 " [Mru-Cmd Mode] This disables all functions of this mode if zero was set.
@@ -1721,7 +1721,7 @@ let g:FuzzyFinderOptions.MruCmd.switch_order = 50
 " [Mru-Cmd Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
-" [Mru-Cmd Mode] This is an upper limit of MRU items to be stored.
+" [Mru-Cmd Mode] This is the ceiling for the number of MRU items to be stored.
 let g:FuzzyFinderOptions.MruCmd.max_item = 200
 "-----------------------------------------------------------------------------
 " [Bookmark Mode] This disables all functions of this mode if zero was set.
