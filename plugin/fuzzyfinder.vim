@@ -639,7 +639,7 @@ endfunction
 
 " FUNCTIONS: COMMANDLINE ------------------------------------------------ {{{1
 
-function! s:EchoHl(msg, hl)
+function! s:EchoWithHl(msg, hl)
   execute "echohl " . a:hl
   echo a:msg
   echohl None
@@ -1351,7 +1351,7 @@ endfunction
 
 function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
   if !empty(&buftype) || expand('%') !~ '\S'
-    call s:EchoHl('Can''t bookmark this buffer.', 'WarningMsg')
+    call s:EchoWithHl('Can''t bookmark this buffer.', 'WarningMsg')
     return
   endif
   call s:InfoFileManager.load()
@@ -1367,7 +1367,7 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
   if item.word =~ '\S'
     call insert(self.data, item)
   else
-    call s:EchoHl('Canceled', 'WarningMsg')
+    call s:EchoWithHl('Canceled', 'WarningMsg')
   endif
   call s:InfoFileManager.save()
 endfunction
@@ -1578,13 +1578,15 @@ function! s:InfoFileManager.get_info_file()
 endfunction
 
 function! s:InfoFileManager.warn_old_info()
-  echohl WarningMsg
-  echo printf("=================================================================\n" .
-        \       "  Sorry, but your information file for Fuzzyfinder is no longer  \n" .
-        \       "  compatible with this version of Fuzzyfinder. Please remove     \n" .
-        \       "  %-63s\n" .
-        \       "=================================================================\n" ,
-        \       '"' . expand(self.get_info_file()) . '".')
+  call s:EchoWithHl(printf("=================================================================\n" .
+        \                  "  Sorry, but your information file for Fuzzyfinder is no longer  \n" .
+        \                  "  compatible with this version of Fuzzyfinder. Please remove     \n" .
+        \                  "  %-63s\n" .
+        \                  "=================================================================\n" ,
+        \                  '"' . expand(self.get_info_file()) . '".'),
+        \           'WarningMsg')
+  echohl Question
+  call input('Press Enter')
   echohl None
 endfunction
 
