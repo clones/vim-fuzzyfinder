@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.18, for Vim 7.1
+" Version: 2.18.1, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -234,6 +234,12 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.18.1:
+"     - Fixed a bug that a selected file was opened in a unintended window.
+"       Thanks Alexey.
+"     - Fixed a bug that garbage characters were entered when switched current
+"       mode. Thanks id:lugecy.
+"
 "   2.18:
 "     - Improved rules for the sorting of completion items.
 "     - Changed not to learn a completion if an entered pattern is empty.
@@ -612,7 +618,7 @@ endfunction
 
 " FUNCTIONS: COMPLETION ITEM: ------------------------------------------- {{{1
 
-" returns [v(1), v(2), ..., v(n) ] , v(1)==1 , v(i) < v(i+1) , v(1) > v(n)/2
+" returns [v(1), v(2), ..., v(n) ] , v(i) < v(i+1) , v(1) > v(n)/2
 function! s:MakeAscendingValues(n, total)
   let values = range(a:n, a:n * 2 - 1)
   let sum = 0
@@ -943,18 +949,19 @@ function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_insert_leave()
+  let last_pattern = s:RemovePrompt(getline('.'), self.prompt)
   call s:OptionManager.restore_all()
   call s:WindowManager.deactivate()
   if exists('s:reserved_command')
     call self.on_open(s:reserved_command[0], s:reserved_command[1])
     unlet s:reserved_command
   endif
-  call self.on_mode_leave()
+  call self.on_mode_leave_post()
   call self.empty_cache_if_existed(0)
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch(s:RemovePrompt(getline('.'), self.prompt), self.partial_matching)
+    call m.launch(last_pattern, self.partial_matching)
     unlet s:reserved_switch_mode
   endif
 endfunction
@@ -999,7 +1006,8 @@ endfunction
 function! g:FuzzyFinderMode.Base.on_mode_enter_post()
 endfunction
 
-function! g:FuzzyFinderMode.Base.on_mode_leave()
+" After leaving Fuzzyfinder buffer.
+function! g:FuzzyFinderMode.Base.on_mode_leave_post()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_open(expr, mode)
@@ -1505,7 +1513,6 @@ endfunction
 let s:WindowManager = { 'buf_nr' : -1 }
 
 function! s:WindowManager.activate(complete_func)
-  "let self.prev_winnr = winnr()
   let cwd = getcwd()
   let self.buf_nr = s:Open1LineBuffer(self.buf_nr, '[Fuzzyfinder]')
   call s:SetLocalOptionsForFuzzyfinder(cwd, a:complete_func)
@@ -1516,7 +1523,7 @@ endfunction
 function! s:WindowManager.deactivate()
   if exists(':AutoComplPopUnlock') | execute ':AutoComplPopUnlock' | endif
   " must close after returning to previous window
-  wincmd p
+  wincmd j
   execute self.buf_nr . 'bdelete'
 endfunction
 
