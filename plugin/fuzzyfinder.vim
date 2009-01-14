@@ -4,7 +4,7 @@
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.18.1, for Vim 7.1
+" Version: 2.19, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -234,9 +234,11 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
-"   2.18.1:
-"     - Fixed a bug that a selected file was opened in a unintended window.
-"       Thanks Alexey.
+"   2.19:
+"     - Changed MRU-File mode that always formats completion items to be
+"       relative to the home directory.
+"     - Fixed a bug that a file was opened in an unintended window with Tag
+"       List plugin. Thanks Alexey.
 "     - Fixed a bug that garbage characters were entered when switched current
 "       mode. Thanks id:lugecy.
 "
@@ -793,12 +795,12 @@ function! s:GetBufIndicator(nr)
   endif
 endfunction
 
-function! s:SetWordToRelativePath(item)
-  let a:item.word = fnamemodify(a:item.word, ':~:.')
+function! s:ModifyWordAsFilename(item, mods)
+  let a:item.word = fnamemodify(a:item.word, a:mods)
   return a:item
 endfunction
 
-function! s:SetFormattedTimeAsMenu(item, format)
+function! s:SetFormattedTimeToMenu(item, format)
   let a:item.menu = strftime(a:format, a:item.time)
   return a:item
 endfunction
@@ -1279,7 +1281,7 @@ endfunction
 function! g:FuzzyFinderMode.MruFile.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 'self.format_item_using_cache(v:val)')
-  let self.items = filter(self.items, '!empty(v:val)')
+  let self.items = filter(self.items, '!empty(v:val) && bufnr("^" . v:val.word . "$") != self.prev_bufnr')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
   let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
 endfunction
@@ -1306,17 +1308,16 @@ endfunction
 " returns empty value if invalid item
 function! g:FuzzyFinderMode.MruFile.format_item_using_cache(item)
   call extend(self, { 'cache' : {} }, 'keep')
-  call extend(self.cache, { getcwd() : {} }, 'keep')
-  let cached_items = self.cache[getcwd()]
   if a:item.word !~ '\S'
     return {}
   endif
-  if !exists('cached_items[a:item.word]')
-    let cached_items[a:item.word] = (bufnr('^' . a:item.word . '$') == self.prev_bufnr || !filereadable(a:item.word)
-          \                          ? {}
-          \                          : s:SetWordToRelativePath(s:SetFormattedTimeAsMenu(copy(a:item), self.time_format)))
+  if !exists('self.cache[a:item.word]')
+    let self.cache[a:item.word] =
+          \ (filereadable(a:item.word)
+          \  ? s:ModifyWordAsFilename(s:SetFormattedTimeToMenu(copy(a:item), self.time_format), ':p:~')
+          \  : {})
   endif
-  return cached_items[a:item.word]
+  return self.cache[a:item.word]
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.remove_item_from_cache(word)
@@ -1348,7 +1349,7 @@ endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_mode_enter_post()
   let self.items = copy(self.data)
-  let self.items = map(self.items, 's:SetFormattedTimeAsMenu(v:val, self.time_format)')
+  let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
   let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
 endfunction
@@ -1386,7 +1387,7 @@ endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_mode_enter_post()
   let self.items = copy(self.data)
-  let self.items = map(self.items, 's:SetWordToRelativePath(s:SetFormattedTimeAsMenu(v:val, self.time_format))')
+  let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
   let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
 endfunction
@@ -1396,21 +1397,21 @@ function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
     call s:EchoWithHl('Can''t bookmark this buffer.', 'WarningMsg')
     return
   endif
-  call s:InfoFileManager.load()
   let item = {
         \   'word' : (a:word =~ '\S' ? substitute(a:word, '\n', ' ', 'g')
         \                            : pathshorten(expand('%:p:~')) . '|' . line('.') . '| ' . getline('.')),
-        \   'path' : expand('%:p:~'),
+        \   'path' : expand('%:p'),
         \   'lnum' : line('.'),
         \   'pattern' : s:GetLinePattern(line('.')),
         \   'time' : localtime(),
         \ }
   let item.word = s:InputHl('Bookmark as:', item.word, 'Question')
-  if item.word =~ '\S'
-    call insert(self.data, item)
-  else
+  if item.word !~ '\S'
     call s:EchoWithHl('Canceled', 'WarningMsg')
+    return
   endif
+  call s:InfoFileManager.load()
+  call insert(self.data, item)
   call s:InfoFileManager.save()
 endfunction
 
@@ -1485,9 +1486,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, index, limit)
     let self.cache[key] = { 'time'  : localtime(), 'items' : items }
   endif
   echo 'Filtering tagged-file list...'
-  for item in self.cache[key].items
-    let item.word = fnamemodify(item.word, ':.')
-  endfor
+  call map(self.cache[key].items, 's:ModifyWordAsFilename(v:val, '':.'')')
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
   return map(result, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
 endfunction
