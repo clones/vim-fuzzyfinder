@@ -80,7 +80,7 @@
 "     length of the entered pattern is more than setting value. By default, it
 "     is shown at the beginning.
 "
-"     The number of items shown in the completion menu is limited (50, by
+"     The number of items shown in the completion menu is limited (100, by
 "     default) to speed up the response time.
 "
 "     Fuzzyfinder sorts completion items with some rules:
@@ -1681,7 +1681,7 @@ let g:FuzzyFinderOptions.Base.time_format = '(%x %H:%M:%S)'
 let g:FuzzyFinderOptions.Base.learning_limit = 100
 " [All Mode] To speed up the response time, Fuzzyfinder ends enumerating
 " completion items when found over this.
-let g:FuzzyFinderOptions.Base.enumerating_limit = 50
+let g:FuzzyFinderOptions.Base.enumerating_limit = 100
 " [All Mode] If a length of completion item is more than this, it is trimmed
 " when shown in completion menu.
 let g:FuzzyFinderOptions.Base.trim_length = 80
