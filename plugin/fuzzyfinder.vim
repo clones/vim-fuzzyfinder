@@ -1,10 +1,11 @@
+"TODO: Document for Information File
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
 "=============================================================================
 "
 " Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version: 2.19, for Vim 7.1
+" Version: 2.20, for Vim 7.1
 " Licence: MIT Licence
 " URL:     http://www.vim.org/scripts/script.php?script_id=1984
 "
@@ -181,6 +182,11 @@
 "     file. This command reads the information file in new unnamed buffer.
 "     Write the buffer and the information file will be updated.
 "
+"     TODO:
+"     I believe you will understand the semantics, so I .
+"     <Mode Name>.data<Tab>...  - data
+"     <Mode Name>.stats<Tab>... - statistics
+"
 "   About Cache:
 "     Once a cache was created, It is not automatically updated to speed up
 "     the response time by default. To update it, use :FuzzyFinderRemoveCache
@@ -234,6 +240,9 @@
 "
 "-----------------------------------------------------------------------------
 " ChangeLog:
+"   2.20:
+"     - TODO:
+"
 "   2.19:
 "     - Changed MRU-File mode that always formats completion items to be
 "       relative to the home directory.
