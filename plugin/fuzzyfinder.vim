@@ -1180,7 +1180,7 @@ endfunction
 "=============================================================================
 " GLOBAL OPTIONS: {{{1
 " stores user-defined g:FuzzyFinderOptions ------------------------------ {{{2
-let user_options = (exists('g:FuzzyFinderOptions') ? g:FuzzyFinderOptions : {})
+let s:user_options = (exists('g:FuzzyFinderOptions') ? g:FuzzyFinderOptions : {})
 " }}}2
 
 " Initializes g:FuzzyFinderOptions.
@@ -1363,7 +1363,7 @@ let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
 let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
-call map(user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
+call map(s:user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
 call map(copy(g:FuzzyFinderMode), 'v:val.extend_options()')
 " }}}2
 
@@ -1377,8 +1377,8 @@ let s:ABBR_TRIM_MARK = '...'
 
 augroup FuzzyfinderGlobal
   autocmd!
-  autocmd BufEnter     * for m in s:GetAvailableModes() | call m.extend_options() | call m.on_buf_enter() | endfor
-  autocmd BufWritePost * for m in s:GetAvailableModes() | call m.extend_options() | call m.on_buf_write_post() | endfor
+  autocmd BufEnter     * for s:m in s:GetAvailableModes() | call s:m.extend_options() | call s:m.on_buf_enter() | endfor
+  autocmd BufWritePost * for s:m in s:GetAvailableModes() | call s:m.extend_options() | call s:m.on_buf_write_post() | endfor
 augroup END
 
 " cnoremap has a problem, which doesn't expand cabbrev.
@@ -1394,7 +1394,7 @@ command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinde
 command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>))
 command! -bang -narg=? -complete=file   FuzzyFinderEditInfo    call s:InfoFileManager.edit()
 command! -bang -narg=? -complete=file   FuzzyFinderAddBookmark call g:FuzzyFinderMode.Bookmark.bookmark_here(<q-args>)
-command! -bang -narg=0                  FuzzyFinderRemoveCache for m in s:GetAvailableModes() | call m.empty_cache_if_existed(1) | endfor
+command! -bang -narg=0                  FuzzyFinderRemoveCache for s:m in s:GetAvailableModes() | call s:m.empty_cache_if_existed(1) | endfor
 
 " }}}1
 "=============================================================================
