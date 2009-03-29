@@ -1086,7 +1086,7 @@ endfunction
 
 function! s:SetLocalOptionsForFuzzyfinder(cwd, complete_func)
   " countermeasure against auto-cd script
-  execute ':lcd ' . a:cwd
+  execute ':lcd ' . escape(a:cwd, ' ')
   setlocal filetype=fuzzyfinder
   setlocal bufhidden=delete
   setlocal buftype=nofile
