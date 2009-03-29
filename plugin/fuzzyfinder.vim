@@ -1085,8 +1085,8 @@ function! s:Open1LineBuffer(buf_nr, buf_name)
 endfunction
 
 function! s:SetLocalOptionsForFuzzyfinder(cwd, complete_func)
-  " countermeasure for auto-cd script
-  execute ':lcd ' . a:cwd
+  " countermeasure against auto-cd script
+  execute ':lcd ' . escape(a:cwd, ' ')
   setlocal filetype=fuzzyfinder
   setlocal bufhidden=delete
   setlocal buftype=nofile
