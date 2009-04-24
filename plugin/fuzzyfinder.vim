@@ -6,7 +6,7 @@
 "   If a window containing target buffer is found in other tab page when
 "   Fuzzyfinder is going to open the buffer in a new tab page, move to it.
 "
-"   You can disable that feature via 'find_reusable_window' option if always
+"   You can disable that feature via 'reuse_window' option if always
 "   want to open a buffer in a new window.
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
@@ -113,12 +113,12 @@ endfunction
 
 " FUNCTIONS: STRING ----------------------------------------------------- {{{1
 
-" trims a:str and add a:mark if a length of a:str is more than a:len
-function! s:TrimLast(str, len)
+" truncates a:str and add a:mark if a length of a:str is more than a:len
+function! s:TruncateHead(str, len)
   if a:len <= 0 || len(a:str) <= a:len
     return a:str
   endif
-  return a:str[:(a:len - len(s:ABBR_TRIM_MARK) - 1)] . s:ABBR_TRIM_MARK
+  return s:ABBR_TRUNCATION_MARK . a:str[-a:len + len(s:ABBR_TRUNCATION_MARK):]
 endfunction
 
 " takes suffix numer. if no digits, returns -1
@@ -372,8 +372,8 @@ function! s:SetRanks(item, eval_word, eval_base, stats)
   return a:item
 endfunction
 
-function! s:SetFormattedAbbr(item, key, trim_len)
-  let a:item.abbr = s:TrimLast(printf('%3d: %s', a:item.index, a:item[a:key]), a:trim_len)
+function! s:SetFormattedAbbr(item, key, truncation_len)
+  let a:item.abbr = printf('%3d: %s', a:item.index, s:TruncateHead(a:item[a:key], a:truncation_len - 5))
   return a:item
 endfunction
 
@@ -607,7 +607,7 @@ function! g:FuzzyFinderMode.Base.on_mode_leave_post()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_open(expr, mode)
-  call s:OpenFile(a:expr, a:mode, self.find_reusable_window)
+  call s:OpenFile(a:expr, a:mode, self.reuse_window)
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_switch_mode(next_prev)
@@ -761,7 +761,7 @@ function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " filter the selected item to get the buffer number for handling unnamed buffer
   call filter(self.items, 'v:val.word ==# a:expr')
   if !empty(self.items)
-    call s:OpenBuffer(self.items[0].buf_nr, a:mode, self.find_reusable_window)
+    call s:OpenBuffer(self.items[0].buf_nr, a:mode, self.reuse_window)
   endif
 endfunction
 
@@ -771,7 +771,7 @@ function! g:FuzzyFinderMode.Buffer.on_mode_enter_post()
   if self.mru_order
     call s:MapToSetSerialIndex(sort(self.items, 's:CompareTimeDescending'), 1)
   endif
-  call map(self.items, 's:SetFormattedAbbr(v:val, "abbr", self.trim_length)')
+  call map(self.items, 's:SetFormattedAbbr(v:val, "abbr", self.truncation_length)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_buf_enter()
@@ -827,7 +827,7 @@ function! g:FuzzyFinderMode.File.cached_glob(dir, file, excluded, index, limit)
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.trim_length)') 
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)') 
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.Dir ----------------------------------------- {{{1
@@ -858,7 +858,7 @@ function! g:FuzzyFinderMode.Dir.cached_glob_dir(dir, file, excluded, index, limi
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.trim_length)') 
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)') 
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.MruFile ------------------------------------- {{{1
@@ -877,7 +877,7 @@ function! g:FuzzyFinderMode.MruFile.on_mode_enter_post()
   let self.items = map(self.items, 'self.format_item_using_cache(v:val)')
   let self.items = filter(self.items, '!empty(v:val) && bufnr("^" . v:val.word . "$") != self.prev_bufnr')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
+  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_buf_enter()
@@ -945,7 +945,7 @@ function! g:FuzzyFinderMode.MruCmd.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
+  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_command_pre(cmd)
@@ -977,14 +977,14 @@ function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
     return ''
   endif
   call s:JumpToBookmark(self.items[0].path, a:mode, self.items[0].pattern, self.items[0].lnum, self.searching_range,
-        \               self.find_reusable_window)
+        \               self.reuse_window)
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
+  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
@@ -1043,7 +1043,7 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, index, limit)
   endif
   echo 'Filtering tag list...'
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.TaggedFile ---------------------------------- {{{1
@@ -1078,7 +1078,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, index, limit)
   echo 'Filtering tagged-file list...'
   call map(self.cache[key].items, 's:ModifyWordAsFilename(v:val, '':.'')')
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.trim_length)')
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
 endfunction
 
 " OBJECT: s:OptionManager ----------------------------------------------- {{{1
@@ -1272,9 +1272,9 @@ let g:FuzzyFinderOptions.Base.learning_limit = 100
 " [All Mode] To speed up the response time, Fuzzyfinder ends enumerating
 " completion items when found over this.
 let g:FuzzyFinderOptions.Base.enumerating_limit = 100
-" [All Mode] If a length of completion item is more than this, it is trimmed
+" [All Mode] If a length of completion item is more than this, it is truncated
 " when shown in completion menu.
-let g:FuzzyFinderOptions.Base.trim_length = 80
+let g:FuzzyFinderOptions.Base.truncation_length = 80
 " [All Mode] Fuzzyfinder does not remove caches of completion lists at the end
 " of explorer to reuse at the next time if non-zero was set.
 let g:FuzzyFinderOptions.Base.lasting_cache = 1
@@ -1295,7 +1295,7 @@ let g:FuzzyFinderOptions.Buffer.smart_bs = 1
 let g:FuzzyFinderOptions.Buffer.switch_order = 10
 " [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
 " non-zero was set.
-let g:FuzzyFinderOptions.Base.find_reusable_window = 1
+let g:FuzzyFinderOptions.Base.reuse_window = 1
 " [Buffer Mode] The completion items is sorted in the order of recently used
 " if non-zero was set.
 let g:FuzzyFinderOptions.Buffer.mru_order = 1
@@ -1314,7 +1314,7 @@ let g:FuzzyFinderOptions.File.smart_bs = 1
 let g:FuzzyFinderOptions.File.switch_order = 20
 " [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
 " non-zero was set.
-let g:FuzzyFinderOptions.Base.find_reusable_window = 1
+let g:FuzzyFinderOptions.Base.reuse_window = 1
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
 "-----------------------------------------------------------------------------
@@ -1348,7 +1348,7 @@ let g:FuzzyFinderOptions.MruFile.smart_bs = 1
 let g:FuzzyFinderOptions.MruFile.switch_order = 40
 " [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
 " non-zero was set.
-let g:FuzzyFinderOptions.Base.find_reusable_window = 1
+let g:FuzzyFinderOptions.Base.reuse_window = 1
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1388,7 +1388,7 @@ let g:FuzzyFinderOptions.Bookmark.smart_bs = 0
 let g:FuzzyFinderOptions.Bookmark.switch_order = 60
 " [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
 " non-zero was set.
-let g:FuzzyFinderOptions.Base.find_reusable_window = 1
+let g:FuzzyFinderOptions.Base.reuse_window = 1
 " [Bookmark Mode] Fuzzyfinder searches a matching line from bookmarked
 " position within this number of lines.
 let g:FuzzyFinderOptions.Bookmark.searching_range = 100
@@ -1422,7 +1422,7 @@ let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
 let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 " [Tagged-File Mode] Fuzzyfinder tries to reuse a window containing a target
 " buffer if non-zero was set.
-let g:FuzzyFinderOptions.Base.find_reusable_window = 1
+let g:FuzzyFinderOptions.Base.reuse_window = 1
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(s:user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
@@ -1435,7 +1435,7 @@ call map(copy(g:FuzzyFinderMode), 'v:val.extend_options()')
 
 let s:PATH_SEPARATOR = (has('win32') || has('win64') ? '\' : '/')
 let s:MATCHING_RATE_BASE = 1000000
-let s:ABBR_TRIM_MARK = '...'
+let s:ABBR_TRUNCATION_MARK = '...'
 let s:OPEN_MODE_CURRENT = 0
 let s:OPEN_MODE_SPLIT   = 1
 let s:OPEN_MODE_VSPLIT  = 2
