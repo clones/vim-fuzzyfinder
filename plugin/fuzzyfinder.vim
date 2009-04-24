@@ -1,3 +1,13 @@
+" TODO: update wiki:
+"   REUSING OF A WINDOW CONTAINING TARGET BUFFER:
+"
+"   If a window containing target buffer is found in current tab page when
+"   Fuzzyfinder is going to open the buffer in a split new window, move to it.
+"   If a window containing target buffer is found in other tab page when
+"   Fuzzyfinder is going to open the buffer in a new tab page, move to it.
+"
+"   You can disable that feature via 'find_reusable_window' option if always
+"   want to open a buffer in a new window.
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
@@ -1251,7 +1261,7 @@ let g:FuzzyFinderOptions.Base.min_length = 0
 " [All Mode] This is a dictionary. Each value must be a list. All matchs of a
 " key in entered text is expanded with the value.
 let g:FuzzyFinderOptions.Base.abbrev_map = {}
-" [All Mode] Fuzzyfinder ignores case in search patterns if non-zero is set.
+" [All Mode] Fuzzyfinder ignores case in search patterns if non-zero was set.
 let g:FuzzyFinderOptions.Base.ignore_case = 1
 " [All Mode] This is a string to format time string. See :help strftime() for
 " details.
@@ -1265,14 +1275,10 @@ let g:FuzzyFinderOptions.Base.enumerating_limit = 100
 " [All Mode] If a length of completion item is more than this, it is trimmed
 " when shown in completion menu.
 let g:FuzzyFinderOptions.Base.trim_length = 80
-" [All Mode] TODO: Description
-" if window exists in current tab page ... .
-" if window exists in other tab page ... .
-let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 " [All Mode] Fuzzyfinder does not remove caches of completion lists at the end
 " of explorer to reuse at the next time if non-zero was set.
 let g:FuzzyFinderOptions.Base.lasting_cache = 1
-" [All Mode] Fuzzyfinder uses Migemo if non-zero is set.
+" [All Mode] Fuzzyfinder uses Migemo if non-zero was set.
 let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
 " [Buffer Mode] This disables all functions of this mode if zero was set.
@@ -1282,13 +1288,16 @@ let g:FuzzyFinderOptions.Buffer.prompt = '>Buffer>'
 " [Buffer Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Buffer.prompt_highlight = 'Question'
 " [Buffer Mode] Pressing <BS> after a path separator deletes one directory
-" name if non-zero is set.
+" name if non-zero was set.
 let g:FuzzyFinderOptions.Buffer.smart_bs = 1
 " [Buffer Mode] This is used to sort modes for switching to the next/previous
 " mode.
 let g:FuzzyFinderOptions.Buffer.switch_order = 10
+" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
+" non-zero was set.
+let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 " [Buffer Mode] The completion items is sorted in the order of recently used
-" if non-zero is set.
+" if non-zero was set.
 let g:FuzzyFinderOptions.Buffer.mru_order = 1
 "-----------------------------------------------------------------------------
 " [File Mode] This disables all functions of this mode if zero was set.
@@ -1298,11 +1307,14 @@ let g:FuzzyFinderOptions.File.prompt = '>File>'
 " [File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.File.prompt_highlight = 'Question'
 " [File Mode] Pressing <BS> after a path separator deletes one directory name
-" if non-zero is set.
+" if non-zero was set.
 let g:FuzzyFinderOptions.File.smart_bs = 1
 " [File Mode] This is used to sort modes for switching to the next/previous
 " mode.
 let g:FuzzyFinderOptions.File.switch_order = 20
+" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
+" non-zero was set.
+let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
 "-----------------------------------------------------------------------------
@@ -1313,7 +1325,7 @@ let g:FuzzyFinderOptions.Dir.prompt = '>Dir>'
 " [Directory Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Dir.prompt_highlight = 'Question'
 " [Directory Mode] Pressing <BS> after a path separator deletes one directory
-" name if non-zero is set.
+" name if non-zero was set.
 let g:FuzzyFinderOptions.Dir.smart_bs = 1
 " [Directory Mode] This is used to sort modes for switching to the
 " next/previous mode.
@@ -1329,11 +1341,14 @@ let g:FuzzyFinderOptions.MruFile.prompt = '>MruFile>'
 " [Mru-File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.MruFile.prompt_highlight = 'Question'
 " [Mru-File Mode] Pressing <BS> after a path separator deletes one directory
-" name if non-zero is set.
+" name if non-zero was set.
 let g:FuzzyFinderOptions.MruFile.smart_bs = 1
 " [Mru-File Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.MruFile.switch_order = 40
+" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
+" non-zero was set.
+let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1348,7 +1363,7 @@ let g:FuzzyFinderOptions.MruCmd.prompt = '>MruCmd>'
 " [Mru-Cmd Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.MruCmd.prompt_highlight = 'Question'
 " [Mru-Cmd Mode] Pressing <BS> after a path separator deletes one directory
-" name if non-zero is set.
+" name if non-zero was set.
 let g:FuzzyFinderOptions.MruCmd.smart_bs = 0
 " [Mru-Cmd Mode] This is used to sort modes for switching to the next/previous
 " mode.
@@ -1366,11 +1381,14 @@ let g:FuzzyFinderOptions.Bookmark.prompt = '>Bookmark>'
 " [Bookmark Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Bookmark.prompt_highlight = 'Question'
 " [Bookmark Mode] Pressing <BS> after a path separator deletes one directory
-" name if non-zero is set.
+" name if non-zero was set.
 let g:FuzzyFinderOptions.Bookmark.smart_bs = 0
 " [Bookmark Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.Bookmark.switch_order = 60
+" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
+" non-zero was set.
+let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 " [Bookmark Mode] Fuzzyfinder searches a matching line from bookmarked
 " position within this number of lines.
 let g:FuzzyFinderOptions.Bookmark.searching_range = 100
@@ -1382,7 +1400,7 @@ let g:FuzzyFinderOptions.Tag.prompt = '>Tag>'
 " [Tag Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.Tag.prompt_highlight = 'Question'
 " [Tag Mode] Pressing <BS> after a path separator deletes one directory name
-" if non-zero is set.
+" if non-zero was set.
 let g:FuzzyFinderOptions.Tag.smart_bs = 0
 " [Tag Mode] This is used to sort modes for switching to the next/previous
 " mode.
@@ -1397,11 +1415,14 @@ let g:FuzzyFinderOptions.TaggedFile.prompt = '>TaggedFile>'
 " [Tagged-File Mode] The highlight group name for a prompt string.
 let g:FuzzyFinderOptions.TaggedFile.prompt_highlight = 'Question'
 " [Tagged-File Mode] Pressing <BS> after a path separator deletes one
-" directory name if non-zero is set.
+" directory name if non-zero was set.
 let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
 " [Tagged-File Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
+" [Tagged-File Mode] Fuzzyfinder tries to reuse a window containing a target
+" buffer if non-zero was set.
+let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(s:user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
