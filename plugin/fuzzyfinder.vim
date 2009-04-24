@@ -1,4 +1,3 @@
-"TODO: Document for Information File
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
@@ -489,7 +488,7 @@ function! g:FuzzyFinderMode.Base.on_cursor_moved_i()
     " if the cursor is placed on the end of the line and has been actually moved.
     let self.last_col = col('.')
     let self.last_base = s:RemovePrompt(getline('.'), self.prompt)
-    call feedkeys("\<C-x>\<C-u>", 'n')
+    call feedkeys("\<C-x>\<C-o>", 'n')
   endif
 endfunction
 
@@ -1095,7 +1094,7 @@ function! s:SetLocalOptionsForFuzzyfinder(cwd, complete_func)
   setlocal modifiable
   setlocal nocursorline   " for highlighting
   setlocal nocursorcolumn " for highlighting
-  let &l:completefunc = a:complete_func
+  let &l:omnifunc = a:complete_func
 endfunction
 
 " OBJECT: s:InfoFileManager --------------------------------------------- {{{1
@@ -1199,12 +1198,12 @@ let g:FuzzyFinderOptions.Base.key_open_vsplit = '<C-k>'
 " open a buffer/file in a new tab page.
 let g:FuzzyFinderOptions.Base.key_open_tab = '<C-]>'
 " [All Mode] This is mapped to switch to the next mode.
-let g:FuzzyFinderOptions.Base.key_next_mode = '<C-l>'
+let g:FuzzyFinderOptions.Base.key_next_mode = '<C-t>'
 " [All Mode] This is mapped to switch to the previous mode.
-let g:FuzzyFinderOptions.Base.key_prev_mode = '<C-o>'
+let g:FuzzyFinderOptions.Base.key_prev_mode = '<C-y>'
 " [All Mode] This is mapped to temporarily switch whether or not to ignore
 " case.
-let g:FuzzyFinderOptions.Base.key_ignore_case = '<C-t>'
+let g:FuzzyFinderOptions.Base.key_ignore_case = '<C-g><C-g>'
 " [All Mode] This is the file name to write information of the MRU, etc. If
 " "" was set, Fuzzyfinder does not write to the file.
 let g:FuzzyFinderOptions.Base.info_file = '~/.vimfuzzyfinder'
