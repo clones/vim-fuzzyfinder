@@ -325,12 +325,12 @@ function! s:EnumExpandedDirsEntries(dir, excluded)
   return entries
 endfunction
 
-function! s:GetBufIndicator(nr)
-  if !getbufvar(a:nr, '&modifiable')
+function! s:GetBufIndicator(buf_nr)
+  if !getbufvar(a:buf_nr, '&modifiable')
     return '[-]'
-  elseif getbufvar(a:nr, '&modified')
+  elseif getbufvar(a:buf_nr, '&modified')
     return '[+]'
-  elseif getbufvar(a:nr, '&readonly')
+  elseif getbufvar(a:buf_nr, '&readonly')
     return '[R]'
   else
     return '   '
@@ -390,8 +390,8 @@ endfunction
 
 " opens a:path and jumps to the line matching to a:pattern from a:lnum within
 " a:range. if not found, jumps to a:lnum.
-function! s:JumpToBookmark(path, mode, pattern, lnum, range)
-  call s:OpenFile(a:path, a:mode)
+function! s:JumpToBookmark(path, mode, pattern, lnum, range, reuse)
+  call s:OpenFile(a:path, a:mode, a:reuse)
   let ln = a:lnum
   for i in range(0, a:range)
     if a:lnum + i <= line('$') && getline(a:lnum + i) =~ a:pattern
@@ -406,27 +406,69 @@ function! s:JumpToBookmark(path, mode, pattern, lnum, range)
   normal! zvzz
 endfunction
 
-function! s:OpenBuffer(nr, mode)
-  execute printf([
-        \   ':%sbuffer',
-        \   ':%ssbuffer',
-        \   ':vertical :%ssbuffer',
-        \   ':tab :%ssbuffer',
-        \ ][a:mode], a:nr)
+" returns 0 if the buffer is not found.
+function! s:MoveToWindowOfBufferInCurrentTabPage(buf_nr)
+  if count(tabpagebuflist(), a:buf_nr) == 0
+    return 0
+  endif
+  execute bufwinnr(a:buf_nr) . 'wincmd w'
+  return 1
 endfunction
 
-function! s:OpenFile(path, mode)
-  let nr = bufnr('^' . a:path . '$')
-  if nr > -1
-    call s:OpenBuffer(nr, a:mode)
-  else
-    execute [
-          \   ':edit ',
-          \   ':split ',
-          \   ':vsplit ',
-          \   ':tabedit ',
-          \ ][a:mode] . s:EscapeFilename(a:path)
+" returns 0 if the buffer is not found.
+function! s:MoveToOtherTabPageOpeningBuffer(buf_nr)
+  for tab_nr in range(1, tabpagenr('$'))
+    if tab_nr != tabpagenr() && count(tabpagebuflist(tab_nr), a:buf_nr) > 0
+      execute 'tabnext ' . tab_nr
+      return 1
+    endif
+  endfor
+  return 0
+endfunction
+
+" returns 0 if the buffer is not found.
+function! s:MoveToWindowOfBufferInOtherTabPage(buf_nr)
+  if !s:MoveToOtherTabPageOpeningBuffer(a:buf_nr)
+    return 0
   endif
+  return s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)
+endfunction
+
+function! s:OpenBuffer(buf_nr, mode, reuse)
+  if a:reuse && ((a:mode == s:OPEN_MODE_SPLIT  && s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
+        \        (a:mode == s:OPEN_MODE_VSPLIT && s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
+        \        (a:mode == s:OPEN_MODE_TAB    && s:MoveToWindowOfBufferInOtherTabPage  (a:buf_nr)))
+    return
+  endif
+  execute printf({
+        \   s:OPEN_MODE_CURRENT : ':%sbuffer'           ,
+        \   s:OPEN_MODE_SPLIT   : ':%ssbuffer'          ,
+        \   s:OPEN_MODE_VSPLIT  : ':vertical :%ssbuffer',
+        \   s:OPEN_MODE_TAB     : ':tab :%ssbuffer'     ,
+        \ }[a:mode], a:buf_nr)
+endfunction
+
+function! s:OpenFile(path, mode, reuse)
+  let buf_nr = bufnr('^' . a:path . '$')
+  if buf_nr > -1
+    call s:OpenBuffer(buf_nr, a:mode, a:reuse)
+  else
+    execute {
+          \   s:OPEN_MODE_CURRENT : ':edit '   ,
+          \   s:OPEN_MODE_SPLIT   : ':split '  ,
+          \   s:OPEN_MODE_VSPLIT  : ':vsplit ' ,
+          \   s:OPEN_MODE_TAB     : ':tabedit ',
+          \ }[a:mode] . s:EscapeFilename(a:path)
+  endif
+endfunction
+
+function s:OpenTag(path, mode)
+  execute {
+        \   s:OPEN_MODE_CURRENT : ':tjump '           ,
+        \   s:OPEN_MODE_SPLIT   : ':stjump '          ,
+        \   s:OPEN_MODE_VSPLIT  : ':vertical :stjump ',
+        \   s:OPEN_MODE_TAB     : ':tab :stjump '     ,
+        \ }[a:mode] . a:expr
 endfunction
 
 " }}}1
@@ -457,15 +499,15 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
   augroup END
   " local mapping
   for [lhs, rhs] in [
-        \   [ self.key_open       , self.to_str('on_cr(0, 0)'            ) ],
-        \   [ self.key_open_split , self.to_str('on_cr(1, 0)'            ) ],
-        \   [ self.key_open_vsplit, self.to_str('on_cr(2, 0)'            ) ],
-        \   [ self.key_open_tab   , self.to_str('on_cr(3, 0)'            ) ],
-        \   [ '<BS>'              , self.to_str('on_bs()'                ) ],
-        \   [ '<C-h>'             , self.to_str('on_bs()'                ) ],
-        \   [ self.key_next_mode  , self.to_str('on_switch_mode(+1)'     ) ],
-        \   [ self.key_prev_mode  , self.to_str('on_switch_mode(-1)'     ) ],
-        \   [ self.key_ignore_case, self.to_str('on_switch_ignore_case()') ],
+        \   [ self.key_open       , self.to_str('on_cr(' . s:OPEN_MODE_CURRENT . ', 0)') ],
+        \   [ self.key_open_split , self.to_str('on_cr(' . s:OPEN_MODE_SPLIT   . ', 0)') ],
+        \   [ self.key_open_vsplit, self.to_str('on_cr(' . s:OPEN_MODE_VSPLIT  . ', 0)') ],
+        \   [ self.key_open_tab   , self.to_str('on_cr(' . s:OPEN_MODE_TAB     . ', 0)') ],
+        \   [ '<BS>'              , self.to_str('on_bs()'                              ) ],
+        \   [ '<C-h>'             , self.to_str('on_bs()'                              ) ],
+        \   [ self.key_next_mode  , self.to_str('on_switch_mode(+1)'                   ) ],
+        \   [ self.key_prev_mode  , self.to_str('on_switch_mode(-1)'                   ) ],
+        \   [ self.key_ignore_case, self.to_str('on_switch_ignore_case()'              ) ],
         \ ]
     " hacks to be able to use feedkeys().
     execute printf('inoremap <buffer> <silent> %s <C-r>=%s ? "" : ""<CR>', lhs, rhs)
@@ -555,7 +597,7 @@ function! g:FuzzyFinderMode.Base.on_mode_leave_post()
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_open(expr, mode)
-  call s:OpenFile(a:expr, a:mode)
+  call s:OpenFile(a:expr, a:mode, self.find_reusable_window)
 endfunction
 
 function! g:FuzzyFinderMode.Base.on_switch_mode(next_prev)
@@ -709,7 +751,7 @@ function! g:FuzzyFinderMode.Buffer.on_open(expr, mode)
   " filter the selected item to get the buffer number for handling unnamed buffer
   call filter(self.items, 'v:val.word ==# a:expr')
   if !empty(self.items)
-    call s:OpenBuffer(self.items[0].buf_nr, a:mode)
+    call s:OpenBuffer(self.items[0].buf_nr, a:mode, self.find_reusable_window)
   endif
 endfunction
 
@@ -924,7 +966,8 @@ function! g:FuzzyFinderMode.Bookmark.on_open(expr, mode)
   if empty(self.items)
     return ''
   endif
-  call s:JumpToBookmark(self.items[0].path, a:mode, self.items[0].pattern, self.items[0].lnum, self.searching_range)
+  call s:JumpToBookmark(self.items[0].path, a:mode, self.items[0].pattern, self.items[0].lnum, self.searching_range,
+        \               self.find_reusable_window)
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.on_mode_enter_post()
@@ -968,12 +1011,7 @@ function! g:FuzzyFinderMode.Tag.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.Tag.on_open(expr, mode)
-  execute [
-        \   ':tjump ',
-        \   ':stjump ',
-        \   ':vertical :stjump ',
-        \   ':tab :stjump ',
-        \ ][a:mode] . a:expr
+  call s:OpenTag(a:expr, a:mode)
 endfunction
 
 function! g:FuzzyFinderMode.Tag.on_mode_enter_pre()
@@ -1104,7 +1142,7 @@ function! s:InfoFileManager.load()
   try
     let lines = readfile(expand(self.get_info_file()))
     " compatibility check
-    if !count(lines, self.get_info_version_line())
+    if count(lines, self.get_info_version_line()) == 0
       call self.warn_old_info()
       let g:FuzzyFinderOptions.Base.info_file = ''
       throw 1
@@ -1227,6 +1265,10 @@ let g:FuzzyFinderOptions.Base.enumerating_limit = 100
 " [All Mode] If a length of completion item is more than this, it is trimmed
 " when shown in completion menu.
 let g:FuzzyFinderOptions.Base.trim_length = 80
+" [All Mode] TODO: Description
+" if window exists in current tab page ... .
+" if window exists in other tab page ... .
+let g:FuzzyFinderOptions.Base.find_reusable_window = 1
 " [All Mode] Fuzzyfinder does not remove caches of completion lists at the end
 " of explorer to reuse at the next time if non-zero was set.
 let g:FuzzyFinderOptions.Base.lasting_cache = 1
@@ -1373,6 +1415,10 @@ call map(copy(g:FuzzyFinderMode), 'v:val.extend_options()')
 let s:PATH_SEPARATOR = (has('win32') || has('win64') ? '\' : '/')
 let s:MATCHING_RATE_BASE = 1000000
 let s:ABBR_TRIM_MARK = '...'
+let s:OPEN_MODE_CURRENT = 0
+let s:OPEN_MODE_SPLIT   = 1
+let s:OPEN_MODE_VSPLIT  = 2
+let s:OPEN_MODE_TAB     = 3
 
 augroup FuzzyfinderGlobal
   autocmd!
