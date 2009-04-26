@@ -1273,7 +1273,7 @@ let g:FuzzyFinderOptions.Base.learning_limit = 100
 " completion items when found over this.
 let g:FuzzyFinderOptions.Base.enumerating_limit = 100
 " [All Mode] If a length of completion item is more than this, it is truncated
-" when shown in completion menu.
+" in completion menu.
 let g:FuzzyFinderOptions.Base.truncation_length = 80
 " [All Mode] Fuzzyfinder does not remove caches of completion lists at the end
 " of explorer to reuse at the next time if non-zero was set.
@@ -1293,9 +1293,9 @@ let g:FuzzyFinderOptions.Buffer.smart_bs = 1
 " [Buffer Mode] This is used to sort modes for switching to the next/previous
 " mode.
 let g:FuzzyFinderOptions.Buffer.switch_order = 10
-" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
-" non-zero was set.
-let g:FuzzyFinderOptions.Base.reuse_window = 1
+" [Buffer Mode] Fuzzyfinder tries to reuse a window containing a target buffer
+" if non-zero was set.
+let g:FuzzyFinderOptions.Buffer.reuse_window = 1
 " [Buffer Mode] The completion items is sorted in the order of recently used
 " if non-zero was set.
 let g:FuzzyFinderOptions.Buffer.mru_order = 1
@@ -1312,9 +1312,9 @@ let g:FuzzyFinderOptions.File.smart_bs = 1
 " [File Mode] This is used to sort modes for switching to the next/previous
 " mode.
 let g:FuzzyFinderOptions.File.switch_order = 20
-" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
-" non-zero was set.
-let g:FuzzyFinderOptions.Base.reuse_window = 1
+" [File Mode] Fuzzyfinder tries to reuse a window containing a target buffer
+" if non-zero was set.
+let g:FuzzyFinderOptions.File.reuse_window = 1
 " [File Mode] The items matching this are excluded from the completion list.
 let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
 "-----------------------------------------------------------------------------
@@ -1346,9 +1346,9 @@ let g:FuzzyFinderOptions.MruFile.smart_bs = 1
 " [Mru-File Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.MruFile.switch_order = 40
-" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
-" non-zero was set.
-let g:FuzzyFinderOptions.Base.reuse_window = 1
+" [Mru-File Mode] Fuzzyfinder tries to reuse a window containing a target
+" buffer if non-zero was set.
+let g:FuzzyFinderOptions.MruFile.reuse_window = 1
 " [Mru-File Mode] The items matching this are excluded from the completion
 " list.
 let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
@@ -1386,9 +1386,9 @@ let g:FuzzyFinderOptions.Bookmark.smart_bs = 0
 " [Bookmark Mode] This is used to sort modes for switching to the
 " next/previous mode.
 let g:FuzzyFinderOptions.Bookmark.switch_order = 60
-" [All Mode] Fuzzyfinder tries to reuse a window containing a target buffer if
-" non-zero was set.
-let g:FuzzyFinderOptions.Base.reuse_window = 1
+" [Bookmark Mode] Fuzzyfinder tries to reuse a window containing a target
+" buffer if non-zero was set.
+let g:FuzzyFinderOptions.Bookmark.reuse_window = 1
 " [Bookmark Mode] Fuzzyfinder searches a matching line from bookmarked
 " position within this number of lines.
 let g:FuzzyFinderOptions.Bookmark.searching_range = 100
@@ -1422,7 +1422,7 @@ let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
 let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 " [Tagged-File Mode] Fuzzyfinder tries to reuse a window containing a target
 " buffer if non-zero was set.
-let g:FuzzyFinderOptions.Base.reuse_window = 1
+let g:FuzzyFinderOptions.TaggedFile.reuse_window = 1
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(s:user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
