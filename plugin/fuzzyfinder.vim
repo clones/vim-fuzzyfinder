@@ -1,13 +1,3 @@
-" TODO: update wiki:
-"   REUSING OF A WINDOW CONTAINING TARGET BUFFER:
-"
-"   If a window containing target buffer is found in current tab page when
-"   Fuzzyfinder is going to open the buffer in a split new window, move to it.
-"   If a window containing target buffer is found in other tab page when
-"   Fuzzyfinder is going to open the buffer in a new tab page, move to it.
-"
-"   You can disable that feature via 'reuse_window' option if always
-"   want to open a buffer in a new window.
 "=============================================================================
 " fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
 "                   buffer/file/MRU/command/bookmark/tag/etc.
