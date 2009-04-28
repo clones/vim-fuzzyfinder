@@ -1,0 +1,708 @@
+*fuzzyfinder.txt*       バッファ/ファイル/その他を、あいまい/部分一致検索
+
+
+==============================================================================
+概要                                                *fuzzyfinder-introduction*
+
+Fuzzyfinder はバッファ/ファイル/コマンド/ブックマーク/タグに素早くアクセスする
+ための手段を提供します。入力されたパターンをあいまいパターンまたは部分一致パタ
+ーンに変換しマッチングを行います。
+
+  入力パターン     あいまいパターン          部分一致パターン ~
+  abc              * a * b * c *             * abc *
+  a?c              * a ? c *                 * a ? c *
+  dir/file         dir/ * f * i * l * e *    dir/ * file *
+  d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
+  ../**/s          ../ ** / * s *            ../ ** / * s *
+                   (** allows searching a directory tree.)
+
+次のような場面で有用です:
+
+  "./AhLongLongLongLongLongFile.txt"
+  "./AhLongLongLongLongLongName.txt"
+  "./OhLongLongLongLongLongFile.txt"
+  "./OhLongLongLongLongLongName.txt" <- 欲しいファイル :-O
+
+"ON" と入力すれば "OhLongLongLongLongLongName.txt" が選択できます. :-D
+
+Fuzzyfinder にはいくつかのモードがあります:
+
+  Buffer モード
+  File モード
+  Directory モード (:cd コマンドの代わり)
+  MRU-File モード (最近使ったファイル)
+  MRU-Command モード (最近使ったコマンドライン)
+  Bookmark モード
+  Tag モード (|:tag|コマンドの代わり)
+  Tagged-File モード (tagsファイルに含まれるファイル)
+
+Fuzzyfinder はマルチバイト文字をサポートしています。
+
+
+==============================================================================
+使い方                                                     *fuzzyfinder-usage*
+
+                                                          *fuzzyfinder-launch*
+起動 ~
+
+次のコマンドで Fuzzyfinder を起動します:
+
+  コマンド                 モード ~
+  :FuzzyFinderBuffer     - Buffer モード
+  :FuzzyFinderFile       - File モード
+  :FuzzyFinderDir        - Directory モード
+  :FuzzyFinderMruFile    - MRU-File モード
+  :FuzzyFinderMruCmd     - MRU-Command モード
+  :FuzzyFinderBookmark   - Bookmark モード
+  :FuzzyFinderTag        - Tag モード
+  :FuzzyFinderTaggedFile - Tagged-File モード
+
+これらのコマンドを押しやすいキーにマッピングすることを推奨します。これらのコマ
+ンドは初期テキストをコマンド引数として受け取ることができます。初期テキストは
+Fuzzyfinder 起動直後に自動的に入力されます。コマンドが ! 付きで実行された場合(
+例: :FuzzyFinderTag!)、あいまいマッチングではなく部分一致マッチングを行うよう
+になります。
+
+                                                    *fuzzyfinder-manipulation*
+操作 ~
+
+入力パターンはあいまいパターンに変換され、それにマッチするアイテムが補完メニュ
+ーに表示されます。
+
+行末で入力を行うと補完メニューが表示されます。
+
+レスポンスを向上させるため、補完メニューに表示されるアイテム数は
+|g:FuzzyFinderOptions.Base.enumerating_limit|に制限されます。
+
+Fuzzyfinder は幾つかのルールに従って補完アイテムをソートします:
+
+  - 完全一致を最優先する
+  - 連続的にマッチングしたアイテムを断片的にマッチングしたアイテムより優先する
+  - 後方でマッチングしたアイテムを前方でマッチングしたアイテムより優先する
+  - 短いアイテムを長いアイテムより優先する
+
+加えて、Fuzzyfinder には学習システムがあります。現在のパターンで、過去に補完さ
+れたことのあるアイテムを優先します。
+
+補完メニューの最初のアイテムは自動的に選択状態になります。
+
+いろいろな方法で、選択されたアイテムを開くことができます:
+
+  <CR>  - 直前のウィンドウで開きます。
+  <C-j> - 直前のウィンドウを分割して開きます。
+  <C-k> - 直前のウィンドウを垂直分割して開きます。
+  <C-]> - 別のタブページで開きます。
+
+キャンセルして直前のウィンドウに戻るには、インサートモードを抜けてください。
+
+インサートモードを抜けずにモードを切り替えるには、<C-t> または <C-y> を入力し
+てください。
+
+大文字小文字を無視するかしないかを一時的に切り替えるには、<C-g><C-g> を入力し
+てください。
+
+                                                  *fuzzyfinder-reusing-window*
+目的のバッファ/ファイルが開かれているウィンドウの再利用 ~
+
+ウィンドウを分割してバッファ/ファイルを開くときに、現在のタブページでそれが開
+かれているウィンドウが見つかった場合、そこへ移動します。別のタブページでバッフ
+ァ/ファイルを開くときに、他のタブページでそれが開かれているウィンドウが見つか
+った場合、そこへ移動します。
+
+常にバッファ/ファイルを新ウィンドウで開きたい場合、'reuse_window'オプションで
+この機能を無効にすることができます。
+
+                                                     *fuzzyfinder-hiding-menu*
+補完メニューの一時非表示 ~
+
+<C-e> で補完メニューを閉じることができます。また、<C-x><C-o>で再度開くことがで
+きます。
+
+                                                    *fuzzyfinder-highlighting*
+ハイライト ~
+
+マッチした補完アイテム数が 0 または
+|g:FuzzyFinderOptions.Base.enumerating_limit|を超える場合、
+Fuzzyfinderのバッファを"Error"グループでハイライトします。
+
+                                                     *fuzzyfinder-command-arg*
+コマンド引数の利用 ~
+
+例として、File モードをカレントディレクトリのフルパスが入力された状態で起動す
+るには次のようにマッピングします:
+>
+  nnoremap <C-p> :FuzzyFinderFile <C-r>=fnamemodify(getcwd(), ':p')<CR><CR>
+<
+カレントディレクトリではなくカレントバッファのディレクトリの場合は次のようにマ
+ッピングします:
+>
+  nnoremap <C-p> :FuzzyFinderFile <C-r>=expand('%:~:.')[:-1-len(expand('%:~:.:t'))]<CR><CR>
+<
+                                                    *fuzzyfinder-abbreviation*
+                                                 *fuzzyfinder-multiple-search*
+短縮入力及び複合検索 ~
+
+各モードで短縮入力と複合検索が利用できます。例えば次のように設定したとします:
+>
+  let g:FuzzyFinderOptions.Base.abbrev_map  = {
+        \   "^WORK" : [
+        \     "~/project/**/src/",
+        \     ".vim/plugin/",
+        \   ],
+        \ }
+<
+そしてFile モードで "WORKtxt" と入力すると、次の2つのパターンの検索結果を複合
+します:
+
+  "~/project/**/src/*t*x*t*"
+  ".vim/plugin/*t*x*t*"
+
+                                                *fuzzyfinder-information-file*
+情報ファイル ~
+
+Fuzzyfinder は補完統計、MRUデータ、ブックマークなどを
+|g:FuzzyFinderOptions.Base.info_file|に書き込みます。
+
+:FuzzyFinderEditInfo コマンドは情報ファイルの編集を補助します。このコマンドを
+実行すると、情報ファイルを無名バッファに読み込みます。:write などで書き込みを
+行うと、情報ファイルを更新します。
+
+                                                           *fuzzyfinder-cache*
+キャッシュ ~
+
+一旦キャッシュが生成されると、レスポンスを向上させるため自動的には更新されませ
+ん。これを更新するには :FuzzyFinderRenewCache コマンドを実行してください。
+
+                                                   *fuzzyfinder-bookmark-mode*
+Bookmark モードについて ~
+
+事前にブックマークした行へジャンプすることができます。Fuzzyfinder はジャンプす
+る行番号を調整します。ブックマークされた行がブックマークされたときのパターンと
+マッチしない場合、Fuzzyfinder はブックマークされた位置の周辺でマッチする行を探
+します。なのでブックマークした行が多少移動していたとしても、そこでジャンプする
+ことができます。ブックマークした行番号へ調整せずにジャンプしたい場合、
+|g:FuzzyFinderOptions.Bookmark.searching_range|を 0 に設定してください。
+
+                                                 *fuzzyfinder-adding-bookmark*
+ブックマークの追加 ~
+
+:FuzzyFinderAddBookmark コマンドでカーソルのある行をブックマークに追加できます
+。このコマンドを実行すると、ブックマーク名の入力を求められます。
+
+                                                     *fuzzyfinder-alt-tagjump*
+タグジャンプの置き換え ~
+
+次のマッピングで、|:tag|と <C-]> を置き換えることができます:
+>
+  nnoremap <silent> <C-f><C-t> :FuzzyFinderTag!<CR>
+  nnoremap <silent> <C-]>      :FuzzyFinderTag! <C-r>=expand('<cword>')<CR><CR>
+<
+Tag モードでは多数の補完アイテムを扱うことになるので、あいまいマッチングより強
+く絞り込める部分一致マッチングのほうがおすすめです。
+
+                                                 *fuzzyfinder-taggedfile-mode*
+Tagged-File モード ~
+
+補完アイテムは tags ファイルに含まれるファイルです。これらのファイルは作業環境
+に関連しているので、一種のプロジェクトモードです。
+
+                                                          *fuzzyfinder-migemo*
+Migemo とは ~
+
+以下のページを参照してください。
+  - http://0xcc.net/migemo/
+  - http://www.kaoriya.net/#CMIGEMO
+
+==============================================================================
+コマンド                                                *fuzzyfinder-commands*
+
+*:FuzzyFinderBuffer*
+  Buffer モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderFile*
+  File モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderFileWithFullCwd*
+  カレントディレクトリのフルパスを初期テキストとする以外は|:FuzzyFinderFile|と
+  同じです。
+
+*:FuzzyFinderFileWithCurrentBufferDir*
+  カレントバッファのディレクトリを初期テキストとする以外は|:FuzzyFinderFile|と
+  同じです。
+
+*:FuzzyFinderDir*
+  Directory モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderDirWithFullCwd*
+  カレントディレクトリのフルパスを初期テキストとする以外は|:FuzzyFinderDir|と
+  同じです。
+
+*:FuzzyFinderDirWithCurrentBufferDir*
+  カレントバッファのディレクトリを初期テキストとする以外は|:FuzzyFinderDir|と
+  同じです。
+
+*:FuzzyFinderMruFile*
+  MRU-File モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderMruCmd*
+  MRU-Command モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderBookmark*
+  Bookmark モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderTag*
+  Tag モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderTagWithCursorWord*
+  カーソル下の単語を初期テキストとする以外は|:FuzzyFinderTag|と同じです。
+
+*:FuzzyFinderTaggedFile*
+  Tagged-File モードの Fuzzyfinder を起動します。
+
+*:FuzzyFinderEditInfo*
+  情報ファイルを編集するためのバッファを開きます。詳しくは
+  |fuzzyfinder-information-file|を参照してください。
+
+*:FuzzyFinderAddBookmark*
+  カーソル行をブックマークに追加します。詳しくは|fuzzyfinder-adding-bookmark|
+  を参照してください。
+
+*:FuzzyFinderAddBookmarkAsSelectedText*
+  最後に選択されたテキストをブックマーク名とする以外は
+  |:FuzzyFinderAddBookmark|と同じです。
+
+*:FuzzyFinderRenewCache*
+  補完アイテムを作り直すためにキャッシュを削除します。詳しくは
+  |fuzzyfinder-cache|を参照してください。
+
+==============================================================================
+オプション                                               *fuzzyfinder-options*
+                                                        *g:FuzzyFinderOptions*
+
+|Dictionary|型変数|g:FuzzyFinderOptions|を通じてオプションを設定すること
+ができます。
+
+変数に値を代入する前に、|g:FuzzyFinderOptions|に各モードの|Dictionary|を宣言し
+ておく必要があります。|fuzzyfinder-vimrc-sample|を参考にしてください。
+
+                                                *fuzzyfinder-options-all-mode*
+                                                   *g:FuzzyFinderOptions.Base*
+全モード用 ~
+
+*g:FuzzyFinderOptions.Base.key_open*
+  補完を確定し、バッファ/ファイルを直前のウィンドウで開くキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_open = '<CR>'
+<
+*g:FuzzyFinderOptions.Base.key_open_split*
+  補完を確定し、バッファ/ファイルを直前のウィンドウを分割して開くキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_open_split = '<C-j>'
+<
+*g:FuzzyFinderOptions.Base.key_open_vsplit*
+  補完を確定し、バッファ/ファイルを直前のウィンドウを垂直分割して開くキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_open_vsplit = '<C-k>'
+<
+*g:FuzzyFinderOptions.Base.key_open_tab*
+  補完を確定し、バッファ/ファイルを別タブページ開くキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_open_tab = '<C-]>'
+<
+*g:FuzzyFinderOptions.Base.key_next_mode*
+  次のモードに切り替えるキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_next_mode = '<C-t>'
+<
+*g:FuzzyFinderOptions.Base.key_prev_mode*
+  前のモードに切り替えるキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_prev_mode = '<C-y>'
+<
+*g:FuzzyFinderOptions.Base.key_ignore_case*
+  大文字小文字を無視するかしないかを一時的に切り替えるキーです。
+>
+  let g:FuzzyFinderOptions.Base.key_ignore_case = '<C-g><C-g>'
+<
+*g:FuzzyFinderOptions.Base.info_file*
+  補完統計、MRUデータ、ブックマークなどを書き込むファイルのパスです。
+  "" を設定するとファイルへの書き込みは行われなくなります。
+>
+  let g:FuzzyFinderOptions.Base.info_file = '~/.vimfuzzyfinder'
+<
+*g:FuzzyFinderOptions.Base.min_length*
+  入力されたテキストの長さがこの値未満なら補完メニューを表示しません。
+>
+  let g:FuzzyFinderOptions.Base.min_length = 0
+<
+*g:FuzzyFinderOptions.Base.abbrev_map*
+  |Dictionary|型でそれぞれの値は|List|型です。入力されたテキストの、キーにマッ
+  チする部分が対応する値に展開されます。
+>
+  let g:FuzzyFinderOptions.Base.abbrev_map = {}
+<
+*g:FuzzyFinderOptions.Base.ignore_case*
+  真なら大文字小文字を無視します。
+>
+  let g:FuzzyFinderOptions.Base.ignore_case = 1
+<
+*g:FuzzyFinderOptions.Base.time_format*
+  アイテムが登録された日時の書式を設定します。書式の詳細は|strftime()|を参照し
+  てください。
+>
+  let g:FuzzyFinderOptions.Base.time_format = '(%x %H:%M:%S)'
+<
+*g:FuzzyFinderOptions.Base.learning_limit*
+  保持する補完統計データの上限値です。
+>
+  let g:FuzzyFinderOptions.Base.learning_limit = 100
+<
+*g:FuzzyFinderOptions.Base.enumerating_limit*
+  レスポンスを向上させるため、補完アイテムの列挙をこの数に達した時点で打ち切ります。
+>
+  let g:FuzzyFinderOptions.Base.enumerating_limit = 100
+<
+*g:FuzzyFinderOptions.Base.truncation_length*
+  長い補完アイテムは、この長さに収まるよう前方を省略します。
+>
+  let g:FuzzyFinderOptions.Base.truncation_length = 80
+<
+*g:FuzzyFinderOptions.Base.lasting_cache*
+  真なら補完リストのキャッシュを解放せずに次回以降再利用するようになります。
+>
+  let g:FuzzyFinderOptions.Base.lasting_cache = 1
+<
+*g:FuzzyFinderOptions.Base.migemo_support*
+  真なら migemo を利用します。
+>
+  let g:FuzzyFinderOptions.Base.migemo_support = 0
+<
+                                             *fuzzyfinder-options-buffer-mode*
+                                                 *g:FuzzyFinderOptions.Buffer*
+Buffer モード用 ~
+
+*g:FuzzyFinderOptions.Buffer.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.Buffer.mode_available = 1
+<
+*g:FuzzyFinderOptions.Buffer.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.Buffer.prompt = '>Buffer>'
+<
+*g:FuzzyFinderOptions.Buffer.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.Buffer.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.Buffer.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.Buffer.smart_bs = 1
+<
+*g:FuzzyFinderOptions.Buffer.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.Buffer.switch_order = 10
+<
+*g:FuzzyFinderOptions.Buffer.reuse_window*
+  真なら目的のバッファ/ファイルを開いているウィンドウを再利用します。
+>
+  let g:FuzzyFinderOptions.Buffer.reuse_window = 1
+<
+*g:FuzzyFinderOptions.Buffer.mru_order*
+  真なら最後に使った時間順に補完アイテムをソートします。
+>
+  let g:FuzzyFinderOptions.Buffer.mru_order = 1
+<
+                                               *fuzzyfinder-options-file-mode*
+                                                   *g:FuzzyFinderOptions.File*
+File モード用 ~
+
+*g:FuzzyFinderOptions.File.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.File.mode_available = 1
+<
+*g:FuzzyFinderOptions.File.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.File.prompt = '>File>'
+<
+*g:FuzzyFinderOptions.File.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.File.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.File.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.File.smart_bs = 1
+<
+*g:FuzzyFinderOptions.File.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.File.switch_order = 20
+<
+*g:FuzzyFinderOptions.File.reuse_window*
+  真なら目的のバッファ/ファイルを開いているウィンドウを再利用します。
+>
+  let g:FuzzyFinderOptions.File.reuse_window = 1
+<
+*g:FuzzyFinderOptions.File.excluded_path*
+  これにマッチするパスのアイテムは除外します。
+>
+  let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
+<
+                                                *fuzzyfinder-options-dir-mode*
+                                                    *g:FuzzyFinderOptions.Dir*
+Directory モード用 ~
+
+*g:FuzzyFinderOptions.Dir.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.Dir.mode_available = 1
+<
+*g:FuzzyFinderOptions.Dir.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.Dir.prompt = '>Dir>'
+<
+*g:FuzzyFinderOptions.Dir.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.Dir.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.Dir.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.Dir.smart_bs = 1
+<
+*g:FuzzyFinderOptions.Dir.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.Dir.switch_order = 30
+<
+*g:FuzzyFinderOptions.Dir.excluded_path*
+  これにマッチするパスのアイテムは除外します。
+>
+  let g:FuzzyFinderOptions.Dir.excluded_path = '\v(^|[/\\])\.{1,2}[/\\]$'
+<
+                                            *fuzzyfinder-options-mrufile-mode*
+                                                *g:FuzzyFinderOptions.MruFile*
+Mru-File モード用 ~
+
+*g:FuzzyFinderOptions.MruFile.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.MruFile.mode_available = 1
+<
+*g:FuzzyFinderOptions.MruFile.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.MruFile.prompt = '>MruFile>'
+<
+*g:FuzzyFinderOptions.MruFile.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.MruFile.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.MruFile.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.MruFile.smart_bs = 1
+<
+*g:FuzzyFinderOptions.MruFile.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.MruFile.switch_order = 40
+<
+*g:FuzzyFinderOptions.MruFile.reuse_window*
+  真なら目的のバッファ/ファイルを開いているウィンドウを再利用します。
+>
+  let g:FuzzyFinderOptions.MruFile.reuse_window = 1
+<
+*g:FuzzyFinderOptions.MruFile.excluded_path*
+  これにマッチするパスのアイテムは除外します。
+>
+  let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
+<
+*g:FuzzyFinderOptions.MruFile.max_item*
+  保持するMRUアイテムの上限値です。
+>
+  let g:FuzzyFinderOptions.MruFile.max_item = 200
+<
+                                             *fuzzyfinder-options-mrucmd-mode*
+                                                 *g:FuzzyFinderOptions.MruCmd*
+Mru-Cmd モード用 ~
+
+*g:FuzzyFinderOptions.MruCmd.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.MruCmd.mode_available = 1
+<
+*g:FuzzyFinderOptions.MruCmd.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.MruCmd.prompt = '>MruCmd>'
+<
+*g:FuzzyFinderOptions.MruCmd.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.MruCmd.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.MruCmd.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.MruCmd.smart_bs = 0
+<
+*g:FuzzyFinderOptions.MruCmd.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.MruCmd.switch_order = 50
+<
+*g:FuzzyFinderOptions.MruCmd.excluded_command*
+  これにマッチするアイテムは除外します。
+>
+  let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
+<
+*g:FuzzyFinderOptions.MruCmd.max_item*
+  保持するMRUアイテムの上限値です。
+>
+  let g:FuzzyFinderOptions.MruCmd.max_item = 200
+<
+                                           *fuzzyfinder-options-Bookmark-mode*
+                                               *g:FuzzyFinderOptions.Bookmark*
+Bookmark モード用 ~
+
+*g:FuzzyFinderOptions.Bookmark.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.Bookmark.mode_available = 1
+<
+*g:FuzzyFinderOptions.Bookmark.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.Bookmark.prompt = '>Bookmark>'
+<
+*g:FuzzyFinderOptions.Bookmark.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.Bookmark.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.Bookmark.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.Bookmark.smart_bs = 0
+<
+*g:FuzzyFinderOptions.Bookmark.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.Bookmark.switch_order = 60
+<
+*g:FuzzyFinderOptions.Bookmark.reuse_window*
+  真なら目的のバッファ/ファイルを開いているウィンドウを再利用します。
+>
+  let g:FuzzyFinderOptions.Bookmark.reuse_window = 1
+<
+*g:FuzzyFinderOptions.Bookmark.searching_range*
+  ジャンプするとき、ブックマークした位置からこの行数の範囲内でブックマークした
+  ときのパターンとマッチする行を探します。
+>
+  let g:FuzzyFinderOptions.Bookmark.searching_range = 100
+<
+                                                *fuzzyfinder-options-tag-mode*
+                                                    *g:FuzzyFinderOptions.Tag*
+Tag モード用 ~
+
+*g:FuzzyFinderOptions.Tag.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.Tag.mode_available = 1
+<
+*g:FuzzyFinderOptions.Tag.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.Tag.prompt = '>Tag>'
+<
+*g:FuzzyFinderOptions.Tag.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.Tag.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.Tag.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.Tag.smart_bs = 0
+<
+*g:FuzzyFinderOptions.Tag.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.Tag.switch_order = 70
+<
+                                         *fuzzyfinder-options-taggedfile-mode*
+                                             *g:FuzzyFinderOptions.TaggedFile*
+Tagged-File モード用 ~
+
+*g:FuzzyFinderOptions.TaggedFile.mode_available*
+  偽ならこのモードに関する機能を無効化します。
+>
+  let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
+<
+*g:FuzzyFinderOptions.TaggedFile.prompt*
+  プロンプト文字列です。
+>
+  let g:FuzzyFinderOptions.TaggedFile.prompt = '>TaggedFile>'
+<
+*g:FuzzyFinderOptions.TaggedFile.prompt_highlight*
+  プロンプトをハイライトするグループ名です。
+>
+  let g:FuzzyFinderOptions.TaggedFile.prompt_highlight = 'Question'
+<
+*g:FuzzyFinderOptions.TaggedFile.smart_bs*
+  パス区切り文字の直後で <BS> を入力すると、ディレクトリ名1つ分を削除します。
+>
+  let g:FuzzyFinderOptions.TaggedFile.smart_bs = 0
+<
+*g:FuzzyFinderOptions.TaggedFile.switch_order*
+  次/前のモードに切り替えるためにモードをソートするときの比較値です。
+>
+  let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
+<
+*g:FuzzyFinderOptions.TaggedFile.reuse_window*
+  真なら目的のバッファ/ファイルを開いているウィンドウを再利用します。
+>
+  let g:FuzzyFinderOptions.TaggedFile.reuse_window = 1
+<
+
+==============================================================================
+vimrc の例                                         *fuzzyfinder-vimrc-example*
+
+>
+  let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{}, 'MruFile':{}, 'MruCmd':{}, 'Bookmark':{}, 'Tag':{}, 'TaggedFile':{}}
+  let g:FuzzyFinderOptions.Base.abbrev_map  = {
+        \   '^v|' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . "/**/"'),
+        \ }
+  let g:FuzzyFinderOptions.MruFile.max_item = 300
+  let g:FuzzyFinderOptions.MruCmd.max_item = 400
+  nnoremap <silent> <C-n>      :FuzzyFinderBuffer<CR>
+  nnoremap <silent> <C-p>      :FuzzyFinderFileWithCurrentBufferDir<CR>
+  nnoremap <silent> <C-f><C-p> :FuzzyFinderFileWithFullCwd<CR>
+  nnoremap <silent> <C-f>p     :FuzzyFinderFile
+  nnoremap <silent> <C-j>      :FuzzyFinderMruFile<CR>
+  nnoremap <silent> <C-k>      :FuzzyFinderMruCmd<CR>
+  nnoremap <silent> <C-f><C-d> :FuzzyFinderDirWithCurrentBufferDir<CR>
+  nnoremap <silent> <C-f>d     :FuzzyFinderDirWithFullCwd<CR>
+  nnoremap <silent> <C-b>      :FuzzyFinderBookmark<CR>
+  nnoremap <silent> <C-f><C-t> :FuzzyFinderTag<CR>
+  nnoremap <silent> <C-f>t     :FuzzyFinderTag!<CR>
+  noremap  <silent> g]         :FuzzyFinderTagWithCursorWord!<CR>
+  nnoremap <silent> <C-f><C-g> :FuzzyFinderTaggedFile<CR>
+  nnoremap <silent> <C-f><C-b> :FuzzyFinderAddBookmark<CR>
+  vnoremap <silent> <C-f><C-b> :FuzzyFinderAddBookmarkAsSelectedText<CR>
+  nnoremap <silent> <C-f><C-e> :FuzzyFinderEditInfo<CR>
+  nnoremap <silent> <C-f><C-r> :FuzzyFinderRenewCache<CR>
+<
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
