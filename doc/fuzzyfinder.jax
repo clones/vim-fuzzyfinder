@@ -9,33 +9,33 @@ Fuzzyfinder はバッファ/ファイル/コマンド/ブックマーク/タグ�
 ための手段を提供します。入力されたパターンをあいまいパターンまたは部分一致パタ
 ーンに変換しマッチングを行います。
 
-  入力パターン     あいまいパターン          部分一致パターン ~
-  abc              * a * b * c *             * abc *
-  a?c              * a ? c *                 * a ? c *
-  dir/file         dir/ * f * i * l * e *    dir/ * file *
-  d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
-  ../**/s          ../ ** / * s *            ../ ** / * s *
-                   (** allows searching a directory tree.)
+        入力パターン     あいまいパターン          部分一致パターン ~
+        abc              * a * b * c *             * abc *
+        a?c              * a ? c *                 * a ? c *
+        dir/file         dir/ * f * i * l * e *    dir/ * file *
+        d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
+        ../**/s          ../ ** / * s *            ../ ** / * s *
+                         (** allows searching a directory tree.)
 
 次のような場面で有用です:
 
-  "./AhLongLongLongLongLongFile.txt"
-  "./AhLongLongLongLongLongName.txt"
-  "./OhLongLongLongLongLongFile.txt"
-  "./OhLongLongLongLongLongName.txt" <- 欲しいファイル :-O
+        "./AhLongLongLongLongLongFile.txt"
+        "./AhLongLongLongLongLongName.txt"
+        "./OhLongLongLongLongLongFile.txt"
+        "./OhLongLongLongLongLongName.txt" <- 欲しいファイル :-O
 
 "ON" と入力すれば "OhLongLongLongLongLongName.txt" が選択できます. :-D
 
 Fuzzyfinder にはいくつかのモードがあります:
 
-  Buffer モード
-  File モード
-  Directory モード (:cd コマンドの代わり)
-  MRU-File モード (最近使ったファイル)
-  MRU-Command モード (最近使ったコマンドライン)
-  Bookmark モード
-  Tag モード (|:tag|コマンドの代わり)
-  Tagged-File モード (tagsファイルに含まれるファイル)
+        Buffer モード
+        File モード
+        Directory モード (:cd コマンドの代わり)
+        MRU-File モード (最近使ったファイル)
+        MRU-Command モード (最近使ったコマンドライン)
+        Bookmark モード
+        Tag モード (|:tag|コマンドの代わり)
+        Tagged-File モード (tagsファイルに含まれるファイル)
 
 Fuzzyfinder はマルチバイト文字をサポートしています。
 
@@ -62,15 +62,15 @@ ZIPファイルをランタイムディレクトリに展開します。
 
 次のコマンドで Fuzzyfinder を起動します:
 
-   コマンド                  モード ~
-  |:FuzzyFinderBuffer|     - Buffer モード
-  |:FuzzyFinderFile|       - File モード
-  |:FuzzyFinderDir|        - Directory モード
-  |:FuzzyFinderMruFile|    - MRU-File モード
-  |:FuzzyFinderMruCmd|     - MRU-Command モード
-  |:FuzzyFinderBookmark|   - Bookmark モード
-  |:FuzzyFinderTag|        - Tag モード
-  |:FuzzyFinderTaggedFile| - Tagged-File モード
+         コマンド                  モード ~
+        |:FuzzyFinderBuffer|     - Buffer モード
+        |:FuzzyFinderFile|       - File モード
+        |:FuzzyFinderDir|        - Directory モード
+        |:FuzzyFinderMruFile|    - MRU-File モード
+        |:FuzzyFinderMruCmd|     - MRU-Command モード
+        |:FuzzyFinderBookmark|   - Bookmark モード
+        |:FuzzyFinderTag|        - Tag モード
+        |:FuzzyFinderTaggedFile| - Tagged-File モード
 
 これらのコマンドを押しやすいキーにマッピングすることを推奨します。これらのコマ
 ンドは初期テキストをコマンド引数として受け取ることができます。初期テキストは
