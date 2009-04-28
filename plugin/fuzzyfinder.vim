@@ -471,6 +471,24 @@ function s:OpenTag(path, mode)
         \ }[a:mode] . a:expr
 endfunction
 
+function! s:SelectedText() " by id:ka-nacht
+  let [visual_p, pos] = [mode() =~# "[vV\<C-v>]", getpos('.')]
+  let [r_, r_t] = [@@, getregtype('"')]
+  let [r0, r0t] = [@0, getregtype('0')]
+  if visual_p
+    execute "normal! \<Esc>"
+  endif
+  silent normal! gvy
+  let [_, _t] = [@@, getregtype('"')]
+  call setreg('"', r_, r_t)
+  call setreg('0', r0, r0t)
+  if visual_p
+    normal! gv
+  else
+    call setpos('.', pos)
+  endif
+  return _
+endfunction
 " }}}1
 "=============================================================================
 " OBJECT: g:FuzzyFinderMode.Base ---------------------------------------- {{{1
@@ -1226,7 +1244,7 @@ let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{}, 'MruFi
 let g:FuzzyFinderOptions.Base.key_open = '<CR>'
 let g:FuzzyFinderOptions.Base.key_open_split = '<C-j>'
 let g:FuzzyFinderOptions.Base.key_open_vsplit = '<C-k>'
-let g:FuzzyFinderOptions.Base.key_open_tab = '<C-]>'
+let g:FuzzyFinderOptions.Base.key_open_tab = '<C-l>'
 let g:FuzzyFinderOptions.Base.key_next_mode = '<C-t>'
 let g:FuzzyFinderOptions.Base.key_prev_mode = '<C-y>'
 let g:FuzzyFinderOptions.Base.key_ignore_case = '<C-g><C-g>'
@@ -1294,7 +1312,6 @@ let g:FuzzyFinderOptions.Tag.prompt = '>Tag>'
 let g:FuzzyFinderOptions.Tag.prompt_highlight = 'Question'
 let g:FuzzyFinderOptions.Tag.smart_bs = 0
 let g:FuzzyFinderOptions.Tag.switch_order = 70
-let g:FuzzyFinderOptions.Tag.excluded_path = '\v\~$|\.bak$|\.swp$'
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.TaggedFile.mode_available = 1
 let g:FuzzyFinderOptions.TaggedFile.prompt = '>TaggedFile>'
@@ -1329,17 +1346,23 @@ augroup END
 " cnoremap has a problem, which doesn't expand cabbrev.
 cmap <silent> <expr> <CR> <SID>OnCmdCR()
 
-command! -bang -narg=? -complete=buffer FuzzyFinderBuffer      call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderFile        call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=dir    FuzzyFinderDir         call g:FuzzyFinderMode.Dir.launch       (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderMruFile     call g:FuzzyFinderMode.MruFile.launch   (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderMruCmd      call g:FuzzyFinderMode.MruCmd.launch    (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderBookmark    call g:FuzzyFinderMode.Bookmark.launch  (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=tag    FuzzyFinderTag         call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile  call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderEditInfo    call s:InfoFileManager.edit()
-command! -bang -narg=? -complete=file   FuzzyFinderAddBookmark call g:FuzzyFinderMode.Bookmark.bookmark_here(<q-args>)
-command! -bang -narg=0                  FuzzyFinderRemoveCache for s:m in s:GetAvailableModes() | call s:m.empty_cache_if_existed(1) | endfor
+command! -bang -narg=? -complete=buffer FuzzyFinderBuffer                    call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFile                      call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFileWithFullCwd           call g:FuzzyFinderMode.File.launch      (fnamemodify(getcwd(), ':p') . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFileWithCurrentBufferDir  call g:FuzzyFinderMode.File.launch      (expand('%:~:.')[:-1-len(expand('%:~:.:t'))] . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDir                       call g:FuzzyFinderMode.Dir.launch       (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDirWithFullCwd            call g:FuzzyFinderMode.Dir.launch       (fnamemodify(getcwd(), ':p') . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDirWithCurrentBufferDir   call g:FuzzyFinderMode.Dir.launch       (expand('%:p:~')[:-1-len(expand('%:p:~:t'))] . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderMruFile                   call g:FuzzyFinderMode.MruFile.launch   (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderMruCmd                    call g:FuzzyFinderMode.MruCmd.launch    (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderBookmark                  call g:FuzzyFinderMode.Bookmark.launch  (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=tag    FuzzyFinderTag                       call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=tag    FuzzyFinderTagWithCursorWord         call g:FuzzyFinderMode.Tag.launch       (expand('<cword>') . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile                call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>))
+command! -bang -narg=?                  FuzzyFinderAddBookmark               call g:FuzzyFinderMode.Bookmark.bookmark_here(<q-args>)
+command! -bang -narg=0 -range           FuzzyFinderAddBookmarkAsSelectedText call g:FuzzyFinderMode.Bookmark.bookmark_here(s:SelectedText())
+command! -bang -narg=0                  FuzzyFinderEditInfo                  call s:InfoFileManager.edit()
+command! -bang -narg=0                  FuzzyFinderRenewCache                for s:m in s:GetAvailableModes() | call s:m.empty_cache_if_existed(1) | endfor
 
 " }}}1
 "=============================================================================
