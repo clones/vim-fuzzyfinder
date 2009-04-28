@@ -9,33 +9,33 @@ Fuzzyfinder provides convenient ways to quickly reach the
 buffer/file/command/bookmark/tag you want. Fuzzyfinder finds matching items
 with a fuzzy/partial pattern to which it converted the entered pattern.
 
-  Entered pattern  Fuzzy pattern             Partial pattern ~
-  abc              * a * b * c *             * abc *
-  a?c              * a ? c *                 * a ? c *
-  dir/file         dir/ * f * i * l * e *    dir/ * file *
-  d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
-  ../**/s          ../ ** / * s *            ../ ** / * s *
-                   (** allows searching a directory tree.)
+        Entered pattern  Fuzzy pattern             Partial pattern ~
+        abc              * a * b * c *             * abc *
+        a?c              * a ? c *                 * a ? c *
+        dir/file         dir/ * f * i * l * e *    dir/ * file *
+        d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
+        ../**/s          ../ ** / * s *            ../ ** / * s *
+                         (** allows searching a directory tree.)
 
 You will be happy when:
 
-  "./AhLongLongLongLongLongFile.txt"
-  "./AhLongLongLongLongLongName.txt"
-  "./OhLongLongLongLongLongFile.txt"
-  "./OhLongLongLongLongLongName.txt" <- you want :O
+        "./AhLongLongLongLongLongFile.txt"
+        "./AhLongLongLongLongLongName.txt"
+        "./OhLongLongLongLongLongFile.txt"
+        "./OhLongLongLongLongLongName.txt" <- you want :O
 
 Type "ON" and "OhLongLongLongLongLongName.txt" will be select. :D
 
 Fuzzyfinder has some modes:
 
-  Buffer mode
-  File mode
-  Directory mode (yet another :cd command)
-  MRU-File mode (most recently used files)
-  MRU-Command mode (most recently used command-lines)
-  Bookmark mode
-  Tag mode (yet another |:tag| command)
-  Tagged-File mode (files which are included in current tags)
+        Buffer mode
+        File mode
+        Directory mode (yet another :cd command)
+        MRU-File mode (most recently used files)
+        MRU-Command mode (most recently used command-lines)
+        Bookmark mode
+        Tag mode (yet another |:tag| command)
+        Tagged-File mode (files which are included in current tags)
 
 Fuzzyfinder supports multibyte characters.
 
@@ -62,15 +62,15 @@ Launching ~
 
 You can launch Fuzzyfinder by the following commands:
 
-   Command                   Mode ~
-  |:FuzzyFinderBuffer|     - Buffer mode
-  |:FuzzyFinderFile|       - File mode
-  |:FuzzyFinderDir|        - Directory mode
-  |:FuzzyFinderMruFile|    - MRU-File mode
-  |:FuzzyFinderMruCmd|     - MRU-Command mode
-  |:FuzzyFinderBookmark|   - Bookmark mode
-  |:FuzzyFinderTag|        - Tag mode
-  |:FuzzyFinderTaggedFile| - Tagged-File mode
+         Command                   Mode ~
+        |:FuzzyFinderBuffer|     - Buffer mode
+        |:FuzzyFinderFile|       - File mode
+        |:FuzzyFinderDir|        - Directory mode
+        |:FuzzyFinderMruFile|    - MRU-File mode
+        |:FuzzyFinderMruCmd|     - MRU-Command mode
+        |:FuzzyFinderBookmark|   - Bookmark mode
+        |:FuzzyFinderTag|        - Tag mode
+        |:FuzzyFinderTaggedFile| - Tagged-File mode
 
 It is recommended to map these commands. These commands can take initial text
 as a command argument. The text will be entered after Fuzzyfinder launched. If
