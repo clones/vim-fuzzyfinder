@@ -1,15 +1,11 @@
 "=============================================================================
-" fuzzyfinder.vim : Fuzzy/Partial pattern explorer for
-"                   buffer/file/MRU/command/bookmark/tag/etc.
-"=============================================================================
-"
-" Author:        Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version:       2.20, for Vim 7.1
-" Licence:       MIT Licence
-" URL:           http://www.vim.org/scripts/script.php?script_id=1984
-"                http://code.google.com/p/vim-fuzzyfinder/
-"
+" File:                plugin/fuzzyfinder.vim
+" Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
+" Version:             2.20, for Vim 7.1
+" Licence:             MIT Licence
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
+"
+" See doc/fuzzyfinder.txt for details.
 "
 "=============================================================================
 " INCLUDE GUARD: {{{1
