@@ -8,7 +8,6 @@
 " Licence:       MIT Licence
 " URL:           http://www.vim.org/scripts/script.php?script_id=1984
 "                http://code.google.com/p/vim-fuzzyfinder/
-" Documentation: http://code.google.com/p/vim-fuzzyfinder/wiki/Index
 "
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
 "
@@ -363,6 +362,7 @@ function! s:SetRanks(item, eval_word, eval_base, stats)
 endfunction
 
 function! s:SetFormattedAbbr(item, key, truncation_len)
+  " -5 is a length of '%3d: '
   let a:item.abbr = printf('%3d: %s', a:item.index, s:TruncateHead(a:item[a:key], a:truncation_len - 5))
   return a:item
 endfunction
@@ -779,7 +779,7 @@ function! g:FuzzyFinderMode.Buffer.on_mode_enter_post()
   if self.mru_order
     call s:MapToSetSerialIndex(sort(self.items, 's:CompareTimeDescending'), 1)
   endif
-  call map(self.items, 's:SetFormattedAbbr(v:val, "abbr", self.truncation_length)')
+  call map(self.items, 's:SetFormattedAbbr(v:val, "abbr", self.max_menu_width)')
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_buf_enter()
@@ -835,7 +835,7 @@ function! g:FuzzyFinderMode.File.cached_glob(dir, file, excluded, index, limit)
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)') 
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.Dir ----------------------------------------- {{{1
@@ -866,7 +866,7 @@ function! g:FuzzyFinderMode.Dir.cached_glob_dir(dir, file, excluded, index, limi
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)') 
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.MruFile ------------------------------------- {{{1
@@ -885,7 +885,7 @@ function! g:FuzzyFinderMode.MruFile.on_mode_enter_post()
   let self.items = map(self.items, 'self.format_item_using_cache(v:val)')
   let self.items = filter(self.items, '!empty(v:val) && bufnr("^" . v:val.word . "$") != self.prev_bufnr')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
+  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_buf_enter()
@@ -953,7 +953,7 @@ function! g:FuzzyFinderMode.MruCmd.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
+  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_command_pre(cmd)
@@ -992,7 +992,7 @@ function! g:FuzzyFinderMode.Bookmark.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
+  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
@@ -1051,7 +1051,7 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, index, limit)
   endif
   echo 'Filtering tag list...'
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.TaggedFile ---------------------------------- {{{1
@@ -1086,7 +1086,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, index, limit)
   echo 'Filtering tagged-file list...'
   call map(self.cache[key].items, 's:ModifyWordAsFilename(v:val, '':.'')')
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.truncation_length)')
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
 endfunction
 
 " OBJECT: s:OptionManager ----------------------------------------------- {{{1
@@ -1255,7 +1255,7 @@ let g:FuzzyFinderOptions.Base.ignore_case = 1
 let g:FuzzyFinderOptions.Base.time_format = '(%x %H:%M:%S)'
 let g:FuzzyFinderOptions.Base.learning_limit = 100
 let g:FuzzyFinderOptions.Base.enumerating_limit = 100
-let g:FuzzyFinderOptions.Base.truncation_length = 80
+let g:FuzzyFinderOptions.Base.max_menu_width = 80
 let g:FuzzyFinderOptions.Base.lasting_cache = 1
 let g:FuzzyFinderOptions.Base.migemo_support = 0
 "-----------------------------------------------------------------------------
