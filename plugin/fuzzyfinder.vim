@@ -427,13 +427,13 @@ function! s:OpenFile(path, mode, reuse)
   endif
 endfunction
 
-function s:OpenTag(path, mode)
+function s:OpenTag(tag, mode)
   execute {
         \   s:OPEN_MODE_CURRENT : ':tjump '           ,
         \   s:OPEN_MODE_SPLIT   : ':stjump '          ,
         \   s:OPEN_MODE_VSPLIT  : ':vertical :stjump ',
         \   s:OPEN_MODE_TAB     : ':tab :stjump '     ,
-        \ }[a:mode] . a:expr
+        \ }[a:mode] . a:tag
 endfunction
 
 function! s:SelectedText() " by id:ka-nacht

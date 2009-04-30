@@ -801,6 +801,7 @@ CHANGELOG                                              *fuzzyfinder-changelog*
     Use dot sequence feature.
   - Changed default value of g:FuzzyFinderOptions.File.excluded_path option.
   - Changed default value of g:FuzzyFinderOptions.Dir.excluded_path option.
+  - Fixed a bug that couldn't jump to a tag.
 
 2.20:
   - Added help files which are doc/fuzzyfinder.txt and doc/fuzzyfinder.jax.
