@@ -184,6 +184,17 @@ Cache ~
 Once a cache was created, It is not automatically updated to speed up the
 response time by default. To update it, use |:FuzzyFinderRenewCache| command.
 
+                                                    *fuzzyfinder-dot-sequence*
+Going Up Parent Directories With Dot Sequence In File/Directory Mode ~
+
+In File/Directory mode, you can go up parent directories with entering dot
+sequence. Dot sequence after a path separator is expanded to "../" sequence.
+
+        Dot sequence    Expanded pattern ~
+        /..             /../
+        /...            /../../
+        /....           /../../../
+
                                                    *fuzzyfinder-bookmark-mode*
 Detail Of Bookmark Mode ~
 
@@ -447,7 +458,8 @@ For Buffer Mode ~
         let g:FuzzyFinderOptions.Buffer.switch_order = 10
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                                  *g:FuzzyFinderOptions.Buffer.reuse_window*  >
         let g:FuzzyFinderOptions.Buffer.reuse_window = 1
@@ -489,7 +501,8 @@ For File Mode ~
         let g:FuzzyFinderOptions.File.switch_order = 20
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                                    *g:FuzzyFinderOptions.File.reuse_window*  >
         let g:FuzzyFinderOptions.File.reuse_window = 1
@@ -498,8 +511,7 @@ For File Mode ~
                 if non-zero was set.
 
                                   *g:FuzzyFinderOptions.File.excluded_path*  >
-        let g:FuzzyFinderOptions.File.excluded_path =
-              \ '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
+        let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
 <
                 The items matching this are excluded from the completion list.
 
@@ -531,11 +543,11 @@ For Directory Mode ~
         let g:FuzzyFinderOptions.Dir.switch_order = 30
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                                    *g:FuzzyFinderOptions.Dir.excluded_path*  >
-        let g:FuzzyFinderOptions.Dir.excluded_path =
-              \ '\v(^|[/\\])\.{1,2}[/\\]$'
+        let g:FuzzyFinderOptions.Dir.excluded_path = ''
 <
                 The items matching this are excluded from the completion list.
 
@@ -567,7 +579,8 @@ For Mru-File Mode ~
         let g:FuzzyFinderOptions.MruFile.switch_order = 40
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                                 *g:FuzzyFinderOptions.MruFile.reuse_window*  >
         let g:FuzzyFinderOptions.MruFile.reuse_window = 1
@@ -576,8 +589,7 @@ For Mru-File Mode ~
                 if non-zero was set.
 
                                *g:FuzzyFinderOptions.MruFile.excluded_path*  >
-        let g:FuzzyFinderOptions.MruFile.excluded_path =
-              \ '\v\~$|\.bak$|\.swp$'
+        let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
 <
                 The items matching this are excluded from the completion list.
 
@@ -614,7 +626,8 @@ For Mru-Cmd Mode ~
         let g:FuzzyFinderOptions.MruCmd.switch_order = 50
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                              *g:FuzzyFinderOptions.MruCmd.excluded_command*  >
         let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
@@ -654,7 +667,8 @@ For Bookmark Mode ~
         let g:FuzzyFinderOptions.Bookmark.switch_order = 60
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                                *g:FuzzyFinderOptions.Bookmark.reuse_window*  >
         let g:FuzzyFinderOptions.Bookmark.reuse_window = 1
@@ -696,7 +710,8 @@ For Tag Mode ~
         let g:FuzzyFinderOptions.Tag.switch_order = 70
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
        *fuzzyfinder-options-taggedfile-mode* *g:FuzzyFinderOptions.TaggedFile*
 For Tagged-File Mode ~
@@ -726,7 +741,8 @@ For Tagged-File Mode ~
         let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 <
                 This is used to sort modes for switching to the next/previous
-                mode.
+                mode. If negative number was set, Fuzzyfinder never switch to
+                this mode.
 
                              *g:FuzzyFinderOptions.TaggedFile.reuse_window*  >
         let g:FuzzyFinderOptions.TaggedFile.reuse_window = 1
@@ -777,6 +793,14 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 
 ==============================================================================
 CHANGELOG                                              *fuzzyfinder-changelog*
+
+2.21.0:
+  - Added CallbackFile mode for third-party script to find a file/directory
+    using Fuzzyfinder.
+  - Changed not to append ".." to a completion menu in File/Directory mode.
+    Use dot sequence feature.
+  - Changed default value of g:FuzzyFinderOptions.File.excluded_path option.
+  - Changed default value of g:FuzzyFinderOptions.Dir.excluded_path option.
 
 2.20:
   - Added help files which are doc/fuzzyfinder.txt and doc/fuzzyfinder.jax.
