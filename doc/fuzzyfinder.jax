@@ -189,6 +189,17 @@ Fuzzyfinder は補完統計、MRUデータ、ブックマークなどを
 一旦キャッシュが生成されると、レスポンスを向上させるため自動的には更新されませ
 ん。これを更新するには :FuzzyFinderRenewCache コマンドを実行してください。
 
+                                                    *fuzzyfinder-dot-sequence*
+ドット列で親ディレクトリへ移動 (File/Directory モード) ~
+
+ドット列を入力することで親ディレクトリを上がっていくことができます。パス区切り
+文字直後のドット列は "../" の列に展開されます。
+
+        ドット列        展開パターン ~
+        /..             /../
+        /...            /../../
+        /....           /../../../
+
                                                    *fuzzyfinder-bookmark-mode*
 Bookmark モードについて ~
 
@@ -446,7 +457,7 @@ Buffer モード用 ~
         let g:FuzzyFinderOptions.Buffer.switch_order = 10
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                                  *g:FuzzyFinderOptions.Buffer.reuse_window*  >
         let g:FuzzyFinderOptions.Buffer.reuse_window = 1
@@ -487,7 +498,7 @@ File モード用 ~
         let g:FuzzyFinderOptions.File.switch_order = 20
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                                    *g:FuzzyFinderOptions.File.reuse_window*  >
         let g:FuzzyFinderOptions.File.reuse_window = 1
@@ -496,8 +507,7 @@ File モード用 ~
                 ます。
 
                                   *g:FuzzyFinderOptions.File.excluded_path*  >
-        let g:FuzzyFinderOptions.File.excluded_path =
-              \ '\v\~$|\.o$|\.exe$|\.bak$|\.swp$|((^|[/\\])\.[/\\]$)'
+        let g:FuzzyFinderOptions.File.excluded_path = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
 <
                 これにマッチするパスのアイテムは除外します。
 
@@ -529,11 +539,10 @@ Directory モード用 ~
         let g:FuzzyFinderOptions.Dir.switch_order = 30
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                                    *g:FuzzyFinderOptions.Dir.excluded_path*  >
-        let g:FuzzyFinderOptions.Dir.excluded_path =
-              \ '\v(^|[/\\])\.{1,2}[/\\]$'
+        let g:FuzzyFinderOptions.Dir.excluded_path = ''
 <
                 これにマッチするパスのアイテムは除外します。
 
@@ -565,7 +574,7 @@ Mru-File モード用 ~
         let g:FuzzyFinderOptions.MruFile.switch_order = 40
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                                 *g:FuzzyFinderOptions.MruFile.reuse_window*  >
         let g:FuzzyFinderOptions.MruFile.reuse_window = 1
@@ -574,8 +583,7 @@ Mru-File モード用 ~
                 ます。
 
                                *g:FuzzyFinderOptions.MruFile.excluded_path*  >
-        let g:FuzzyFinderOptions.MruFile.excluded_path =
-              \ '\v\~$|\.bak$|\.swp$'
+        let g:FuzzyFinderOptions.MruFile.excluded_path = '\v\~$|\.bak$|\.swp$'
 <
                 これにマッチするパスのアイテムは除外します。
 
@@ -612,7 +620,7 @@ Mru-Cmd モード用 ~
         let g:FuzzyFinderOptions.MruCmd.switch_order = 50
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                              *g:FuzzyFinderOptions.MruCmd.excluded_command*  >
         let g:FuzzyFinderOptions.MruCmd.excluded_command = '^$'
@@ -652,7 +660,7 @@ Bookmark モード用 ~
         let g:FuzzyFinderOptions.Bookmark.switch_order = 60
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                                *g:FuzzyFinderOptions.Bookmark.reuse_window*  >
         let g:FuzzyFinderOptions.Bookmark.reuse_window = 1
@@ -694,7 +702,7 @@ Tag モード用 ~
         let g:FuzzyFinderOptions.Tag.switch_order = 70
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
        *fuzzyfinder-options-taggedfile-mode* *g:FuzzyFinderOptions.TaggedFile*
 Tagged-File モード用 ~
@@ -724,7 +732,7 @@ Tagged-File モード用 ~
         let g:FuzzyFinderOptions.TaggedFile.switch_order = 80
 <
                 次/前のモードに切り替えるためにモードをソートするときの比較値
-                です。
+                です。負数ならこのモードには切り替えません。
 
                              *g:FuzzyFinderOptions.TaggedFile.reuse_window*  >
         let g:FuzzyFinderOptions.TaggedFile.reuse_window = 1
