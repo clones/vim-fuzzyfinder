@@ -107,7 +107,7 @@ Fuzzyfinder は幾つかのルールに従って補完アイテムをソート�
         <CR>  - 直前のウィンドウで開きます。
         <C-j> - 直前のウィンドウを分割して開きます。
         <C-k> - 直前のウィンドウを垂直分割して開きます。
-        <C-]> - 別のタブページで開きます。
+        <C-l> - 別のタブページで開きます。
 
 キャンセルして直前のウィンドウに戻るには、インサートモードを抜けてください。
 
@@ -352,7 +352,7 @@ Migemo とは ~
                 て開くキーです。
 
                                    *g:FuzzyFinderOptions.Base.key_open_tab*  >
-        let g:FuzzyFinderOptions.Base.key_open_tab = '<C-]>'
+        let g:FuzzyFinderOptions.Base.key_open_tab = '<C-l>'
 <
                 補完を確定し、バッファ/ファイルを別タブページ開くキーです。
 

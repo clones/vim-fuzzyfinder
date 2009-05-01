@@ -104,7 +104,7 @@ You can open a selected item in various ways:
         <CR>  - opens in a previous window.
         <C-j> - opens in a split window.
         <C-k> - opens in a vertical-split window.
-        <C-]> - opens in a new tab page.
+        <C-l> - opens in a new tab page.
 
 To cancel and return to previous window, leave Insert mode.
 
@@ -348,7 +348,7 @@ For All Mode ~
                 open a buffer/file in vertical-split new window.
 
                                    *g:FuzzyFinderOptions.Base.key_open_tab*  >
-        let g:FuzzyFinderOptions.Base.key_open_tab = '<C-]>'
+        let g:FuzzyFinderOptions.Base.key_open_tab = '<C-l>'
 <
                 This is mapped to select completion item or finish input and
                 open a buffer/file in a new tab page.
