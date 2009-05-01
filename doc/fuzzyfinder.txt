@@ -11,7 +11,6 @@ with a fuzzy/partial pattern to which it converted the entered pattern.
 
         Entered pattern  Fuzzy pattern             Partial pattern ~
         abc              * a * b * c *             * abc *
-        a?c              * a ? c *                 * a ? c *
         dir/file         dir/ * f * i * l * e *    dir/ * file *
         d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
         ../**/s          ../ ** / * s *            ../ ** / * s *

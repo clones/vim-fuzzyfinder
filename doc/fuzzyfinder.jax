@@ -11,7 +11,6 @@ Fuzzyfinder はバッファ/ファイル/コマンド/ブックマーク/タグ�
 
         入力パターン     あいまいパターン          部分一致パターン ~
         abc              * a * b * c *             * abc *
-        a?c              * a ? c *                 * a ? c *
         dir/file         dir/ * f * i * l * e *    dir/ * file *
         d*r/file         d * r/ * f * i * l * e *  d * r/ * file *
         ../**/s          ../ ** / * s *            ../ ** / * s *
