@@ -1,4 +1,3 @@
-" TODO: expand ** before typing /
 "=============================================================================
 " File:                plugin/fuzzyfinder.vim
 " Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
@@ -1369,8 +1368,10 @@ augroup FuzzyfinderGlobal
   autocmd BufWritePost * for s:m in s:GetAvailableModes() | call s:m.extend_options() | call s:m.on_buf_write_post() | endfor
 augroup END
 
-" cnoremap has a problem, which doesn't expand cabbrev.
-cmap <silent> <expr> <CR> <SID>OnCmdCR()
+if s:IsAvailableMode(g:FuzzyFinderMode.MruCmd)
+  " cnoremap has a problem, which doesn't expand cabbrev.
+  cmap <silent> <expr> <CR> <SID>OnCmdCR()
+endif
 
 command! -bang -narg=? -complete=buffer FuzzyFinderBuffer                    call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>))
 command! -bang -narg=? -complete=file   FuzzyFinderFile                      call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>))
