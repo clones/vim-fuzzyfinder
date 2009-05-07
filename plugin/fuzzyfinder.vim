@@ -8,12 +8,11 @@
 " See doc/fuzzyfinder.txt for details.
 "
 "=============================================================================
-" INCLUDE GUARD: {{{1
+" LOAD GUARD: {{{1
 if exists('g:loaded_fuzzyfinder') || v:version < 701
   finish
 endif
-let g:loaded_fuzzyfinder = 1
-let g:fuzzyfinder_version = 022100
+let g:loaded_fuzzyfinder = 022100 " Version xx.xx.xx
 
 " }}}1
 "=============================================================================
