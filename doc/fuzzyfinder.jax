@@ -232,6 +232,16 @@ Tagged-File モード ~
 補完アイテムは tags ファイルに含まれるファイルです。これらのファイルは作業環境
 に関連しているので、一種のプロジェクトモードです。
 
+                                               *fuzzyfinder-callbackfile-mode*
+Callback-File モードの利用 ~
+
+TODO:
+
+                                               *fuzzyfinder-callbackitem-mode*
+Callback-Item モードの利用 ~
+
+TODO:
+
                                                           *fuzzyfinder-migemo*
 Migemo とは ~
 

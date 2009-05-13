@@ -230,6 +230,48 @@ completion items are files which are included in the current tags. These files
 are related to the current working environment. So this mode is a pseudo
 project mode.
 
+                                               *fuzzyfinder-callbackfile-mode*
+Use of Callback-File Mode ~
+
+TODO:
+>
+        function! g:echoCallback(...)
+          if a:0
+            echo "Item: " . a:1 . "\nOpen mode: " . a:2
+          else
+            echo "Canceled"
+          endif
+        endfunction
+
+        " Find a file from current working directory.
+        call g:FuzzyFinderMode.CallbackFile.launch_callbacker(
+              \ '', 0, 'g:echoCallback')
+
+        " Find a file from home directory.
+        call g:FuzzyFinderMode.CallbackFile.launch_callbacker(
+              \ '~/', 0, 'g:echoCallback')
+<
+                                               *fuzzyfinder-callbackitem-mode*
+Use of Callback-Item Mode ~
+
+TODO:
+>
+        function! g:echoCallback(...)
+          if a:0
+            echo "Item: " . a:1 . "\nOpen method: " . a:2
+          else
+            echo "Canceled"
+          endif
+        endfunction
+
+        " Select an item from given list.
+        call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
+              \ '', 0, 'g:echoCallback', ['ed', 'vi', 'vim'], 0)
+
+        " Select a file from given list.
+        call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
+              \ '', 0, 'g:echoCallback', ['../foo/bar', 'baz'], 1)
+<
                                                           *fuzzyfinder-migemo*
 What Is Migemo ~
 
@@ -751,7 +793,7 @@ For Tagged-File Mode ~
 
 
 ==============================================================================
-VIMRC EXAMPLE                                      *fuzzyfinder-vimrc-sample*
+VIMRC EXAMPLE                                       *fuzzyfinder-vimrc-sample*
 
 >
         let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{}, 'MruFile':{}, 'MruCmd':{}, 'Bookmark':{}, 'Tag':{}, 'TaggedFile':{}}
@@ -797,8 +839,8 @@ CHANGELOG                                              *fuzzyfinder-changelog*
   - Changed not to map command-line <CR> for MRU-Command mode if
     g:FuzzyFinderOptions.MruCmd.mode_available is set 0 before loading
     fuzzyfinder.vim.
-  - Added CallbackFile mode for third-party script to find a file/directory
-    using Fuzzyfinder.
+  - Added Callback-File mode and Callback-Item mode for third-party script to
+    find a file/directory or an item from given list using Fuzzyfinder.
   - Changed not to append ".." to a completion menu in File/Directory mode.
     Use dot sequence feature.
   - Changed default value of g:FuzzyFinderOptions.File.excluded_path option.

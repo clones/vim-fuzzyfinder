@@ -458,7 +458,7 @@ endfunction
 " OBJECT: g:FuzzyFinderMode.Base ---------------------------------------- {{{1
 let g:FuzzyFinderMode = { 'Base' : {} }
 
-function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
+function! g:FuzzyFinderMode.Base.launch(patternInitial, partial_matching)
   " initializes this object
   call self.extend_options()
   let self.partial_matching = a:partial_matching
@@ -496,7 +496,7 @@ function! g:FuzzyFinderMode.Base.launch(initial_text, partial_matching)
   endfor
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
-  call setline(1, self.prompt . a:initial_text)
+  call setline(1, self.prompt . a:patternInitial)
   call self.on_mode_enter_post()
   call feedkeys("A", 'n') " startinsert! does not work in InsertLeave handler
 endfunction
@@ -1058,9 +1058,9 @@ endfunction
 " OBJECT: g:FuzzyFinderMode.CallbackFile -------------------------------- {{{1
 let g:FuzzyFinderMode.CallbackFile = copy(g:FuzzyFinderMode.Base)
 
-function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(callback_name, initial_text, partial_matching)
-  let self.callback_name = a:callback_name
-  call.self.launch(a:initial_text, a:partial_matching)
+function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(patternInitial, partial_matching, funcCallback)
+  let self.funcCallback = a:funcCallback
+  call.self.launch(a:patternInitial, a:partial_matching)
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_complete(base)
@@ -1073,7 +1073,7 @@ function! g:FuzzyFinderMode.CallbackFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_open(expr, mode)
-  call eval(printf('%s(%s)', self.callback_name, string(a:expr)))
+  call eval(printf('%s(%s, %d)', self.funcCallback, string(a:expr), a:mode))
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_switch_mode(next_prev)
@@ -1082,11 +1082,67 @@ endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_mode_leave_post(opened)
   if !a:opened
-    call eval(printf('%s()', self.callback_name))
+    call eval(printf('%s()', self.funcCallback))
   endif
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.cached_glob(dir, file, excluded, index, limit)
+  let key = fnamemodify(a:dir, ':p')
+  call extend(self, { 'cache' : {} }, 'keep')
+  if !exists('self.cache[key]')
+    echo 'Caching file list...'
+    let self.cache[key] = s:EnumExpandedDirsEntries(key, a:excluded)
+    if isdirectory(key . '.' . s:PATH_SEPARATOR)
+      call insert(self.cache[key], { 'head' : key, 'tail' : '.' , 'suffix' : '' })
+    endif
+    call s:MapToSetSerialIndex(self.cache[key], 1)
+  endif
+  echo 'Filtering file list...'
+  let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
+  call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
+  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
+endfunction
+
+" OBJECT: g:FuzzyFinderMode.CallbackItem -------------------------------- {{{1
+let g:FuzzyFinderMode.CallbackItem = copy(g:FuzzyFinderMode.Base)
+
+function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(patternInitial, fPartial, funcCallback, items, fFileItem)
+  let self.funcCallback = a:funcCallback
+  let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  let self.on_complete = (a:fFileItem ? self.on_complete_file : self.on_complete_nonfile)
+  call.self.launch(a:patternInitial, a:fPartial)
+endfunction
+
+function! g:FuzzyFinderMode.CallbackItem.on_complete_file(base)
+  let patterns = self.make_pattern(a:base)
+  let base_tail = s:SplitPath(a:base).tail
+  let stats = self.get_filtered_stats(a:base)
+  let result = s:FilterMatching(self.items, 'word', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  return map(result, 's:SetRanks(v:val, s:SplitPath(matchstr(v:val.word, ''^.*[^/\\]'')).tail, base_tail, stats)')
+endfunction
+
+function! g:FuzzyFinderMode.CallbackItem.on_complete_nonfile(base)
+  let patterns = self.make_pattern(a:base)
+  let stats = self.get_filtered_stats(a:base)
+  let result = s:FilterMatching(self.items, 'word', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  return map(result, 's:SetRanks(v:val, v:val.word, a:base, stats)')
+endfunction
+
+function! g:FuzzyFinderMode.CallbackItem.on_open(expr, mode)
+  call eval(printf('%s(%s, %d)', self.funcCallback, string(a:expr), a:mode))
+endfunction
+
+function! g:FuzzyFinderMode.CallbackItem.on_switch_mode(next_prev)
+  " mode switching is unavailable
+endfunction
+
+function! g:FuzzyFinderMode.CallbackItem.on_mode_leave_post(opened)
+  if !a:opened
+    call eval(printf('%s()', self.funcCallback))
+  endif
+endfunction
+
+function! g:FuzzyFinderMode.CallbackItem.cached_glob(dir, file, excluded, index, limit)
   let key = fnamemodify(a:dir, ':p')
   call extend(self, { 'cache' : {} }, 'keep')
   if !exists('self.cache[key]')
@@ -1255,7 +1311,8 @@ let s:user_options = (exists('g:FuzzyFinderOptions') ? g:FuzzyFinderOptions : {}
 " Initializes g:FuzzyFinderOptions.
 let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{},
       \                      'MruFile':{}, 'MruCmd':{}, 'Bookmark':{},
-      \                      'Tag':{}, 'TaggedFile':{}, 'CallbackFile':{} }
+      \                      'Tag':{}, 'TaggedFile':{},
+      \                      'CallbackFile':{}, 'CallbackItem':{}, }
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.Base.key_open = '<CR>'
 let g:FuzzyFinderOptions.Base.key_open_split = '<C-j>'
@@ -1343,6 +1400,14 @@ let g:FuzzyFinderOptions.CallbackFile.smart_bs = 1
 let g:FuzzyFinderOptions.CallbackFile.switch_order = -1
 let g:FuzzyFinderOptions.CallbackFile.lasting_cache = 0
 let g:FuzzyFinderOptions.CallbackFile.excluded_path = ''
+"-----------------------------------------------------------------------------
+let g:FuzzyFinderOptions.CallbackItem.mode_available = 1
+let g:FuzzyFinderOptions.CallbackItem.prompt = '>CallbackItem>'
+let g:FuzzyFinderOptions.CallbackItem.prompt_highlight = 'Question'
+let g:FuzzyFinderOptions.CallbackItem.smart_bs = 1
+let g:FuzzyFinderOptions.CallbackItem.switch_order = -1
+let g:FuzzyFinderOptions.CallbackItem.lasting_cache = 0
+let g:FuzzyFinderOptions.CallbackItem.excluded_path = ''
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(s:user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
@@ -1356,10 +1421,10 @@ call map(copy(g:FuzzyFinderMode), 'v:val.extend_options()')
 let s:PATH_SEPARATOR = (has('win32') || has('win64') ? '\' : '/')
 let s:MATCHING_RATE_BASE = 1000000
 let s:ABBR_TRUNCATION_MARK = '...'
-let s:OPEN_MODE_CURRENT = 0
-let s:OPEN_MODE_SPLIT   = 1
-let s:OPEN_MODE_VSPLIT  = 2
-let s:OPEN_MODE_TAB     = 3
+let s:OPEN_MODE_CURRENT = 1
+let s:OPEN_MODE_SPLIT   = 2
+let s:OPEN_MODE_VSPLIT  = 3
+let s:OPEN_MODE_TAB     = 4
 
 augroup FuzzyfinderGlobal
   autocmd!
