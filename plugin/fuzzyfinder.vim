@@ -458,7 +458,7 @@ endfunction
 " OBJECT: g:FuzzyFinderMode.Base ---------------------------------------- {{{1
 let g:FuzzyFinderMode = { 'Base' : {} }
 
-function! g:FuzzyFinderMode.Base.launch(patternInitial, partial_matching)
+function! g:FuzzyFinderMode.Base.launch(initial_pattern, partial_matching)
   " initializes this object
   call self.extend_options()
   let self.partial_matching = a:partial_matching
@@ -496,7 +496,7 @@ function! g:FuzzyFinderMode.Base.launch(patternInitial, partial_matching)
   endfor
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
-  call setline(1, self.prompt . a:patternInitial)
+  call setline(1, self.prompt . a:initial_pattern)
   call self.on_mode_enter_post()
   call feedkeys("A", 'n') " startinsert! does not work in InsertLeave handler
 endfunction
@@ -1058,9 +1058,9 @@ endfunction
 " OBJECT: g:FuzzyFinderMode.CallbackFile -------------------------------- {{{1
 let g:FuzzyFinderMode.CallbackFile = copy(g:FuzzyFinderMode.Base)
 
-function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(patternInitial, partial_matching, funcCallback)
-  let self.funcCallback = a:funcCallback
-  call.self.launch(a:patternInitial, a:partial_matching)
+function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(initial_pattern, partial_matching, callback_func)
+  let self.callback_func = a:callback_func
+  call.self.launch(a:initial_pattern, a:partial_matching)
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_complete(base)
@@ -1073,7 +1073,7 @@ function! g:FuzzyFinderMode.CallbackFile.on_complete(base)
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_open(expr, mode)
-  call eval(printf('%s(%s, %d)', self.funcCallback, string(a:expr), a:mode))
+  call eval(printf('%s(%s, %d)', self.callback_func, string(a:expr), a:mode))
 endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_switch_mode(next_prev)
@@ -1082,7 +1082,7 @@ endfunction
 
 function! g:FuzzyFinderMode.CallbackFile.on_mode_leave_post(opened)
   if !a:opened
-    call eval(printf('%s()', self.funcCallback))
+    call eval(printf('%s()', self.callback_func))
   endif
 endfunction
 
@@ -1106,11 +1106,11 @@ endfunction
 " OBJECT: g:FuzzyFinderMode.CallbackItem -------------------------------- {{{1
 let g:FuzzyFinderMode.CallbackItem = copy(g:FuzzyFinderMode.Base)
 
-function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(patternInitial, fPartial, funcCallback, items, fFileItem)
-  let self.funcCallback = a:funcCallback
+function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(initial_pattern, partial_matching, callback_func, items, for_file)
+  let self.callback_func = a:callback_func
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
-  let self.on_complete = (a:fFileItem ? self.on_complete_file : self.on_complete_nonfile)
-  call.self.launch(a:patternInitial, a:fPartial)
+  let self.on_complete = (a:for_file ? self.on_complete_file : self.on_complete_nonfile)
+  call.self.launch(a:initial_pattern, a:partial_matching)
 endfunction
 
 function! g:FuzzyFinderMode.CallbackItem.on_complete_file(base)
@@ -1129,7 +1129,7 @@ function! g:FuzzyFinderMode.CallbackItem.on_complete_nonfile(base)
 endfunction
 
 function! g:FuzzyFinderMode.CallbackItem.on_open(expr, mode)
-  call eval(printf('%s(%s, %d)', self.funcCallback, string(a:expr), a:mode))
+  call eval(printf('%s(%s, %d)', self.callback_func, string(a:expr), a:mode))
 endfunction
 
 function! g:FuzzyFinderMode.CallbackItem.on_switch_mode(next_prev)
@@ -1138,7 +1138,7 @@ endfunction
 
 function! g:FuzzyFinderMode.CallbackItem.on_mode_leave_post(opened)
   if !a:opened
-    call eval(printf('%s()', self.funcCallback))
+    call eval(printf('%s()', self.callback_func))
   endif
 endfunction
 

@@ -71,10 +71,10 @@ You can launch Fuzzyfinder by the following commands:
         |:FuzzyFinderTag|        - Tag mode
         |:FuzzyFinderTaggedFile| - Tagged-File mode
 
-It is recommended to map these commands. These commands can take initial text
-as a command argument. The text will be entered after Fuzzyfinder launched. If
-a command was executed with a ! modifier (e.g. |:FuzzyFinderTag|!), it enables
-the partial matching instead of the fuzzy matching.
+It is recommended to map these commands. These commands can take initial
+pattern as a command argument. The pattern will be inserted after launching
+Fuzzyfinder. If a command was executed with a ! modifier (e.g.:
+:FuzzyFinderTag!), it enables a partial matching instead of a fuzzy matching.
 
                                                     *fuzzyfinder-manipulation*
 Manipulation ~
@@ -233,11 +233,30 @@ project mode.
                                                *fuzzyfinder-callbackfile-mode*
 Use of Callback-File Mode ~
 
-TODO:
+Callback-File mode provides an API to find a file and not command interfaces.
+
+API function:
+>
+        function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(
+              \ initial_pattern,
+              \ partial_matching,
+              \ callback_func)
+<
+        initial_pattern  - String which is inserted after launching
+                           Fuzzyfinder.
+        partial_matching - If non-zero, enable a partial matching instead of a
+                           fuzzy matching.
+        callback_func    - Name of function which is called at the end of
+                           Fuzzyfinder. This is called with 2 arguments, a
+                           name of selected item and a number of open method
+                           if completed. Or, called without arguments if
+                           aborted.
+
+Example of use:
 >
         function! g:echoCallback(...)
           if a:0
-            echo "Item: " . a:1 . "\nOpen mode: " . a:2
+            echo "Item: " . a:1 . "\nMethod: " . a:2
           else
             echo "Canceled"
           endif
@@ -254,7 +273,31 @@ TODO:
                                                *fuzzyfinder-callbackitem-mode*
 Use of Callback-Item Mode ~
 
-TODO:
+Callback-Item mode provides an API to select an item from a given list and not
+command interfaces.
+
+API function:
+>
+        function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(
+              \ initial_pattern,
+              \ partial_matching,
+              \ callback_func,
+              \ items,
+              \ for_file)
+<
+        initial_pattern  - String which is inserted after launching
+                           Fuzzyfinder.
+        partial_matching - If non-zero, enable a partial matching instead of a
+                           fuzzy matching.
+        callback_func    - Name of function which is called at the end of
+                           Fuzzyfinder. This is called with 2 arguments, a
+                           name of selected item and a number of open method
+                           if completed. Or, called without arguments if
+                           aborted.
+        items            - List of items.
+        for_fil          - If non-zero, use a matching method for files.
+
+Example of use:
 >
         function! g:echoCallback(...)
           if a:0
@@ -264,11 +307,11 @@ TODO:
           endif
         endfunction
 
-        " Select an item from given list.
+        " Select an item from a given list.
         call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
               \ '', 0, 'g:echoCallback', ['ed', 'vi', 'vim'], 0)
 
-        " Select a file from given list.
+        " Select a file from a given list.
         call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
               \ '', 0, 'g:echoCallback', ['../foo/bar', 'baz'], 1)
 <
@@ -843,7 +886,7 @@ CHANGELOG                                              *fuzzyfinder-changelog*
     g:FuzzyFinderOptions.MruCmd.mode_available is set 0 before loading
     fuzzyfinder.vim.
   - Added Callback-File mode and Callback-Item mode for third-party script to
-    find a file/directory or an item from given list using Fuzzyfinder.
+    find a file/directory or an item from a given list using Fuzzyfinder.
   - Changed not to append ".." to a completion menu in File/Directory mode.
     Use dot sequence feature.
   - Changed default value of g:FuzzyFinderOptions.File.excluded_path option.
