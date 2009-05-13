@@ -882,6 +882,9 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 CHANGELOG                                              *fuzzyfinder-changelog*
 
 2.21.0:
+  - Improved a method of trimming long completion items. Thanks to Andy,
+    pyrhockz, and Nathan.
+  - Changed to truncate long completion items from the head instead of tail.
   - Changed not to map command-line <CR> for MRU-Command mode if
     g:FuzzyFinderOptions.MruCmd.mode_available is set 0 before loading
     fuzzyfinder.vim.
@@ -891,7 +894,7 @@ CHANGELOG                                              *fuzzyfinder-changelog*
     Use dot sequence feature.
   - Changed default value of g:FuzzyFinderOptions.File.excluded_path option.
   - Changed default value of g:FuzzyFinderOptions.Dir.excluded_path option.
-  - Fixed a bug that couldn't jump to a tag.
+  - Fixed a bug that couldn't jump to a tag. Thanks to Thinca.
 
 2.20:
   - Added help files which are doc/fuzzyfinder.txt and doc/fuzzyfinder.jax.

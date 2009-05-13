@@ -83,10 +83,22 @@ endfunction
 
 " truncates a:str and add a:mark if a length of a:str is more than a:len
 function! s:TruncateHead(str, len)
-  if a:len <= 0 || len(a:str) <= a:len
+  if a:len >= len(a:str)
     return a:str
+  elseif a:len <= len(s:ABBR_TRUNCATION_MARK)
+    return s:ABBR_TRUNCATION_MARK
   endif
   return s:ABBR_TRUNCATION_MARK . a:str[-a:len + len(s:ABBR_TRUNCATION_MARK):]
+endfunction
+
+" truncates a:str and add a:mark if a length of a:str is more than a:len
+function! s:TruncateTail(str, len)
+  if a:len >= len(a:str)
+    return a:str
+  elseif a:len <= len(s:ABBR_TRUNCATION_MARK)
+    return s:ABBR_TRUNCATION_MARK
+  endif
+  return a:str[:a:len - 1 + len(s:ABBR_TRUNCATION_MARK)] . s:ABBR_TRUNCATION_MARK
 endfunction
 
 " takes suffix numer. if no digits, returns -1
@@ -231,24 +243,29 @@ endfunction
 
 " FUNCTIONS: MISC ------------------------------------------------------- {{{1
 
+"
 function! s:IsAvailableMode(mode)
   return exists('a:mode.mode_available') && a:mode.mode_available
 endfunction
 
+"
 function! s:GetAvailableModes()
   return filter(values(g:FuzzyFinderMode), 's:IsAvailableMode(v:val)')
 endfunction
 
+"
 function! s:GetSortedSwitchableModes()
   let modes = filter(items(g:FuzzyFinderMode), 's:IsAvailableMode(v:val[1]) && v:val[1].switch_order >= 0')
   let modes = map(modes, 'extend(v:val[1], { "ranks" : [v:val[1].switch_order, v:val[0]] })')
   return sort(modes, 's:CompareRanks')
 endfunction
 
+"
 function! s:GetSidPrefix()
   return matchstr(expand('<sfile>'), '<SNR>\d\+_')
 endfunction
 
+"
 function! s:OnCmdCR()
   for m in s:GetAvailableModes()
     call m.extend_options()
@@ -260,6 +277,7 @@ function! s:OnCmdCR()
   return "\<CR>"
 endfunction
 
+"
 function! s:ExpandAbbrevMap(base, abbrev_map)
   let result = [a:base]
   " expand
@@ -273,6 +291,7 @@ function! s:ExpandAbbrevMap(base, abbrev_map)
   return s:Unique(result)
 endfunction
 
+"
 function! s:EnumExpandedDirsEntries(dir, excluded)
   " Substitutes "\" because on Windows, "**\" doesn't include ".\",
   " but "**/" include "./". I don't know why.
@@ -287,6 +306,7 @@ function! s:EnumExpandedDirsEntries(dir, excluded)
   return entries
 endfunction
 
+"
 function! s:GetBufIndicator(buf_nr)
   if !getbufvar(a:buf_nr, '&modifiable')
     return '[-]'
@@ -299,16 +319,19 @@ function! s:GetBufIndicator(buf_nr)
   endif
 endfunction
 
+"
 function! s:ModifyWordAsFilename(item, mods)
   let a:item.word = fnamemodify(a:item.word, a:mods)
   return a:item
 endfunction
 
+"
 function! s:SetFormattedTimeToMenu(item, format)
   let a:item.menu = strftime(a:format, a:item.time)
   return a:item
 endfunction
 
+"
 function! s:SetRanks(item, eval_word, eval_base, stats)
   "let eval_word = (a:is_path ? s:SplitPath(matchstr(a:item.word, '^.*[^/\\]')).tail : a:item.word)
   "let eval_base = (a:is_path ? s:SplitPath(a:base).tail : a:base)
@@ -324,16 +347,41 @@ function! s:SetRanks(item, eval_word, eval_base, stats)
   return a:item
 endfunction
 
-function! s:SetFormattedAbbr(item, key, truncation_len)
-  " -5 is a length of '%3d: '
-  let a:item.abbr = printf('%3d: %s', a:item.index, s:TruncateHead(a:item[a:key], a:truncation_len - 5))
+"
+function! s:SetFormattedWordToAbbr(item, max_menu_width)
+  let abbr_prefix = (exists('a:item.abbr_prefix') ? a:item.abbr_prefix : '')
+  let a:item.abbr = s:TruncateTail(printf('%3d: ', a:item.index) . abbr_prefix . a:item.word, a:max_menu_width)
   return a:item
 endfunction
 
+"
+function! s:SetDataToAbbrForFile(item)
+  let a:item.abbr = s:SplitPath(a:item.word)
+  let a:item.abbr.prefix = printf('%3d: ', a:item.index) . (exists('a:item.abbr_prefix') ? a:item.abbr_prefix : '')
+  return a:item
+endfunction
+
+"
+function! s:FormatAbbrForFile(item, max_menu_width, len_drop)
+  let len_head = len(v:val.abbr.head) - a:len_drop
+  let a:item.abbr = v:val.abbr.prefix . s:TruncateHead(v:val.abbr.head, len_head) . v:val.abbr.tail
+  let a:item.abbr = s:TruncateTail(a:item.abbr, a:max_menu_width)
+  return a:item
+endfunction
+
+"
+function! s:MapToSetFormattedWordToAbbrForFile(items, max_menu_width)
+  let result = map(a:items, 's:SetDataToAbbrForFile(v:val)')
+  let len_drop = max(map(copy(result), 'len(v:val.abbr.prefix . v:val.abbr.head . v:val.abbr.tail)')) - a:max_menu_width
+  return map(a:items, 's:FormatAbbrForFile(v:val, a:max_menu_width, len_drop)')
+endfunction
+
+"
 function! s:CompareTimeDescending(i1, i2)
   return a:i1.time == a:i2.time ? 0 : a:i1.time > a:i2.time ? -1 : +1
 endfunction
 
+"
 function! s:CompareRanks(i1, i2)
   if exists('a:i1.ranks') && exists('a:i2.ranks')
     for i in range(min([len(a:i1.ranks), len(a:i2.ranks)]))
@@ -347,6 +395,7 @@ function! s:CompareRanks(i1, i2)
   return 0
 endfunction
 
+"
 function! s:GetLinePattern(lnum)
   return '\C\V\^' . escape(getline(a:lnum), '\') . '\$'
 endfunction
@@ -397,6 +446,7 @@ function! s:MoveToWindowOfBufferInOtherTabPage(buf_nr)
   return s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)
 endfunction
 
+"
 function! s:OpenBuffer(buf_nr, mode, reuse)
   if a:reuse && ((a:mode == s:OPEN_MODE_SPLIT  && s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
         \        (a:mode == s:OPEN_MODE_VSPLIT && s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
@@ -411,6 +461,7 @@ function! s:OpenBuffer(buf_nr, mode, reuse)
         \ }[a:mode], a:buf_nr)
 endfunction
 
+"
 function! s:OpenFile(path, mode, reuse)
   let buf_nr = bufnr('^' . a:path . '$')
   if buf_nr > -1
@@ -425,6 +476,7 @@ function! s:OpenFile(path, mode, reuse)
   endif
 endfunction
 
+"
 function s:OpenTag(tag, mode)
   execute {
         \   s:OPEN_MODE_CURRENT : ':tjump '           ,
@@ -434,6 +486,7 @@ function s:OpenTag(tag, mode)
         \ }[a:mode] . a:tag
 endfunction
 
+"
 function! s:SelectedText() " by id:ka-nacht
   let [visual_p, pos] = [mode() =~# "[vV\<C-v>]", getpos('.')]
   let [r_, r_t] = [@@, getregtype('"')]
@@ -744,7 +797,7 @@ function! g:FuzzyFinderMode.Buffer.on_mode_enter_post()
   if self.mru_order
     call s:MapToSetSerialIndex(sort(self.items, 's:CompareTimeDescending'), 1)
   endif
-  call map(self.items, 's:SetFormattedAbbr(v:val, "abbr", self.max_menu_width)')
+  let self.items = s:MapToSetFormattedWordToAbbrForFile(self.items, self.max_menu_width)
 endfunction
 
 function! g:FuzzyFinderMode.Buffer.on_buf_enter()
@@ -764,12 +817,12 @@ function! g:FuzzyFinderMode.Buffer.make_item(nr)
   let path = (empty(bufname(a:nr)) ? '[No Name]' : fnamemodify(bufname(a:nr), ':~:.'))
   let time = (exists('self.buf_times[a:nr]') ? self.buf_times[a:nr] : 0)
   return  {
-        \   'index'  : a:nr,
-        \   'buf_nr' : a:nr,
-        \   'word'   : path,
-        \   'abbr'   : s:GetBufIndicator(a:nr) . ' ' . path,
-        \   'menu'   : strftime(self.time_format, time),
-        \   'time'   : time,
+        \   'index'       : a:nr,
+        \   'buf_nr'      : a:nr,
+        \   'word'        : path,
+        \   'abbr_prefix' : s:GetBufIndicator(a:nr) . ' ',
+        \   'menu'        : strftime(self.time_format, time),
+        \   'time'        : time,
         \ }
 endfunction
 
@@ -800,7 +853,7 @@ function! g:FuzzyFinderMode.File.cached_glob(dir, file, excluded, index, limit)
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
+  return s:MapToSetFormattedWordToAbbrForFile(result, self.max_menu_width)
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.Dir ----------------------------------------- {{{1
@@ -832,7 +885,7 @@ function! g:FuzzyFinderMode.Dir.cached_glob_dir(dir, file, excluded, index, limi
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
+  return s:MapToSetFormattedWordToAbbrForFile(result, self.max_menu_width)
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.MruFile ------------------------------------- {{{1
@@ -851,7 +904,7 @@ function! g:FuzzyFinderMode.MruFile.on_mode_enter_post()
   let self.items = map(self.items, 'self.format_item_using_cache(v:val)')
   let self.items = filter(self.items, '!empty(v:val) && bufnr("^" . v:val.word . "$") != self.prev_bufnr')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
+  let self.items = s:MapToSetFormattedWordToAbbrForFile(self.items, self.max_menu_width)
 endfunction
 
 function! g:FuzzyFinderMode.MruFile.on_buf_enter()
@@ -919,7 +972,7 @@ function! g:FuzzyFinderMode.MruCmd.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
+  let self.items = map(self.items, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
 endfunction
 
 function! g:FuzzyFinderMode.MruCmd.on_command_pre(cmd)
@@ -958,7 +1011,7 @@ function! g:FuzzyFinderMode.Bookmark.on_mode_enter_post()
   let self.items = copy(self.data)
   let self.items = map(self.items, 's:SetFormattedTimeToMenu(v:val, self.time_format)')
   let self.items = s:MapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
+  let self.items = map(self.items, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
 endfunction
 
 function! g:FuzzyFinderMode.Bookmark.bookmark_here(word)
@@ -1017,7 +1070,7 @@ function! g:FuzzyFinderMode.Tag.find_tag(pattern, index, limit)
   endif
   echo 'Filtering tag list...'
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
+  return map(result, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.TaggedFile ---------------------------------- {{{1
@@ -1052,7 +1105,7 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, index, limit)
   echo 'Filtering tagged-file list...'
   call map(self.cache[key].items, 's:ModifyWordAsFilename(v:val, '':.'')')
   let result = s:FilterMatching(self.cache[key].items, 'word', a:pattern, a:index, a:limit)
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)')
+  return s:MapToSetFormattedWordToAbbrForFile(result, self.max_menu_width)
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.CallbackFile -------------------------------- {{{1
@@ -1100,7 +1153,7 @@ function! g:FuzzyFinderMode.CallbackFile.cached_glob(dir, file, excluded, index,
   echo 'Filtering file list...'
   let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
   call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
+  return s:MapToSetFormattedWordToAbbrForFile(result, self.max_menu_width)
 endfunction
 
 " OBJECT: g:FuzzyFinderMode.CallbackItem -------------------------------- {{{1
@@ -1140,23 +1193,6 @@ function! g:FuzzyFinderMode.CallbackItem.on_mode_leave_post(opened)
   if !a:opened
     call eval(printf('%s()', self.callback_func))
   endif
-endfunction
-
-function! g:FuzzyFinderMode.CallbackItem.cached_glob(dir, file, excluded, index, limit)
-  let key = fnamemodify(a:dir, ':p')
-  call extend(self, { 'cache' : {} }, 'keep')
-  if !exists('self.cache[key]')
-    echo 'Caching file list...'
-    let self.cache[key] = s:EnumExpandedDirsEntries(key, a:excluded)
-    if isdirectory(key . '.' . s:PATH_SEPARATOR)
-      call insert(self.cache[key], { 'head' : key, 'tail' : '.' , 'suffix' : '' })
-    endif
-    call s:MapToSetSerialIndex(self.cache[key], 1)
-  endif
-  echo 'Filtering file list...'
-  let result = s:FilterMatching(self.cache[key], 'tail', a:file, a:index, a:limit)
-  call map(result, '{ "index" : v:val.index, "word" : (v:val.head == key ? a:dir : v:val.head) . v:val.tail . v:val.suffix }') 
-  return map(result, 's:SetFormattedAbbr(v:val, "word", self.max_menu_width)') 
 endfunction
 
 " OBJECT: s:OptionManager ----------------------------------------------- {{{1
