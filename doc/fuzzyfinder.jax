@@ -235,12 +235,14 @@ Tagged-File モード ~
                                                *fuzzyfinder-callbackfile-mode*
 Callback-File モードの利用 ~
 
-TODO:
+Callback-File モードはファイルを探すための API を提供します。コマンドインター
+フェースはありません。
 
                                                *fuzzyfinder-callbackitem-mode*
 Callback-Item モードの利用 ~
 
-TODO:
+Callback-Item モードは与えられたリストからアイテムを選択するためのを API を提
+供します。コマンドインターフェースはありません。
 
                                                           *fuzzyfinder-migemo*
 Migemo とは ~
