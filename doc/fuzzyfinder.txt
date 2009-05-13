@@ -884,7 +884,6 @@ CHANGELOG                                              *fuzzyfinder-changelog*
 2.21.0:
   - Improved a method of trimming long completion items. Thanks to Andy,
     pyrhockz, and Nathan.
-  - Changed to truncate long completion items from the head instead of tail.
   - Changed not to map command-line <CR> for MRU-Command mode if
     g:FuzzyFinderOptions.MruCmd.mode_available is set 0 before loading
     fuzzyfinder.vim.
