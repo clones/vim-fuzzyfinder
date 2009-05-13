@@ -365,7 +365,7 @@ OPTIONS                           *fuzzyfinder-options* *g:FuzzyFinderOptions*
 
 You can set options via |g:FuzzyFinderOptions| which is a |Dictionary|.
 
-Be sure to declare |Dictionaries| for each mode in |g:FuzzyFinderOptions|
+Be sure to allocate |Dictionaries| to each mode in |g:FuzzyFinderOptions|
 before set variables. See |fuzzyfinder-vimrc-sample| also.
 
                     *fuzzyfinder-options-all-mode* *g:FuzzyFinderOptions.Base*
@@ -796,7 +796,10 @@ For Tagged-File Mode ~
 VIMRC EXAMPLE                                       *fuzzyfinder-vimrc-sample*
 
 >
-        let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{}, 'MruFile':{}, 'MruCmd':{}, 'Bookmark':{}, 'Tag':{}, 'TaggedFile':{}}
+        let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{},
+              \                      'MruFile':{}, 'MruCmd':{}, 'Bookmark':{},
+              \                      'Tag':{}, 'TaggedFile':{},
+              \                      'CallbackFile':{}, 'CallbackItem':{}, }
         let g:FuzzyFinderOptions.Base.abbrev_map  = {
               \   '^v|' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . "/**/"'),
               \ }
