@@ -42,15 +42,16 @@ Fuzzyfinder supports multibyte characters.
 ==============================================================================
 INSTALLATION                                        *fuzzyfinder-installation*
 
-If you have the zip file, extract it to your runtime directory.
+Put all files into your runtime directory. If you have the zip file, extract
+it to your runtime directory.
 
-You should have the following files:
+You should place the files as follows:
 >
         <your runtime directory>/plugin/fuzzyfinder.vim
         <your runtime directory>/doc/fuzzyfinder.txt
         <your runtime directory>/doc/fuzzyfinder.jax
 <
-And then update your tags file to enable fuzzyfinder help. See
+And then update your help tags files to enable fuzzyfinder help. See
 |add-local-help| for details.
 
 ==============================================================================
