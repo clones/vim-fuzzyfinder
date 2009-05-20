@@ -1242,6 +1242,36 @@ function! g:FuzzyFinderMode.GivenDir.on_switch_mode(next_prev)
   " mode switching is unavailable
 endfunction
 
+" OBJECT: g:FuzzyFinderMode.GivenCmd ------------------------------------ {{{1
+let g:FuzzyFinderMode.GivenCmd = copy(g:FuzzyFinderMode.Base)
+
+"
+function! g:FuzzyFinderMode.GivenCmd.launch(initial_pattern, partial_matching, items)
+  let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call.self.launch_base(a:initial_pattern, a:partial_matching)
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenCmd.on_complete(base)
+  let patterns = self.make_pattern(a:base)
+  let stats = self.get_filtered_stats(a:base)
+  let result = s:FilterMatching(self.items, 'word', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  return map(result, 's:SetRanks(v:val, v:val.word, a:base, stats)')
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenCmd.on_open(expr, mode)
+  if a:expr[0] =~ '[:/?]'
+    call histadd(a:expr[0], a:expr[1:])
+  endif
+  call feedkeys(a:expr . "\<CR>", 'n')
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenCmd.on_switch_mode(next_prev)
+  " mode switching is unavailable
+endfunction
+
 " OBJECT: g:FuzzyFinderMode.CallbackFile -------------------------------- {{{1
 let g:FuzzyFinderMode.CallbackFile = copy(g:FuzzyFinderMode.Base)
 
@@ -1506,7 +1536,7 @@ let s:user_options = (exists('g:FuzzyFinderOptions') ? g:FuzzyFinderOptions : {}
 let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{},
       \                      'MruFile':{}, 'MruCmd':{}, 'Bookmark':{},
       \                      'Tag':{}, 'TaggedFile':{},
-      \                      'GivenFile':{}, 'GivenDir':{},
+      \                      'GivenFile':{}, 'GivenDir':{}, 'GivenCmd':{},
       \                      'CallbackFile':{}, 'CallbackItem':{}, }
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.Base.key_open          = '<CR>'
@@ -1600,7 +1630,12 @@ let g:FuzzyFinderOptions.GivenDir.prompt           = '>GivenDir>'
 let g:FuzzyFinderOptions.GivenDir.prompt_highlight = 'Question'
 let g:FuzzyFinderOptions.GivenDir.smart_bs         = 0
 let g:FuzzyFinderOptions.GivenDir.switch_order     = -1
-let g:FuzzyFinderOptions.GivenDir.reuse_window     = 1
+"-----------------------------------------------------------------------------
+let g:FuzzyFinderOptions.GivenCmd.mode_available   = 1
+let g:FuzzyFinderOptions.GivenCmd.prompt           = '>GivenCmd>'
+let g:FuzzyFinderOptions.GivenCmd.prompt_highlight = 'Question'
+let g:FuzzyFinderOptions.GivenCmd.smart_bs         = 0
+let g:FuzzyFinderOptions.GivenCmd.switch_order     = -1
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.CallbackFile.mode_available   = 1
 let g:FuzzyFinderOptions.CallbackFile.prompt           = '>CallbackFile>'
