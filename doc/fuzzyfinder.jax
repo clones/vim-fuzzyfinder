@@ -332,8 +332,8 @@ API 関数:
                            らは Fuzzyfinder 終了時に呼ばれます。
                            listener.onComplete(item, method) は選択が完了した
                            とき、選択されたアイテム名とオープン方式番号の2引数
-                           とと共に呼ばれます。listener.onAbort() は選択を中止
-                           したときに呼ばれます。
+                           と共に呼ばれます。listener.onAbort() は選択を中止し
+                           たときに呼ばれます。
 
 使用例:
 >
@@ -376,8 +376,8 @@ API 関数:
                            らは Fuzzyfinder 終了時に呼ばれます。
                            listener.onComplete(item, method) は選択が完了した
                            とき、選択されたアイテム名とオープン方式番号の2引数
-                           とと共に呼ばれます。listener.onAbort() は選択を中止
-                           したときに呼ばれます。
+                           と共に呼ばれます。listener.onAbort() は選択を中止し
+                           たときに呼ばれます。
         items            - アイテムのリスト
         for_file         - ファイル選択に特化したマッチングを利用するか
 
