@@ -281,6 +281,41 @@ Example of use:
         call g:FuzzyFinderMode.GivenDir.launch(
               \ '', 0, split(&runtimepath, ','))
 <
+                                                   *fuzzyfinder-givencmd-mode*
+Use of Given-Command Mode ~
+
+Given-Command mode provides an API to execute a selected command from a given
+list.
+
+API function:
+>
+        function! g:FuzzyFinderMode.GivenCmd.launch(
+              \ initial_pattern,
+              \ partial_matching,
+              \ items)
+<
+        initial_pattern  - String which is inserted after launching
+                           Fuzzyfinder.
+        partial_matching - If non-zero, enable a partial matching instead of a
+                           fuzzy matching.
+        items            - List of items.
+
+
+Example of use:
+>
+        function GetAllCommands()
+          redir => commands
+          silent command
+          redir END
+          return map((split(commands, "\n")[3:]),
+              \      '":" . matchstr(v:val, ''^....\zs\S*'')')
+        endfunction
+
+        " select a command from all user-defined commands and execute
+        call g:FuzzyFinderMode.GivenCmd.launch(
+              \ '', 0, GetAllCommands())
+
+<
                                                *fuzzyfinder-callbackfile-mode*
 Use of Callback-File Mode ~
 
@@ -938,9 +973,12 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 CHANGELOG                                              *fuzzyfinder-changelog*
 
 2.22.0:
-  - Added Given-File mode and Given-Directory mode for third-party script to
-    select a file from a given list and open a file or change current working
-    directory.
+  - Added Given-File mode for third-party script to select a file from a given
+    list and open.
+  - Added Given-Directory mode for third-party script to select a directory
+    from a given list and change current working directory to it.
+  - Added Given-Command mode for third-party script to select a command from a
+    given list and execute.
   - More improved the abbreviation method for long completion items.
   - Changed ways to launch Callback-File mode and Callback-item mode.
 

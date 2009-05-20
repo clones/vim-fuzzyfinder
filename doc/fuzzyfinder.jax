@@ -278,6 +278,41 @@ API 関数:
         call g:FuzzyFinderMode.GivenDir.launch(
               \ '', 0, split(&runtimepath, ','))
 <
+                                                   *fuzzyfinder-givencmd-mode*
+Given-Command モードの利用 ~
+
+Given-Command モードは与えられたリストから選択されたコマンドを実行するための
+API を提供します。
+
+API 関数:
+>
+        function! g:FuzzyFinderMode.GivenCmd.launch(
+              \ initial_pattern,
+              \ partial_matching,
+              \ items)
+<
+        initial_pattern  - String which is inserted after launching
+                           Fuzzyfinder.
+        partial_matching - If non-zero, enable a partial matching instead of a
+                           fuzzy matching.
+        items            - List of items.
+
+
+使用例:
+>
+        function GetAllCommands()
+          redir => commands
+          silent command
+          redir END
+          return map((split(commands, "\n")[3:]),
+              \      '":" . matchstr(v:val, ''^....\zs\S*'')')
+        endfunction
+
+        " 全てのユーザー定義コマンドのリストからコマンドを選択して実行
+        call g:FuzzyFinderMode.GivenCmd.launch(
+              \ '', 0, GetAllCommands())
+
+<
                                                *fuzzyfinder-callbackfile-mode*
 Callback-File モードの利用 ~
 
