@@ -1191,8 +1191,8 @@ endfunction
 let g:FuzzyFinderMode.CallbackFile = copy(g:FuzzyFinderMode.Base)
 
 "
-function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(initial_pattern, partial_matching, callback_func)
-  let self.callback_func = a:callback_func
+function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(initial_pattern, partial_matching, listener)
+  let self.listener = a:listener
   call.self.launch(a:initial_pattern, a:partial_matching)
 endfunction
 
@@ -1208,7 +1208,7 @@ endfunction
 
 "
 function! g:FuzzyFinderMode.CallbackFile.on_open(expr, mode)
-  call eval(printf('%s(%s, %d)', self.callback_func, string(a:expr), a:mode))
+  call self.listener.onComplete(a:expr, a:mode)
 endfunction
 
 "
@@ -1219,7 +1219,7 @@ endfunction
 "
 function! g:FuzzyFinderMode.CallbackFile.on_mode_leave_post(opened)
   if !a:opened
-    call eval(printf('%s()', self.callback_func))
+    call self.listener.onAbort()
   endif
 endfunction
 
@@ -1245,8 +1245,8 @@ endfunction
 let g:FuzzyFinderMode.CallbackItem = copy(g:FuzzyFinderMode.Base)
 
 "
-function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(initial_pattern, partial_matching, callback_func, items, for_file)
-  let self.callback_func = a:callback_func
+function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(initial_pattern, partial_matching, listener, items, for_file)
+  let self.listener = a:listener
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
   let self.on_complete = (a:for_file ? self.on_complete_file : self.on_complete_nonfile)
   call.self.launch(a:initial_pattern, a:partial_matching)
@@ -1271,7 +1271,7 @@ endfunction
 
 "
 function! g:FuzzyFinderMode.CallbackItem.on_open(expr, mode)
-  call eval(printf('%s(%s, %d)', self.callback_func, string(a:expr), a:mode))
+  call self.listener.onComplete(a:expr, a:mode)
 endfunction
 
 "
@@ -1282,7 +1282,7 @@ endfunction
 "
 function! g:FuzzyFinderMode.CallbackItem.on_mode_leave_post(opened)
   if !a:opened
-    call eval(printf('%s()', self.callback_func))
+    call self.listener.onAbort()
   endif
 endfunction
 
