@@ -847,7 +847,6 @@ VIMRC EXAMPLE                                       *fuzzyfinder-vimrc-sample*
         let g:FuzzyFinderOptions.Base.abbrev_map  = {
               \   '^v|' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . "/**/"'),
               \ }
-        let g:FuzzyFinderOptions.MruFile.max_item = 300
         let g:FuzzyFinderOptions.MruCmd.max_item = 400
         nnoremap <silent> <C-n>      :FuzzyFinderBuffer<CR>
         nnoremap <silent> <C-p>      :FuzzyFinderFileWithCurrentBufferDir<CR>
@@ -881,6 +880,9 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 
 ==============================================================================
 CHANGELOG                                              *fuzzyfinder-changelog*
+
+2.22.0:
+  - More improved the abbreviation method for long completion items.
 
 2.21.0:
   - Improved a method of trimming long completion items. Thanks to Andy,
