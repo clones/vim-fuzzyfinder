@@ -287,6 +287,9 @@ Use of Given-Command Mode ~
 Given-Command mode provides an API to execute a selected command from a given
 list.
 
+A selected command is executed by |feedkeys()|, so it is able to emulate a
+series of key input in Normal mode.
+
 API function:
 >
         function! g:FuzzyFinderMode.GivenCmd.launch(

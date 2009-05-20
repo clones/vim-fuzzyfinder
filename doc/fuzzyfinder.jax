@@ -284,6 +284,9 @@ Given-Command モードの利用 ~
 Given-Command モードは与えられたリストから選択されたコマンドを実行するための
 API を提供します。
 
+選択されたコマンドは feedkeys() によって実行されるので、ノーマルモードでの一連
+のキー入力をエミュレートさせることも可能です。
+
 API 関数:
 >
         function! g:FuzzyFinderMode.GivenCmd.launch(
@@ -291,11 +294,9 @@ API 関数:
               \ partial_matching,
               \ items)
 <
-        initial_pattern  - String which is inserted after launching
-                           Fuzzyfinder.
-        partial_matching - If non-zero, enable a partial matching instead of a
-                           fuzzy matching.
-        items            - List of items.
+        initial_pattern  - Fuzzyfinder 起動直後に挿入される文字列
+        partial_matching - マッチングではなく部分一致マッチングを行うか
+        items            - アイテムのリスト
 
 
 使用例:
@@ -357,8 +358,8 @@ API 関数:
                                                *fuzzyfinder-callbackitem-mode*
 Callback-Item モードの利用 ~
 
-Callback-Item モードは与えられたリストからアイテムを選択するためのを API を提
-供します。
+Callback-Item モードは与えられたリストからアイテムを選択するための API を提供
+します。
 
 API 関数:
 >
