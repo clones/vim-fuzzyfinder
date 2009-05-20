@@ -133,10 +133,10 @@ endfunction
 
 " "foo/bar/buz/hoge" -> { head: "foo/bar/buz/", tail: "hoge" }
 function! s:SplitPath(path)
-  let dir = matchstr(a:path, '^.*[/\\]')
+  let head = matchstr(a:path, '^.*[/\\]')
   return  {
-        \   'head' : dir,
-        \   'tail' : a:path[strlen(dir):]
+        \   'head' : head,
+        \   'tail' : a:path[strlen(head):]
         \ }
 endfunction
 
@@ -381,19 +381,31 @@ function! s:SetFormattedWordToAbbr(item, max_menu_width)
 endfunction
 
 function! s:MakeFileAbbrInfo(item, max_len_stats)
-  let abbr_prefix = (exists('a:item.abbr_prefix') ? a:item.abbr_prefix : '')
-  let a:item.abbr = {'raw' : printf('%3d: ', a:item.index) . abbr_prefix . a:item.word }
-  let a:item.abbr.key = s:SplitPath(a:item.word).head . '.'
-  let a:item.abbr.len = len(a:item.abbr.raw)
+  let head = matchstr(a:item.word, '^.*[/\\]\ze.')
+  let a:item.abbr = { 'head' : head,
+        \             'tail' : a:item.word[strlen(head):],
+        \             'key' : head . '.',
+        \             'prefix' : printf('%3d: ', a:item.index), }
+  if exists('a:item.abbr_prefix')
+    let a:item.abbr.prefix .= a:item.abbr_prefix
+  endif
+  let a:item.abbr.len = len(a:item.abbr.prefix) + len(a:item.word)
   if !exists('a:max_len_stats[a:item.abbr.key]') || a:item.abbr.len > a:max_len_stats[a:item.abbr.key]
     let a:max_len_stats[a:item.abbr.key] = a:item.abbr.len
   endif
   return a:item
 endfunction
 
-function! s:SetAbbrWithFileAbbrData(item, max_len_stats, max_menu_width)
-  let len = a:item.abbr.len + a:max_menu_width - a:max_len_stats[a:item.abbr.key]
-  let a:item.abbr = s:TruncateMid(a:item.abbr.raw, len)
+
+"
+function! s:GetTruncatedHeads(head, max_len, max_menu_width)
+  return s:TruncateMid(a:head, len(a:head) + a:max_menu_width - a:max_len)
+endfunction
+
+"
+function! s:SetAbbrWithFileAbbrData(item, truncated_heads, max_menu_width)
+  let abbr = a:item.abbr.prefix . a:truncated_heads[a:item.abbr.key] . a:item.abbr.tail
+  let a:item.abbr = s:TruncateTail(abbr, a:max_menu_width)
   return a:item
 endfunction
 
@@ -401,7 +413,8 @@ endfunction
 function! s:MapToSetAbbrWithFileWord(items, max_menu_width)
   let max_len_stats = {}
   call map(a:items, 's:MakeFileAbbrInfo(v:val, max_len_stats)')
-  return map(a:items, 's:SetAbbrWithFileAbbrData(v:val, max_len_stats, a:max_menu_width)')
+  let truncated_heads = map(max_len_stats, 's:GetTruncatedHeads(v:key[: -2], v:val, a:max_menu_width)')
+  return map(a:items, 's:SetAbbrWithFileAbbrData(v:val, truncated_heads, a:max_menu_width)')
 endfunction
 
 "

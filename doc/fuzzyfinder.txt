@@ -976,13 +976,13 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 CHANGELOG                                              *fuzzyfinder-changelog*
 
 2.22.0:
+  - More improved the abbreviation method for long completion items.
   - Added Given-File mode for third-party script to select a file from a given
     list and open.
   - Added Given-Directory mode for third-party script to select a directory
     from a given list and change current working directory to it.
   - Added Given-Command mode for third-party script to select a command from a
     given list and execute.
-  - More improved the abbreviation method for long completion items.
   - Changed ways to launch Callback-File mode and Callback-item mode.
 
 2.21.0:
