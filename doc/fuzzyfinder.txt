@@ -241,35 +241,38 @@ API function:
         function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(
               \ initial_pattern,
               \ partial_matching,
-              \ callback_func)
+              \ listener)
 <
         initial_pattern  - String which is inserted after launching
                            Fuzzyfinder.
         partial_matching - If non-zero, enable a partial matching instead of a
                            fuzzy matching.
-        callback_func    - Name of function which is called at the end of
-                           Fuzzyfinder. This is called with 2 arguments, a
-                           name of selected item and a number of open method
-                           if completed. Or, called without arguments if
-                           aborted.
+        listener         - Dictionary which has 'onComplete' and 'onAbort'.
+                           They are called at the end of Fuzzyfinder.
+                           listener.onComplete(item, method) is called with 2
+                           arguments which are a name of selected item and a
+                           number of open method when completed.
+                           listener.onAbort() is called when aborted.
 
 Example of use:
 >
-        function! g:echoCallback(...)
-          if a:0
-            echo "Item: " . a:1 . "\nMethod: " . a:2
-          else
-            echo "Canceled"
-          endif
+        let listener = {}
+
+        function! listener.onComplete(item, method)
+          echo "Item: " . a:item . "\nMethod: " . a:method
+        endfunction
+
+        function! listener.onAbort()
+          echo "Abort"
         endfunction
 
         " Find a file from current working directory.
         call g:FuzzyFinderMode.CallbackFile.launch_callbacker(
-              \ '', 0, 'g:echoCallback')
+              \ '', 0, listener)
 
         " Find a file from home directory.
         call g:FuzzyFinderMode.CallbackFile.launch_callbacker(
-              \ '~/', 0, 'g:echoCallback')
+              \ '~/', 0, listener)
 <
                                                *fuzzyfinder-callbackitem-mode*
 Use of Callback-Item Mode ~
@@ -282,7 +285,7 @@ API function:
         function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(
               \ initial_pattern,
               \ partial_matching,
-              \ callback_func,
+              \ listener,
               \ items,
               \ for_file)
 <
@@ -290,31 +293,34 @@ API function:
                            Fuzzyfinder.
         partial_matching - If non-zero, enable a partial matching instead of a
                            fuzzy matching.
-        callback_func    - Name of function which is called at the end of
-                           Fuzzyfinder. This is called with 2 arguments, a
-                           name of selected item and a number of open method
-                           if completed. Or, called without arguments if
-                           aborted.
+        listener         - Dictionary which has 'onComplete' and 'onAbort'.
+                           They are called at the end of Fuzzyfinder.
+                           listener.onComplete(item, method) is called with 2
+                           arguments which are a name of selected item and a
+                           number of open method when completed.
+                           listener.onAbort() is called when aborted.
         items            - List of items.
         for_fil          - If non-zero, use a matching method for files.
 
 Example of use:
 >
-        function! g:echoCallback(...)
-          if a:0
-            echo "Item: " . a:1 . "\nOpen method: " . a:2
-          else
-            echo "Canceled"
-          endif
+        let listener = {}
+
+        function! listener.onComplete(item, method)
+          echo "Item: " . a:item . "\nMethod: " . a:method
+        endfunction
+
+        function! listener.onAbort()
+          echo "Abort"
         endfunction
 
         " Select an item from a given list.
         call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
-              \ '', 0, 'g:echoCallback', ['ed', 'vi', 'vim'], 0)
+              \ '', 0, listener, ['ed', 'vi', 'vim'], 0)
 
         " Select a file from a given list.
         call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
-              \ '', 0, 'g:echoCallback', ['../foo/bar', 'baz'], 1)
+              \ '', 0, listener, ['../foo/bar', 'baz'], 1)
 <
                                                           *fuzzyfinder-migemo*
 What Is Migemo ~
@@ -883,6 +889,7 @@ CHANGELOG                                              *fuzzyfinder-changelog*
 
 2.22.0:
   - More improved the abbreviation method for long completion items.
+  - Changed ways to launch Callback-File mode and Callback-item mode.
 
 2.21.0:
   - Improved a method of trimming long completion items. Thanks to Andy,
