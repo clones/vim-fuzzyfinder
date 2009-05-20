@@ -540,7 +540,7 @@ endfunction
 let g:FuzzyFinderMode = { 'Base' : {} }
 
 "
-function! g:FuzzyFinderMode.Base.launch(initial_pattern, partial_matching)
+function! g:FuzzyFinderMode.Base.launch_base(initial_pattern, partial_matching)
   " initializes this object
   call self.extend_options()
   let self.partial_matching = a:partial_matching
@@ -614,7 +614,7 @@ function! g:FuzzyFinderMode.Base.on_insert_leave()
   " switchs to next mode, or finishes fuzzyfinder.
   if exists('s:reserved_switch_mode')
     let m = self.next_mode(s:reserved_switch_mode < 0)
-    call m.launch(last_pattern, self.partial_matching)
+    call m.launch_base(last_pattern, self.partial_matching)
     unlet s:reserved_switch_mode
   endif
 endfunction
@@ -1187,13 +1187,68 @@ function! g:FuzzyFinderMode.TaggedFile.find_tagged_file(pattern, index, limit)
   return s:MapToSetAbbrWithFileWord(result, self.max_menu_width)
 endfunction
 
+" OBJECT: g:FuzzyFinderMode.GivenFile ----------------------------------- {{{1
+let g:FuzzyFinderMode.GivenFile = copy(g:FuzzyFinderMode.Base)
+
+"
+function! g:FuzzyFinderMode.GivenFile.launch(initial_pattern, partial_matching, items)
+  let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call.self.launch_base(a:initial_pattern, a:partial_matching)
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenFile.on_complete(base)
+  let patterns = self.make_pattern(a:base)
+  let base_tail = s:SplitPath(a:base).tail
+  let stats = self.get_filtered_stats(a:base)
+  let result = s:FilterMatching(self.items, 'word', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  return map(result, 's:SetRanks(v:val, s:SplitPath(matchstr(v:val.word, ''^.*[^/\\]'')).tail, base_tail, stats)')
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenFile.on_open(expr, mode)
+  call s:OpenFile(a:expr, a:mode, self.reuse_window)
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenFile.on_switch_mode(next_prev)
+  " mode switching is unavailable
+endfunction
+
+" OBJECT: g:FuzzyFinderMode.GivenDir  ----------------------------------- {{{1
+let g:FuzzyFinderMode.GivenDir = copy(g:FuzzyFinderMode.Base)
+
+"
+function! g:FuzzyFinderMode.GivenDir.launch(initial_pattern, partial_matching, items)
+  let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call.self.launch_base(a:initial_pattern, a:partial_matching)
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenDir.on_complete(base)
+  let patterns = self.make_pattern(a:base)
+  let stats = self.get_filtered_stats(a:base)
+  let result = s:FilterMatching(self.items, 'word', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
+  return map(result, 's:SetRanks(v:val, v:val.word, a:base, stats)')
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenDir.on_open(expr, mode)
+  execute ':cd ' . s:EscapeFilename(a:expr)
+endfunction
+
+"
+function! g:FuzzyFinderMode.GivenDir.on_switch_mode(next_prev)
+  " mode switching is unavailable
+endfunction
+
 " OBJECT: g:FuzzyFinderMode.CallbackFile -------------------------------- {{{1
 let g:FuzzyFinderMode.CallbackFile = copy(g:FuzzyFinderMode.Base)
 
 "
-function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(initial_pattern, partial_matching, listener)
+function! g:FuzzyFinderMode.CallbackFile.launch(initial_pattern, partial_matching, listener)
   let self.listener = a:listener
-  call.self.launch(a:initial_pattern, a:partial_matching)
+  call.self.launch_base(a:initial_pattern, a:partial_matching)
 endfunction
 
 "
@@ -1245,11 +1300,11 @@ endfunction
 let g:FuzzyFinderMode.CallbackItem = copy(g:FuzzyFinderMode.Base)
 
 "
-function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(initial_pattern, partial_matching, listener, items, for_file)
+function! g:FuzzyFinderMode.CallbackItem.launch(initial_pattern, partial_matching, listener, items, for_file)
   let self.listener = a:listener
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
   let self.on_complete = (a:for_file ? self.on_complete_file : self.on_complete_nonfile)
-  call.self.launch(a:initial_pattern, a:partial_matching)
+  call.self.launch_base(a:initial_pattern, a:partial_matching)
 endfunction
 
 "
@@ -1451,6 +1506,7 @@ let s:user_options = (exists('g:FuzzyFinderOptions') ? g:FuzzyFinderOptions : {}
 let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{},
       \                      'MruFile':{}, 'MruCmd':{}, 'Bookmark':{},
       \                      'Tag':{}, 'TaggedFile':{},
+      \                      'GivenFile':{}, 'GivenDir':{},
       \                      'CallbackFile':{}, 'CallbackItem':{}, }
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.Base.key_open          = '<CR>'
@@ -1532,6 +1588,20 @@ let g:FuzzyFinderOptions.TaggedFile.smart_bs         = 0
 let g:FuzzyFinderOptions.TaggedFile.switch_order     = 80
 let g:FuzzyFinderOptions.TaggedFile.reuse_window     = 1
 "-----------------------------------------------------------------------------
+let g:FuzzyFinderOptions.GivenFile.mode_available   = 1
+let g:FuzzyFinderOptions.GivenFile.prompt           = '>GivenFile>'
+let g:FuzzyFinderOptions.GivenFile.prompt_highlight = 'Question'
+let g:FuzzyFinderOptions.GivenFile.smart_bs         = 0
+let g:FuzzyFinderOptions.GivenFile.switch_order     = -1
+let g:FuzzyFinderOptions.GivenFile.reuse_window     = 1
+"-----------------------------------------------------------------------------
+let g:FuzzyFinderOptions.GivenDir.mode_available   = 1
+let g:FuzzyFinderOptions.GivenDir.prompt           = '>GivenDir>'
+let g:FuzzyFinderOptions.GivenDir.prompt_highlight = 'Question'
+let g:FuzzyFinderOptions.GivenDir.smart_bs         = 0
+let g:FuzzyFinderOptions.GivenDir.switch_order     = -1
+let g:FuzzyFinderOptions.GivenDir.reuse_window     = 1
+"-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.CallbackFile.mode_available   = 1
 let g:FuzzyFinderOptions.CallbackFile.prompt           = '>CallbackFile>'
 let g:FuzzyFinderOptions.CallbackFile.prompt_highlight = 'Question'
@@ -1544,6 +1614,7 @@ let g:FuzzyFinderOptions.CallbackItem.prompt           = '>CallbackItem>'
 let g:FuzzyFinderOptions.CallbackItem.prompt_highlight = 'Question'
 let g:FuzzyFinderOptions.CallbackItem.smart_bs         = 0
 let g:FuzzyFinderOptions.CallbackItem.switch_order     = -1
+"-----------------------------------------------------------------------------
 
 " overwrites default values of g:FuzzyFinderOptions with user-defined values - {{{2
 call map(s:user_options, 'extend(g:FuzzyFinderOptions[v:key], v:val, ''force'')')
@@ -1573,19 +1644,19 @@ if s:IsAvailableMode(g:FuzzyFinderMode.MruCmd)
   cmap <silent> <expr> <CR> <SID>OnCmdCR()
 endif
 
-command! -bang -narg=? -complete=buffer FuzzyFinderBuffer                    call g:FuzzyFinderMode.Buffer.launch    (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderFile                      call g:FuzzyFinderMode.File.launch      (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderFileWithFullCwd           call g:FuzzyFinderMode.File.launch      (fnamemodify(getcwd(), ':p') . <q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderFileWithCurrentBufferDir  call g:FuzzyFinderMode.File.launch      (expand('%:~:.')[:-1-len(expand('%:~:.:t'))] . <q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=dir    FuzzyFinderDir                       call g:FuzzyFinderMode.Dir.launch       (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=dir    FuzzyFinderDirWithFullCwd            call g:FuzzyFinderMode.Dir.launch       (fnamemodify(getcwd(), ':p') . <q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=dir    FuzzyFinderDirWithCurrentBufferDir   call g:FuzzyFinderMode.Dir.launch       (expand('%:p:~')[:-1-len(expand('%:p:~:t'))] . <q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderMruFile                   call g:FuzzyFinderMode.MruFile.launch   (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderMruCmd                    call g:FuzzyFinderMode.MruCmd.launch    (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderBookmark                  call g:FuzzyFinderMode.Bookmark.launch  (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=tag    FuzzyFinderTag                       call g:FuzzyFinderMode.Tag.launch       (<q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=tag    FuzzyFinderTagWithCursorWord         call g:FuzzyFinderMode.Tag.launch       (expand('<cword>') . <q-args>, len(<q-bang>))
-command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile                call g:FuzzyFinderMode.TaggedFile.launch(<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=buffer FuzzyFinderBuffer                    call g:FuzzyFinderMode.Buffer.launch_base    (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFile                      call g:FuzzyFinderMode.File.launch_base      (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFileWithFullCwd           call g:FuzzyFinderMode.File.launch_base      (fnamemodify(getcwd(), ':p') . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderFileWithCurrentBufferDir  call g:FuzzyFinderMode.File.launch_base      (expand('%:~:.')[:-1-len(expand('%:~:.:t'))] . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDir                       call g:FuzzyFinderMode.Dir.launch_base       (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDirWithFullCwd            call g:FuzzyFinderMode.Dir.launch_base       (fnamemodify(getcwd(), ':p') . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=dir    FuzzyFinderDirWithCurrentBufferDir   call g:FuzzyFinderMode.Dir.launch_base       (expand('%:p:~')[:-1-len(expand('%:p:~:t'))] . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderMruFile                   call g:FuzzyFinderMode.MruFile.launch_base   (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderMruCmd                    call g:FuzzyFinderMode.MruCmd.launch_base    (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderBookmark                  call g:FuzzyFinderMode.Bookmark.launch_base  (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=tag    FuzzyFinderTag                       call g:FuzzyFinderMode.Tag.launch_base       (<q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=tag    FuzzyFinderTagWithCursorWord         call g:FuzzyFinderMode.Tag.launch_base       (expand('<cword>') . <q-args>, len(<q-bang>))
+command! -bang -narg=? -complete=file   FuzzyFinderTaggedFile                call g:FuzzyFinderMode.TaggedFile.launch_base(<q-args>, len(<q-bang>))
 command! -bang -narg=?                  FuzzyFinderAddBookmark               call g:FuzzyFinderMode.Bookmark.bookmark_here(<q-args>)
 command! -bang -narg=0 -range           FuzzyFinderAddBookmarkAsSelectedText call g:FuzzyFinderMode.Bookmark.bookmark_here(s:SelectedText())
 command! -bang -narg=0                  FuzzyFinderEditInfo                  call s:InfoFileManager.edit()

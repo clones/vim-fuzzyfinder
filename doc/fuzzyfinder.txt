@@ -231,14 +231,64 @@ completion items are files which are included in the current tags. These files
 are related to the current working environment. So this mode is a pseudo
 project mode.
 
-                                               *fuzzyfinder-callbackfile-mode*
-Use of Callback-File Mode ~
+                                                  *fuzzyfinder-givenfile-mode*
+Use of Given-File Mode ~
 
-Callback-File mode provides an API to find a file and not command interfaces.
+Given-File mode provides an API to open a selected file from a given list.
 
 API function:
 >
-        function! g:FuzzyFinderMode.CallbackFile.launch_callbacker(
+        function! g:FuzzyFinderMode.GivenFile.launch(
+              \ initial_pattern,
+              \ partial_matching,
+              \ items)
+<
+        initial_pattern  - String which is inserted after launching
+                           Fuzzyfinder.
+        partial_matching - If non-zero, enable a partial matching instead of a
+                           fuzzy matching.
+        items            - List of items.
+
+Example of use:
+>
+        " Open your dotfile.
+        call g:FuzzyFinderMode.GivenFile.launch(
+              \ '', 0, split(glob('~/.*'), "\n"))
+<
+                                                   *fuzzyfinder-givendir-mode*
+Use of Given-Directory Mode ~
+
+Given-Directory mode provides an API to change current working directory to a
+selected one from a given list.
+
+API function:
+>
+        function! g:FuzzyFinderMode.GivenDir.launch(
+              \ initial_pattern,
+              \ partial_matching,
+              \ items)
+<
+        initial_pattern  - String which is inserted after launching
+                           Fuzzyfinder.
+        partial_matching - If non-zero, enable a partial matching instead of a
+                           fuzzy matching.
+        items            - List of items.
+
+
+Example of use:
+>
+        " Change current working directory to one of your runtime directory.
+        call g:FuzzyFinderMode.GivenDir.launch(
+              \ '', 0, split(&runtimepath, ','))
+<
+                                               *fuzzyfinder-callbackfile-mode*
+Use of Callback-File Mode ~
+
+Callback-File mode provides an API to find and select a file.
+
+API function:
+>
+        function! g:FuzzyFinderMode.CallbackFile.launch(
               \ initial_pattern,
               \ partial_matching,
               \ listener)
@@ -247,7 +297,7 @@ API function:
                            Fuzzyfinder.
         partial_matching - If non-zero, enable a partial matching instead of a
                            fuzzy matching.
-        listener         - Dictionary which has 'onComplete' and 'onAbort'.
+        listener         - |Dictionary| which has 'onComplete' and 'onAbort'.
                            They are called at the end of Fuzzyfinder.
                            listener.onComplete(item, method) is called with 2
                            arguments which are a name of selected item and a
@@ -267,22 +317,21 @@ Example of use:
         endfunction
 
         " Find a file from current working directory.
-        call g:FuzzyFinderMode.CallbackFile.launch_callbacker(
+        call g:FuzzyFinderMode.CallbackFile.launch(
               \ '', 0, listener)
 
         " Find a file from home directory.
-        call g:FuzzyFinderMode.CallbackFile.launch_callbacker(
+        call g:FuzzyFinderMode.CallbackFile.launch(
               \ '~/', 0, listener)
 <
                                                *fuzzyfinder-callbackitem-mode*
 Use of Callback-Item Mode ~
 
-Callback-Item mode provides an API to select an item from a given list and not
-command interfaces.
+Callback-Item mode provides an API to select an item from a given list.
 
 API function:
 >
-        function! g:FuzzyFinderMode.CallbackItem.launch_callbacker(
+        function! g:FuzzyFinderMode.CallbackItem.launch(
               \ initial_pattern,
               \ partial_matching,
               \ listener,
@@ -293,7 +342,7 @@ API function:
                            Fuzzyfinder.
         partial_matching - If non-zero, enable a partial matching instead of a
                            fuzzy matching.
-        listener         - Dictionary which has 'onComplete' and 'onAbort'.
+        listener         - |Dictionary| which has 'onComplete' and 'onAbort'.
                            They are called at the end of Fuzzyfinder.
                            listener.onComplete(item, method) is called with 2
                            arguments which are a name of selected item and a
@@ -315,11 +364,11 @@ Example of use:
         endfunction
 
         " Select an item from a given list.
-        call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
+        call g:FuzzyFinderMode.CallbackItem.launch(
               \ '', 0, listener, ['ed', 'vi', 'vim'], 0)
 
         " Select a file from a given list.
-        call g:FuzzyFinderMode.CallbackItem.launch_callbacker(
+        call g:FuzzyFinderMode.CallbackItem.launch(
               \ '', 0, listener, ['../foo/bar', 'baz'], 1)
 <
                                                           *fuzzyfinder-migemo*
@@ -849,6 +898,7 @@ VIMRC EXAMPLE                                       *fuzzyfinder-vimrc-sample*
         let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{},
               \                      'MruFile':{}, 'MruCmd':{}, 'Bookmark':{},
               \                      'Tag':{}, 'TaggedFile':{},
+              \                      'GivenFile':{}, 'GivenDir':{},
               \                      'CallbackFile':{}, 'CallbackItem':{}, }
         let g:FuzzyFinderOptions.Base.abbrev_map  = {
               \   '^v|' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . "/**/"'),
@@ -888,6 +938,9 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 CHANGELOG                                              *fuzzyfinder-changelog*
 
 2.22.0:
+  - Added Given-File mode and Given-Directory mode for third-party script to
+    select a file from a given list and open a file or change current working
+    directory.
   - More improved the abbreviation method for long completion items.
   - Changed ways to launch Callback-File mode and Callback-item mode.
 
