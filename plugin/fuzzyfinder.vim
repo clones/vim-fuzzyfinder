@@ -1,7 +1,7 @@
 "=============================================================================
 " File:                plugin/fuzzyfinder.vim
 " Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version:             2.22.0, for Vim 7.1
+" Version:             2.23.0, for Vim 7.1
 " Licence:             MIT Licence
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
 "
@@ -12,7 +12,7 @@
 if exists('g:loaded_fuzzyfinder') || v:version < 701
   finish
 endif
-let g:loaded_fuzzyfinder = 022200 " Version xx.xx.xx
+let g:loaded_fuzzyfinder = 022300 " Version xx.xx.xx
 
 " }}}1
 "=============================================================================
@@ -1206,6 +1206,7 @@ let g:FuzzyFinderMode.GivenFile = copy(g:FuzzyFinderMode.Base)
 "
 function! g:FuzzyFinderMode.GivenFile.launch(initial_pattern, partial_matching, items)
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call map(self.items, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
   call.self.launch_base(a:initial_pattern, a:partial_matching)
 endfunction
 
@@ -1234,6 +1235,7 @@ let g:FuzzyFinderMode.GivenDir = copy(g:FuzzyFinderMode.Base)
 "
 function! g:FuzzyFinderMode.GivenDir.launch(initial_pattern, partial_matching, items)
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call map(self.items, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
   call.self.launch_base(a:initial_pattern, a:partial_matching)
 endfunction
 
@@ -1261,6 +1263,7 @@ let g:FuzzyFinderMode.GivenCmd = copy(g:FuzzyFinderMode.Base)
 "
 function! g:FuzzyFinderMode.GivenCmd.launch(initial_pattern, partial_matching, items)
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call map(self.items, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
   call.self.launch_base(a:initial_pattern, a:partial_matching)
 endfunction
 
@@ -1346,6 +1349,7 @@ let g:FuzzyFinderMode.CallbackItem = copy(g:FuzzyFinderMode.Base)
 function! g:FuzzyFinderMode.CallbackItem.launch(initial_pattern, partial_matching, listener, items, for_file)
   let self.listener = a:listener
   let self.items = s:MapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
+  call map(self.items, 's:SetFormattedWordToAbbr(v:val, self.max_menu_width)')
   let self.on_complete = (a:for_file ? self.on_complete_file : self.on_complete_nonfile)
   call.self.launch_base(a:initial_pattern, a:partial_matching)
 endfunction

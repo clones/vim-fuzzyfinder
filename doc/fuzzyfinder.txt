@@ -975,6 +975,10 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 ==============================================================================
 CHANGELOG                                              *fuzzyfinder-changelog*
 
+2.23.0:
+  - Fixed to show item number in Given-File, Given-Directory, and
+    Given-Command mode.
+
 2.22.0:
   - More improved the abbreviation method for long completion items.
   - Added Given-File mode for third-party script to select a file from a given
