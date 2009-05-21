@@ -682,11 +682,6 @@ function! g:FuzzyFinderMode.Base.on_mode_leave_post(opened)
 endfunction
 
 "
-function! g:FuzzyFinderMode.Base.on_open(expr, mode)
-  call s:OpenFile(a:expr, a:mode, self.reuse_window)
-endfunction
-
-"
 function! g:FuzzyFinderMode.Base.on_switch_mode(next_prev)
   let s:reserved_switch_mode = a:next_prev
   call feedkeys("\<Esc>", 'n') " stopinsert behavior is strange...
@@ -909,6 +904,11 @@ function! g:FuzzyFinderMode.File.on_complete(base)
 endfunction
 
 "
+function! g:FuzzyFinderMode.File.on_open(expr, mode)
+  call s:OpenFile(a:expr, a:mode, self.reuse_window)
+endfunction
+
+"
 function! g:FuzzyFinderMode.File.cached_glob(dir, file, excluded, index, limit)
   let key = fnamemodify(a:dir, ':p')
   call extend(self, { 'cache' : {} }, 'keep')
@@ -968,6 +968,11 @@ function! g:FuzzyFinderMode.MruFile.on_complete(base)
   let stats = self.get_filtered_stats(a:base)
   let result = s:FilterMatching(self.items, 'word', patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:SetRanks(v:val, s:SplitPath(matchstr(v:val.word, ''^.*[^/\\]'')).tail, base_tail, stats)')
+endfunction
+
+"
+function! g:FuzzyFinderMode.MruFile.on_open(expr, mode)
+  call s:OpenFile(a:expr, a:mode, self.reuse_window)
 endfunction
 
 "
@@ -1173,6 +1178,11 @@ function! g:FuzzyFinderMode.TaggedFile.on_complete(base)
   echo 'Making tagged file list...'
   let result = self.find_tagged_file(patterns.re, s:SuffixNumber(patterns.base), self.enumerating_limit)
   return map(result, 's:SetRanks(v:val, s:SplitPath(matchstr(v:val.word, ''^.*[^/\\]'')).tail, base_tail, stats)')
+endfunction
+
+"
+function! g:FuzzyFinderMode.TaggedFile.on_open(expr, mode)
+  call s:OpenFile(a:expr, a:mode, self.reuse_window)
 endfunction
 
 "
