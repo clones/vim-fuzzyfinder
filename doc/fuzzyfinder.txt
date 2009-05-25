@@ -989,11 +989,9 @@ SPECIAL THANKS                                            *fuzzyfinder-thanks*
 ==============================================================================
 CHANGELOG                                              *fuzzyfinder-changelog*
 
-2.23.1:
+2.22.1:
   - Fixed a bug that Fuzzyfinder could not expand abbreviations to patterns
     including '\' correctly.
-
-2.23.0:
   - Fixed to show item number in Given-File, Given-Directory, and
     Given-Command mode.
 
