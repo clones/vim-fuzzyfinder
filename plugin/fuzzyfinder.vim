@@ -375,7 +375,7 @@ endfunction
 "
 function! s:SetFormattedWordToAbbr(item, max_menu_width)
   let abbr_prefix = (exists('a:item.abbr_prefix') ? a:item.abbr_prefix : '')
-  let a:item.abbr = s:TruncateTail(printf('%3d: ', a:item.index) . abbr_prefix . a:item.word, a:max_menu_width)
+  let a:item.abbr = s:TruncateTail(printf('%4d: ', a:item.index) . abbr_prefix . a:item.word, a:max_menu_width)
   return a:item
 endfunction
 
@@ -384,7 +384,7 @@ function! s:MakeFileAbbrInfo(item, max_len_stats)
   let a:item.abbr = { 'head' : head,
         \             'tail' : a:item.word[strlen(head):],
         \             'key' : head . '.',
-        \             'prefix' : printf('%3d: ', a:item.index), }
+        \             'prefix' : printf('%4d: ', a:item.index), }
   if exists('a:item.abbr_prefix')
     let a:item.abbr.prefix .= a:item.abbr_prefix
   endif
