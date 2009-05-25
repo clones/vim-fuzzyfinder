@@ -1,7 +1,7 @@
 "=============================================================================
 " File:                plugin/fuzzyfinder.vim
 " Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version:             2.23.0, for Vim 7.1
+" Version:             2.24.0, for Vim 7.1
 " Licence:             MIT Licence
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
 "
@@ -12,7 +12,7 @@
 if exists('g:loaded_fuzzyfinder') || v:version < 701
   finish
 endif
-let g:loaded_fuzzyfinder = 022300 " Version xx.xx.xx
+let g:loaded_fuzzyfinder = 022400 " Version xx.xx.xx
 
 " }}}1
 "=============================================================================
@@ -307,12 +307,11 @@ endfunction
 "
 function! s:ExpandAbbrevMap(base, abbrev_map)
   let result = [a:base]
-  " expand
   for [pattern, sub_list] in items(a:abbrev_map)
     let exprs = result
     let result = []
     for expr in exprs
-      let result += map(copy(sub_list), 'substitute(expr, pattern, v:val, "g")')
+      let result += map(copy(sub_list), 'substitute(expr, pattern, escape(v:val, ''\''), "g")')
     endfor
   endfor
   return s:Unique(result)
