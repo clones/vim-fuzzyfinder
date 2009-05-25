@@ -1,7 +1,7 @@
 "=============================================================================
 " File:                plugin/fuzzyfinder.vim
 " Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version:             2.24.0, for Vim 7.1
+" Version:             2.22.1, for Vim 7.1
 " Licence:             MIT Licence
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
 "
@@ -12,7 +12,7 @@
 if exists('g:loaded_fuzzyfinder') || v:version < 701
   finish
 endif
-let g:loaded_fuzzyfinder = 022400 " Version xx.xx.xx
+let g:loaded_fuzzyfinder = 022201 " Version xx.xx.xx
 
 " }}}1
 "=============================================================================
