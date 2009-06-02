@@ -12,7 +12,7 @@
 if exists('g:loaded_fuzzyfinder') || v:version < 701
   finish
 endif
-let g:loaded_fuzzyfinder = 022201 " Version xx.xx.xx
+let g:loaded_fuzzyfinder = 022202 " Version xx.xx.xx
 
 " }}}1
 "=============================================================================
