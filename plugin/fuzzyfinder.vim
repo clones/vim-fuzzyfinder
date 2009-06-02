@@ -368,14 +368,16 @@ function! s:SetRanks(item, eval_word, eval_base, stats)
     let rank_perfect = 2
     let rank_matching = -s:EvaluateMatchingRate(a:eval_word, a:eval_base)
   endif
-  let a:item.ranks = [ rank_perfect, s:EvaluateLearningRank(a:item.word, a:stats), rank_matching, a:item.index ]
+  let a:item.ranks = [ rank_perfect, s:EvaluateLearningRank(a:item.word, a:stats),
+        \              rank_matching, a:item.index ]
   return a:item
 endfunction
 
 "
-function! s:SetFormattedWordToAbbr(item, max_menu_width)
+function! s:SetFormattedWordToAbbr(item, max_item_width)
   let abbr_prefix = (exists('a:item.abbr_prefix') ? a:item.abbr_prefix : '')
-  let a:item.abbr = s:TruncateTail(printf('%4d: ', a:item.index) . abbr_prefix . a:item.word, a:max_menu_width)
+  let a:item.abbr = printf('%4d: ', a:item.index) . abbr_prefix . a:item.word
+  let a:item.abbr = s:TruncateTail(a:item.abbr, a:max_item_width)
   return a:item
 endfunction
 
@@ -389,7 +391,8 @@ function! s:MakeFileAbbrInfo(item, max_len_stats)
     let a:item.abbr.prefix .= a:item.abbr_prefix
   endif
   let a:item.abbr.len = len(a:item.abbr.prefix) + len(a:item.word)
-  if !exists('a:max_len_stats[a:item.abbr.key]') || a:item.abbr.len > a:max_len_stats[a:item.abbr.key]
+  if !exists('a:max_len_stats[a:item.abbr.key]') ||
+        \ a:item.abbr.len > a:max_len_stats[a:item.abbr.key]
     let a:max_len_stats[a:item.abbr.key] = a:item.abbr.len
   endif
   return a:item
@@ -397,23 +400,24 @@ endfunction
 
 
 "
-function! s:GetTruncatedHeads(head, max_len, max_menu_width)
-  return s:TruncateMid(a:head, len(a:head) + a:max_menu_width - a:max_len)
+function! s:GetTruncatedHead(head, max_len, max_item_width)
+  return s:TruncateMid(a:head, len(a:head) + a:max_item_width - a:max_len)
 endfunction
 
 "
-function! s:SetAbbrWithFileAbbrData(item, truncated_heads, max_menu_width)
+function! s:SetAbbrWithFileAbbrData(item, truncated_heads, max_item_width)
   let abbr = a:item.abbr.prefix . a:truncated_heads[a:item.abbr.key] . a:item.abbr.tail
-  let a:item.abbr = s:TruncateTail(abbr, a:max_menu_width)
+  let a:item.abbr = s:TruncateTail(abbr, a:max_item_width)
   return a:item
 endfunction
 
 "
-function! s:MapToSetAbbrWithFileWord(items, max_menu_width)
+function! s:MapToSetAbbrWithFileWord(items, max_item_width)
   let max_len_stats = {}
   call map(a:items, 's:MakeFileAbbrInfo(v:val, max_len_stats)')
-  let truncated_heads = map(max_len_stats, 's:GetTruncatedHeads(v:key[: -2], v:val, a:max_menu_width)')
-  return map(a:items, 's:SetAbbrWithFileAbbrData(v:val, truncated_heads, a:max_menu_width)')
+  let truncated_heads =
+        \ map(max_len_stats, 's:GetTruncatedHead(v:key[: -2], v:val, a:max_item_width)')
+  return map(a:items, 's:SetAbbrWithFileAbbrData(v:val, truncated_heads, a:max_item_width)')
 endfunction
 
 "
@@ -1565,23 +1569,23 @@ let g:FuzzyFinderOptions = { 'Base':{}, 'Buffer':{}, 'File':{}, 'Dir':{},
       \                      'GivenFile':{}, 'GivenDir':{}, 'GivenCmd':{},
       \                      'CallbackFile':{}, 'CallbackItem':{}, }
 "-----------------------------------------------------------------------------
-let g:FuzzyFinderOptions.Base.key_open          = '<CR>'
-let g:FuzzyFinderOptions.Base.key_open_split    = '<C-j>'
-let g:FuzzyFinderOptions.Base.key_open_vsplit   = '<C-k>'
-let g:FuzzyFinderOptions.Base.key_open_tab      = '<C-l>'
-let g:FuzzyFinderOptions.Base.key_next_mode     = '<C-t>'
-let g:FuzzyFinderOptions.Base.key_prev_mode     = '<C-y>'
-let g:FuzzyFinderOptions.Base.key_ignore_case   = '<C-g><C-g>'
-let g:FuzzyFinderOptions.Base.info_file         = '~/.vimfuzzyfinder'
-let g:FuzzyFinderOptions.Base.min_length        = 0
-let g:FuzzyFinderOptions.Base.abbrev_map        = {}
-let g:FuzzyFinderOptions.Base.ignore_case       = 1
-let g:FuzzyFinderOptions.Base.time_format       = '(%x %H:%M:%S)'
-let g:FuzzyFinderOptions.Base.learning_limit    = 100
-let g:FuzzyFinderOptions.Base.enumerating_limit = 100
-let g:FuzzyFinderOptions.Base.max_menu_width    = 80
-let g:FuzzyFinderOptions.Base.lasting_cache     = 1
-let g:FuzzyFinderOptions.Base.migemo_support    = 0
+let g:FuzzyFinderOptions.Base.key_open           = '<CR>'
+let g:FuzzyFinderOptions.Base.key_open_split     = '<C-j>'
+let g:FuzzyFinderOptions.Base.key_open_vsplit    = '<C-k>'
+let g:FuzzyFinderOptions.Base.key_open_tab       = '<C-l>'
+let g:FuzzyFinderOptions.Base.key_next_mode      = '<C-t>'
+let g:FuzzyFinderOptions.Base.key_prev_mode      = '<C-y>'
+let g:FuzzyFinderOptions.Base.key_ignore_case    = '<C-g><C-g>'
+let g:FuzzyFinderOptions.Base.info_file          = '~/.vimfuzzyfinder'
+let g:FuzzyFinderOptions.Base.min_length         = 0
+let g:FuzzyFinderOptions.Base.abbrev_map         = {}
+let g:FuzzyFinderOptions.Base.ignore_case        = 1
+let g:FuzzyFinderOptions.Base.time_format        = '(%Y-%m-%d %H:%M:%S)'
+let g:FuzzyFinderOptions.Base.learning_limit     = 100
+let g:FuzzyFinderOptions.Base.enumerating_limit  = 100
+let g:FuzzyFinderOptions.Base.max_menu_width     = 80
+let g:FuzzyFinderOptions.Base.lasting_cache      = 1
+let g:FuzzyFinderOptions.Base.migemo_support     = 0
 "-----------------------------------------------------------------------------
 let g:FuzzyFinderOptions.Buffer.mode_available   = 1
 let g:FuzzyFinderOptions.Buffer.prompt           = '>Buffer>'
