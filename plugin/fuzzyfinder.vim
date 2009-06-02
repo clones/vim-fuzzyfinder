@@ -1,7 +1,7 @@
 "=============================================================================
 " File:                plugin/fuzzyfinder.vim
 " Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version:             2.22.1, for Vim 7.1
+" Version:             2.22.2, for Vim 7.1
 " Licence:             MIT Licence
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
 "
@@ -101,7 +101,7 @@ function! s:TruncateTail(str, len)
   elseif a:len <= len(s:ABBR_TRUNCATION_MARK)
     return s:ABBR_TRUNCATION_MARK
   endif
-  return a:str[:a:len - 1 + len(s:ABBR_TRUNCATION_MARK)] . s:ABBR_TRUNCATION_MARK
+  return a:str[:a:len - 1 - len(s:ABBR_TRUNCATION_MARK)] . s:ABBR_TRUNCATION_MARK
 endfunction
 
 " truncates a:str and add a:mark if a length of a:str is more than a:len
@@ -113,7 +113,9 @@ function! s:TruncateMid(str, len)
   endif
   let len_head = (a:len - len(s:ABBR_TRUNCATION_MARK)) / 2
   let len_tail = a:len - len(s:ABBR_TRUNCATION_MARK) - len_head
-  return a:str[: len_head - 1] . s:ABBR_TRUNCATION_MARK . a:str[-len_tail :]
+  return  (len_head > 0 ? a:str[: len_head - 1] : '') .
+        \ s:ABBR_TRUNCATION_MARK .
+        \ (len_tail > 0 ? a:str[-len_tail :] : '')
 endfunction
 
 " takes suffix numer. if no digits, returns -1
@@ -375,12 +377,14 @@ endfunction
 
 "
 function! s:SetFormattedWordToAbbr(item, max_item_width)
+  let len_menu = (exists('a:item.menu') ? len(a:item.menu) + 2 : 0)
   let abbr_prefix = (exists('a:item.abbr_prefix') ? a:item.abbr_prefix : '')
   let a:item.abbr = printf('%4d: ', a:item.index) . abbr_prefix . a:item.word
-  let a:item.abbr = s:TruncateTail(a:item.abbr, a:max_item_width)
+  let a:item.abbr = s:TruncateTail(a:item.abbr, a:max_item_width - len_menu)
   return a:item
 endfunction
 
+"
 function! s:MakeFileAbbrInfo(item, max_len_stats)
   let head = matchstr(a:item.word, '^.*[/\\]\ze.')
   let a:item.abbr = { 'head' : head,
@@ -390,10 +394,10 @@ function! s:MakeFileAbbrInfo(item, max_len_stats)
   if exists('a:item.abbr_prefix')
     let a:item.abbr.prefix .= a:item.abbr_prefix
   endif
-  let a:item.abbr.len = len(a:item.abbr.prefix) + len(a:item.word)
-  if !exists('a:max_len_stats[a:item.abbr.key]') ||
-        \ a:item.abbr.len > a:max_len_stats[a:item.abbr.key]
-    let a:max_len_stats[a:item.abbr.key] = a:item.abbr.len
+  let len = len(a:item.abbr.prefix) + len(a:item.word) +
+        \   (exists('a:item.menu') ? len(a:item.menu) + 2 : 0)
+  if !exists('a:max_len_stats[a:item.abbr.key]') || len > a:max_len_stats[a:item.abbr.key]
+    let a:max_len_stats[a:item.abbr.key] = len
   endif
   return a:item
 endfunction
@@ -406,8 +410,9 @@ endfunction
 
 "
 function! s:SetAbbrWithFileAbbrData(item, truncated_heads, max_item_width)
+  let len_menu = (exists('a:item.menu') ? len(a:item.menu) + 2 : 0)
   let abbr = a:item.abbr.prefix . a:truncated_heads[a:item.abbr.key] . a:item.abbr.tail
-  let a:item.abbr = s:TruncateTail(abbr, a:max_item_width)
+  let a:item.abbr = s:TruncateTail(abbr, a:max_item_width - len_menu)
   return a:item
 endfunction
 
