@@ -323,9 +323,9 @@ endfunction
 function! s:EnumExpandedDirsEntries(dir, excluded)
   " Substitutes "\" because on Windows, "**\" doesn't include ".\",
   " but "**/" include "./". I don't know why.
-  let dirs = split(expand(substitute(a:dir, '\', '/', 'g')), "\n")
-  let entries = s:Concat(map(copy(dirs), 'split(glob(v:val . ".*"), "\n") + ' .
-        \                                'split(glob(v:val . "*" ), "\n")'))
+  let dirNormalized = substitute(a:dir, '\', '/', 'g')
+  let entries = split(glob(dirNormalized . "*" ), "\n") +
+        \       split(glob(dirNormalized . ".*"), "\n")
   " removes "*/." and "*/.."
   call filter(entries, 'v:val !~ ''\v(^|[/\\])\.\.?$''')
   call map(entries, 'extend(s:SplitPath(v:val), { "suffix" : (isdirectory(v:val) ? s:PATH_SEPARATOR : "") })')
