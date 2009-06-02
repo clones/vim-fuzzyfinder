@@ -497,9 +497,12 @@ endfunction
 
 "
 function! s:OpenBuffer(buf_nr, mode, reuse)
-  if a:reuse && ((a:mode == s:OPEN_MODE_SPLIT  && s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
-        \        (a:mode == s:OPEN_MODE_VSPLIT && s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
-        \        (a:mode == s:OPEN_MODE_TAB    && s:MoveToWindowOfBufferInOtherTabPage  (a:buf_nr)))
+  if a:reuse && ((a:mode == s:OPEN_MODE_SPLIT &&
+        \         s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
+        \        (a:mode == s:OPEN_MODE_VSPLIT &&
+        \         s:MoveToWindowOfBufferInCurrentTabPage(a:buf_nr)) ||
+        \        (a:mode == s:OPEN_MODE_TAB &&
+        \         s:MoveToWindowOfBufferInOtherTabPage(a:buf_nr)))
     return
   endif
   execute printf({
@@ -856,7 +859,8 @@ endfunction
 
 "
 function! g:FuzzyFinderMode.Buffer.on_mode_enter_post()
-  let self.items = map(filter(range(1, bufnr('$')), 'buflisted(v:val) && v:val != self.prev_bufnr'),
+  let self.items = map(filter(range(1, bufnr('$')),
+        \                     'buflisted(v:val) && v:val != self.prev_bufnr'),
         \              'self.make_item(v:val)')
   if self.mru_order
     call s:MapToSetSerialIndex(sort(self.items, 's:CompareTimeDescending'), 1)
