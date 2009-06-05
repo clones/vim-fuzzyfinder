@@ -1,12 +1,7 @@
 "=============================================================================
-" File:                plugin/fuzzyfinder.vim
-" Author:              Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
-" Version:             2.22.3, for Vim 7.1
-" Licence:             MIT Licence
+" Copyright (c) 2007-2009 Takeshi NISHIDA
+"
 " GetLatestVimScripts: 1984 1 :AutoInstall: fuzzyfinder.vim
-"
-" See doc/fuzzyfinder.txt for details.
-"
 "=============================================================================
 " LOAD GUARD: {{{1
 if exists('g:loaded_fuzzyfinder') || v:version < 701
