@@ -1,5 +1,7 @@
 *fuzzyfinder.txt*       Fuzzy/Partial pattern explorer for buffer/file/etc.
 
+        Copyright (c) 2007-2009 Takeshi NISHIDA
+
 Fuzzyfinder                                                      *fuzzyfinder*
 
 INTRODUCTION                    |fuzzyfinder-introduction|
@@ -1293,11 +1295,11 @@ ABOUT           *fuzzyfinder-about* *fuzzyfinder-contact* *fuzzyfinder-author*
 Author:  Takeshi NISHIDA <ns9tks@DELETE-ME.gmail.com>
 Licence: MIT Licence
 URL:     http://www.vim.org/scripts/script.php?script_id=1984
-         http://code.google.com/p/vim-fuzzyfinder/
+         http://bitbucket.org/ns9tks/vim-fuzzyfinder/
 
 Bugs/Issues/Suggestions/Improvements ~
 
-Please submit to http://code.google.com/p/vim-fuzzyfinder/issues/list .
+Please submit to http://bitbucket.org/ns9tks/vim-fuzzyfinder/issues/ .
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:
