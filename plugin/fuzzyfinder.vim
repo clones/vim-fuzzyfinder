@@ -520,7 +520,7 @@ function! s:OpenFile(path, mode, reuse)
           \   s:OPEN_MODE_SPLIT   : ':split '  ,
           \   s:OPEN_MODE_VSPLIT  : ':vsplit ' ,
           \   s:OPEN_MODE_TAB     : ':tabedit ',
-          \ }[a:mode] . s:EscapeFilename(a:path)
+          \ }[a:mode] . s:EscapeFilename(fnamemodify(a:path, ':~:.'))
   endif
 endfunction
 
