@@ -1430,6 +1430,9 @@ let s:WindowManager = { 'buf_nr' : -1 }
 
 "
 function! s:WindowManager.activate(complete_func)
+ " lcd . : To avoid the strange behavior that unnamed buffer changes its cwd
+ "         if 'autochdir' was set on.
+  lcd .
   let cwd = getcwd()
   let self.buf_nr = s:Open1LineBuffer(self.buf_nr, '[Fuzzyfinder]')
   call s:SetLocalOptionsForFuzzyfinder(cwd, a:complete_func)
@@ -1462,7 +1465,7 @@ endfunction
 
 "
 function! s:SetLocalOptionsForFuzzyfinder(cwd, complete_func)
-  " countermeasure against auto-cd script
+  " lcd ... : countermeasure against auto-cd script
   execute ':lcd ' . escape(a:cwd, ' ')
   setlocal filetype=fuzzyfinder
   setlocal bufhidden=delete
