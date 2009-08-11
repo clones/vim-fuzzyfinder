@@ -99,11 +99,12 @@ mode.
 Fuzzyfinder searchs for fuzzy-matching items with an entered pattern and shows
 them in a completion menu.
 
-TODO:
-you can add some refining patterns if you want to refine a search result. A
-refining pattern is entered after ";" (|g:fuf_patternSeparator|). For more
-details, see |fuf-refining-pattern|.
+If current mode targets file paths, the matching is done only for the tail
+(last component) of each path.
 
+You can add a refining pattern if you want to narrow down the list of matching
+items by another pattern. A refining pattern is entered after ";"
+(|g:fuf_patternSeparator|). For more details, see |fuf-refining-pattern|.
 
 If there are a lot of matching items, Fuzzyfinder limits the number of
 enumerating items (|g:fuf_enumeratingLimit|) to speed up a response time, and
@@ -168,6 +169,8 @@ bookmarked line number without the adjustment, set
 
 You can add a cursor line to bookmarks by |:FufAddBookmark| command.
 Execute that command and you will be prompted to enter a bookmark name.
+
+To delete bookmarks, use |:FufEditInfo| command.
 
                                                                 *fuf-tag-mode*
 Tag mode ~
@@ -357,8 +360,11 @@ DETAILED TOPICS                                          *fuf-detailed-topics*
                                                 *fuf-refining-pattern*
 Refining Pattern ~
 
-TODO
-<
+TODO:
+
+Even if current mode targets file paths, a refining pattern can match each
+items anyplace. With a primary pattern in such case, it can match only the
+tail of each path.
 
                                                 *fuf-sorting-completion-items*
 Sorting Completion Items ~
@@ -573,7 +579,7 @@ OPTIONS                                                          *fuf-options*
                                                    *fuf-options-for-all-modes*
 For All Modes ~
 
-                                                            *g:fuf_keyOpen*  >
+                                                              *g:fuf_modes*  >
   let g:fuf_modes = [
         \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
         \   'bookmark', 'tag', 'taggedfile', 'givenfile',

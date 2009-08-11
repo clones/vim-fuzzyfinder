@@ -97,6 +97,13 @@ ZIPファイルをランタイムディレクトリに展開します。
 Fuzzyfinder は入力されたパターンにあいまいマッチングするアイテムを検索し、それ
 を補完メニューに表示します。
 
+カレントモードがファイルパスを対象としている場合、マッチングはパスの末尾の部分
+だけに対して行われます。
+
+マッチングしたアイテムのリストを別のパターンで絞り込むために、絞り込みパターン
+を追加することができます。絞り込みパターンは";"(|g:fuf_patternSeparator|)の後
+に入力します。詳しくは|fuf-refining-pattern|を参照してください。
+
 多くのアイテムがマッチングする場合、Fuzzyfinder はレスポンスを向上させるために
 列挙するアイテムの数(|g:fuf_enumeratingLimit|)を制限し、その際、入力されたパタ
 ーンを"Error" グループでハイライトします。
@@ -158,6 +165,7 @@ Fuzzyfinder はジャンプする行番号を調整します。ブックマー�
 |:FufAddBookmark|コマンドでカーソルのある行をブックマークに追加できます。この
 コマンドを実行すると、ブックマーク名の入力を求められます。
 
+ブックマークを削除するには|:FufEditInfo|コマンドを利用してください。
 
                                                                 *fuf-tag-mode*
 Tag mode ~
@@ -330,12 +338,21 @@ API 関数:
 <
 
 ==============================================================================
-DETAILED TOPICS                                          *fuf-detailed-topics*
+詳細なトピック                                           *fuf-detailed-topics*
 
                                                 *fuf-refining-pattern*
 絞り込みパターン ~
 
 TODO
+";" (|g:fuf_patternSeparator|) から 入力パターンの末尾また
+は次の ";" までが絞り込みパターンになります。
+入力パターンの先頭から最初の ";" まではプライマリパターンになります。
+
+絞り込みパターンは常に部分一致マッチングになります。
+
+カレントモードがファイルパスを対象にしていても、絞り込みパターンはアイテムのど
+こでもマッチングすることができます。この場合プライマリパターンでは、パスの末尾
+部分だけに対してマッチングすることができます。
 
                                                 *fuf-sorting-completion-items*
 補完アイテムのソート ~
@@ -553,7 +570,7 @@ See also: |fuf-vimrc-sample|
                                                    *fuf-options-for-all-modes*
 全モード用 ~
 
-                                                            *g:fuf_keyOpen*  >
+                                                              *g:fuf_modes*  >
   let g:fuf_modes = [
         \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
         \   'bookmark', 'tag', 'taggedfile', 'givenfile',
