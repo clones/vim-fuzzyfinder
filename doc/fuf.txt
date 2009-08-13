@@ -1,4 +1,4 @@
-*fuf.txt*       Fuzzy/Partial matching explorer for buffer/file/etc.
+*fuf.txt*       buffer/file/command/tag/etc explorer with fuzzy matching.
 
         Copyright (c) 2007-2009 Takeshi NISHIDA
 
@@ -96,15 +96,9 @@ It is recommended to map these commands.
 These commands open 1-line buffer to enter search pattern and start insert
 mode.
 
-Fuzzyfinder searchs for fuzzy-matching items with an entered pattern and shows
-them in a completion menu.
-
-If current mode targets file paths, the matching is done only for the tail
-(last component) of each path.
-
-You can add a refining pattern if you want to narrow down the list of matching
-items by another pattern. A refining pattern is entered after ";"
-(|g:fuf_patternSeparator|). For more details, see |fuf-refining-pattern|.
+Fuzzyfinder searchs for matching items with an entered pattern and shows them
+in a completion menu. For more details on a pattern matching, see
+|fuf-search-patterns|.
 
 If there are a lot of matching items, Fuzzyfinder limits the number of
 enumerating items (|g:fuf_enumeratingLimit|) to speed up a response time, and
@@ -357,17 +351,31 @@ Example of use:
 ==============================================================================
 DETAILED TOPICS                                          *fuf-detailed-topics*
 
-                                                *fuf-refining-pattern*
-Refining Pattern ~
+                                                         *fuf-search-patterns*
+Search Patterns ~
 
-TODO:
+You can enter one primary pattern and zero or more refining patterns as search
+patterns. An entered pattern is separated by ";" (|g:fuf_patternSeparator|),
+and the first pattern is a primary pattern and the rest of patterns is a
+refining pattern.
 
-Even if current mode targets file paths, a refining pattern can match each
-items anyplace. With a primary pattern in such case, it can match only the
-tail of each path.
+A refining pattern is used to narrow down the list of matching items by
+another pattern.
 
-                                                *fuf-sorting-completion-items*
-Sorting Completion Items ~
+With a primary pattern, Fuzzyfinder does the selected one of a fuzzy matching
+and a partial matching. With a refining pattern, Fuzzyfinder always does a
+partial matching.
+
+If current mode targets file paths, a primary pattern can match 
+only the tail (last component) of each path.
+With a refining pattern in such case, it can match anywhere on each
+path.
+
+If current mode targets file paths, the matching with a primary pattern is
+done only for the tail (last component) of each path.
+
+                                                *fuf-sort-of-completion-items*
+Sort of Completion Items ~
 
 Fuzzyfinder sorts completion items with some rules:
 
@@ -461,7 +469,7 @@ See also: |fuf-vimrc-sample|
 :FufBuffer[!] [{pattern}]
         Launchs Buffer mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -470,7 +478,7 @@ See also: |fuf-vimrc-sample|
 :FufFile[!] [{pattern}]
         Launchs File mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -489,7 +497,7 @@ See also: |fuf-vimrc-sample|
 :FufDir[!] [{pattern}]
         Launchs Directory mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -508,7 +516,7 @@ See also: |fuf-vimrc-sample|
 :FufMruFile[!] [{pattern}]
         Launchs MRU-File mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -517,7 +525,7 @@ See also: |fuf-vimrc-sample|
 :FufMruCmd[!] [{pattern}]
         Launchs MRU-Command mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -526,7 +534,7 @@ See also: |fuf-vimrc-sample|
 :FufBookmark[!] [{pattern}]
         Launchs Bookmark mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -535,7 +543,7 @@ See also: |fuf-vimrc-sample|
 :FufTag[!] [{pattern}]
         Launchs Tag mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
@@ -548,7 +556,7 @@ See also: |fuf-vimrc-sample|
 :FufTaggedFile[!] [{pattern}]
         Launchs Tagged-File mode.
 
-        If a command was executed with a ! modifier, it enables a partial
+        If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
         {pattern} will be inserted after launching Fuzzyfinder.
