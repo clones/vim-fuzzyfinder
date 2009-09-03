@@ -90,8 +90,9 @@ endfunction
 
 "
 function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(s:enumTags(self.tagFiles),
-        \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+  return fuf#filterMatchesAndMapToSetRanks(
+        \ s:enumTags(self.tagFiles), a:patternSet,
+        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
 endfunction
 
 "

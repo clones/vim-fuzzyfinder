@@ -83,8 +83,9 @@ endfunction
 
 "
 function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(self.items,
-        \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+  return fuf#filterMatchesAndMapToSetRanks(
+        \ self.items, a:patternSet,
+        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
 endfunction
 
 "

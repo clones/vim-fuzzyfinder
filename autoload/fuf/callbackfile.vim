@@ -88,8 +88,9 @@ endfunction
 function s:handler.onComplete(patternSet)
   let items = copy(s:enumItems(a:patternSet.rawHead))
   let items = filter(items, 'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
-  return fuf#filterMatchesAndMapToSetRanks(items,
-        \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+  return fuf#filterMatchesAndMapToSetRanks(
+        \ items, a:patternSet,
+        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
 endfunction
 
 "
