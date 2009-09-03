@@ -75,11 +75,13 @@ endfunction
 "
 function s:handler.onComplete(patternSet)
   if s:forPath
-    return fuf#filterMatchesAndMapToSetRanks(s:items,
-          \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+    return fuf#filterMatchesAndMapToSetRanks(
+          \ s:items, a:patternSet,
+          \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
   else
-    return fuf#filterMatchesAndMapToSetRanks(s:items,
-          \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+    return fuf#filterMatchesAndMapToSetRanks(
+          \ s:items, a:patternSet,
+          \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
   endif
 endfunction
 

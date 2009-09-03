@@ -40,6 +40,16 @@ endfunction
 let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
+function s:getTaggedFileList(tagfile)
+  execute 'cd ' . fnamemodify(a:tagfile, ':h')
+  let result = map(readfile(a:tagfile), 'matchstr(v:val, ''^[^!\t][^\t]*\t\zs[^\t]\+'')')
+  call map(readfile(a:tagfile), 'fnamemodify(v:val, ":p")')
+  cd -
+  call map(readfile(a:tagfile), 'fnamemodify(v:val, ":~:.")')
+  return filter(result, 'v:val =~ ''[^/\\ ]$''')
+endfunction
+
+"
 function s:enumTaggedFiles(tagFiles)
   if !len(a:tagFiles)
     return []
@@ -54,16 +64,6 @@ function s:enumTaggedFiles(tagFiles)
     let s:cache[key] = { 'time'  : localtime(), 'items' : items }
   endif
   return s:cache[key].items
-endfunction
-
-"
-function s:getTaggedFileList(tagfile)
-  execute 'cd ' . fnamemodify(a:tagfile, ':h')
-  let result = map(readfile(a:tagfile), 'matchstr(v:val, ''^[^!\t][^\t]*\t\zs[^\t]\+'')')
-  call map(readfile(a:tagfile), 'fnamemodify(v:val, ":p")')
-  cd -
-  call map(readfile(a:tagfile), 'fnamemodify(v:val, ":~:.")')
-  return filter(result, 'v:val =~ ''[^/\\ ]$''')
 endfunction
 
 " }}}1
@@ -94,10 +94,9 @@ endfunction
 
 "
 function s:handler.onComplete(patternSet)
-  let items = copy(s:enumTaggedFiles(self.tagFiles))
-  let items = filter(items, 'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
-  return fuf#filterMatchesAndMapToSetRanks(items,
-        \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+  return fuf#filterMatchesAndMapToSetRanks(
+        \ self.cache, a:patternSet,
+        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
 endfunction
 
 "
@@ -112,6 +111,11 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
+  " NOTE: Don't do this in onModeEnterPre()
+  "       because it should return in a short time 
+  let self.cache =
+        \ filter(copy(s:enumTaggedFiles(self.tagFiles)),
+        \        'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
 endfunction
 
 "

@@ -80,10 +80,14 @@ endfunction
 
 "
 function s:handler.onComplete(patternSet)
-  let items = copy(s:enumItems(a:patternSet.rawHead))
-  let items = filter(items, 'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
-  return fuf#filterMatchesAndMapToSetRanks(items,
-        \ a:patternSet, self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+  let key = a:patternSet.rawHead . 'AVOIDING EMPTY KEY'
+  if !exists('self.cache[key]')
+    let self.cache[key] = filter(copy(s:enumItems(a:patternSet.rawHead)),
+          \                      'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
+  endif
+  return fuf#filterMatchesAndMapToSetRanks(
+        \ self.cache[key], a:patternSet,
+        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
 endfunction
 
 "
@@ -97,6 +101,7 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
+  let self.cache = {}
 endfunction
 
 "
