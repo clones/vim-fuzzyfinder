@@ -22,6 +22,7 @@ function s:initialize()
         \   'bookmark', 'tag', 'taggedfile', 'givenfile',
         \   'givendir', 'givencmd', 'callbackfile', 'callbackitem',
         \ ])
+  call s:defineOption('g:fuf_modesDisable'  , [ 'mrufile', 'mrucmd', ])
   call s:defineOption('g:fuf_keyOpen'         , '<CR>')
   call s:defineOption('g:fuf_keyOpenSplit'    , '<C-j>')
   call s:defineOption('g:fuf_keyOpenVsplit'   , '<C-k>')
@@ -44,20 +45,20 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_file_prompt'         , '>File>')
   call s:defineOption('g:fuf_file_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_file_excludedPath'   , '\v\~$|\.o$|\.exe$|\.bak$|\.swp$')
+  call s:defineOption('g:fuf_file_exclude'        , '\v\~$|\.o$|\.exe$|\.bak$|\.swp$')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_dir_prompt'         , '>Dir>')
   call s:defineOption('g:fuf_dir_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_dir_excludedPath'   , '')
+  call s:defineOption('g:fuf_dir_exclude'        , '')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_mrufile_prompt'         , '>MruFile>')
   call s:defineOption('g:fuf_mrufile_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_mrufile_excludedPath'   , '\v\~$|\.bak$|\.swp$')
+  call s:defineOption('g:fuf_mrufile_exclude'        , '\v\~$|\.bak$|\.swp$')
   call s:defineOption('g:fuf_mrufile_maxItem'        , 200)
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_mrucmd_prompt'         , '>MruCmd>')
   call s:defineOption('g:fuf_mrucmd_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_mrucmd_excludedCommand', '^$')
+  call s:defineOption('g:fuf_mrucmd_exclude'        , '^$')
   call s:defineOption('g:fuf_mrucmd_maxItem'        , 200)
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_bookmark_prompt'         , '>Bookmark>')
@@ -81,11 +82,12 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_callbackfile_prompt'         , '>CallbackFile>')
   call s:defineOption('g:fuf_callbackfile_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_callbackfile_excludedPath'   , '')
+  call s:defineOption('g:fuf_callbackfile_exclude'        , '')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_callbackitem_prompt'         , '>CallbackItem>')
   call s:defineOption('g:fuf_callbackitem_promptHighlight', 'Question')
   "---------------------------------------------------------------------------
+  call filter(g:fuf_modes, 'count(g:fuf_modesDisable, v:val) == 0')
   for m in g:fuf_modes
     call fuf#{m}#renewCache()
     call fuf#{m}#onInit()

@@ -52,7 +52,7 @@ function s:updateInfo()
   let info = fuf#loadInfoFile(s:MODE_NAME)
   let info.data = fuf#updateMruList(
         \ info.data, { 'word' : expand('%:p'), 'time' : localtime() },
-        \ g:fuf_mrufile_maxItem, g:fuf_mrufile_excludedPath)
+        \ g:fuf_mrufile_maxItem, g:fuf_mrufile_exclude)
   call fuf#saveInfoFile(s:MODE_NAME, info)
   call s:removeItemFromCache(expand('%:p'))
 endfunction
