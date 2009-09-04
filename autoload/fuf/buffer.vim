@@ -52,7 +52,7 @@ endfunction
 
 "
 function s:makeItem(nr)
-  let item = fuf#makeFileItem((empty(bufname(a:nr)) ? '[No Name]' : fnamemodify(bufname(a:nr), ':~:.')), 0)
+  let item = fuf#makePathItem((empty(bufname(a:nr)) ? '[No Name]' : fnamemodify(bufname(a:nr), ':~:.')), 0)
   let item.index = a:nr
   let item.bufNr = a:nr
   let item.abbrPrefix = s:getBufIndicator(a:nr) . ' '

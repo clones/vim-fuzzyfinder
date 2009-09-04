@@ -58,7 +58,7 @@ function s:enumTaggedFiles(tagFiles)
   " cache not created or tags file updated? 
   if !exists('s:cache[key]') || max(map(copy(a:tagFiles), 'getftime(v:val) >= s:cache[key].time'))
     let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTaggedFileList(v:val)')))
-    call map(items, 'fuf#makeFileItem(v:val, 0)')
+    call map(items, 'fuf#makePathItem(v:val, 0)')
     call fuf#mapToSetSerialIndex(items, 1)
     call fuf#mapToSetAbbrWithSnippedWordAsPath(items)
     let s:cache[key] = { 'time'  : localtime(), 'items' : items }

@@ -155,7 +155,8 @@ endfunction
 function s:handler.onModeEnterPost()
   let self.items = copy(self.info.data)
   let self.items = map(self.items, 'fuf#setMenuWithFormattedTime(v:val)')
-  let self.items = fuf#mapToSetSerialIndex(self.items, 1)
+  let self.items = map(self.items, 'fuf#setBoundariesWithWord(v:val)')
+  call fuf#mapToSetSerialIndex(self.items, 1)
   let self.items = map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
 endfunction
 

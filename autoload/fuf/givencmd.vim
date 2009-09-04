@@ -33,8 +33,10 @@ endfunction
 
 "
 function fuf#givencmd#launch(initialPattern, partialMatching, items)
-  let s:items = fuf#mapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
-  call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  let s:items = map(copy(a:items), '{ "word" : v:val }')
+  let s:items = map(s:items, 'fuf#setBoundariesWithWord(v:val)')
+  call fuf#mapToSetSerialIndex(s:items, 1)
+  let s:items = map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
   call fuf#launch(s:MODE_NAME, a:initialPattern, a:partialMatching)
 endfunction
 

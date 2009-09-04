@@ -50,7 +50,7 @@ function s:enumItems(dir)
   if !exists('s:cache[key]')
     let s:cache[key] = fuf#enumExpandedDirsEntries(a:dir, g:fuf_callbackfile_excludedPath)
     if isdirectory(a:dir)
-      call insert(s:cache[key], fuf#makeFileItem(a:dir . '.', 0))
+      call insert(s:cache[key], fuf#makePathItem(a:dir . '.', 0))
     endif
     call fuf#mapToSetSerialIndex(s:cache[key], 1)
     call fuf#mapToSetAbbrWithSnippedWordAsPath(s:cache[key])

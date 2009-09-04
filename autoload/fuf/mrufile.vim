@@ -73,7 +73,7 @@ function s:formatItemUsingCache(item)
   endif
   if !exists('s:cache[a:item.word]')
     if filereadable(a:item.word)
-      let s:cache[a:item.word] = fuf#makeFileItem(fnamemodify(a:item.word, ':~'), 0)
+      let s:cache[a:item.word] = fuf#makePathItem(fnamemodify(a:item.word, ':~'), 0)
       let s:cache[a:item.word].time = a:item.time
       call fuf#setMenuWithFormattedTime(s:cache[a:item.word])
     else

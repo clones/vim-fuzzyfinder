@@ -48,7 +48,7 @@ function s:enumItems(dir)
     let s:cache[key] = fuf#enumExpandedDirsEntries(a:dir, g:fuf_dir_excludedPath)
     call filter(s:cache[key], 'v:val.word =~ ''[/\\]$''')
     if isdirectory(a:dir)
-      call insert(s:cache[key], fuf#makeFileItem(a:dir . '.', 0))
+      call insert(s:cache[key], fuf#makePathItem(a:dir . '.', 0))
     endif
     call fuf#mapToSetSerialIndex(s:cache[key], 1)
     call fuf#mapToSetAbbrWithSnippedWordAsPath(s:cache[key])

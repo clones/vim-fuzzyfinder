@@ -33,9 +33,10 @@ endfunction
 
 "
 function fuf#givendir#launch(initialPattern, partialMatching, items)
-  let s:items = map(copy(a:items), 'fuf#makeFileItem(v:val, 1)')
+  let s:items = map(copy(a:items), 'substitute(v:val, ''[/\\]\?$'', "", "")')
+  let s:items = map(s:items, 'fuf#makePathItem(v:val, 0)')
   call fuf#mapToSetSerialIndex(s:items, 1)
-  call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call fuf#mapToSetAbbrWithSnippedWordAsPath(s:items)
   call fuf#launch(s:MODE_NAME, a:initialPattern, a:partialMatching)
 endfunction
 
