@@ -384,8 +384,8 @@ each item.
 If current mode targets file paths, the matching with a primary pattern is
 done only for the tail (last component) of each path.
 
-                                                *fuf-sort-of-completion-items*
-Sort of Completion Items ~
+                                             *fuf-sorting-of-completion-items*
+Sorting of Completion Items ~
 
 FuzzyFinder sorts completion items with some rules:
 
