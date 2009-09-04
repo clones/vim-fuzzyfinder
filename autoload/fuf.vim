@@ -612,11 +612,11 @@ let s:bufNrFuf = -1
 "
 function s:openFufBuffer()
   if !bufexists(s:bufNrFuf)
-    leftabove 1new
+    topleft 1new
     file `='[fuf]'`
     let s:bufNrFuf = bufnr('%')
   elseif bufwinnr(s:bufNrFuf) == -1
-    leftabove 1split
+    topleft 1split
     execute s:bufNrFuf . 'buffer'
     delete _
   elseif bufwinnr(s:bufNrFuf) != bufwinnr('%')
@@ -654,7 +654,7 @@ endfunction
 function s:deactivateFufBuffer()
   if exists(':AutoComplPopUnlock') | execute ':AutoComplPopUnlock' | endif
   " must close after returning to previous window
-  wincmd j
+  wincmd p
   execute s:bufNrFuf . 'bdelete'
 endfunction
 

@@ -901,6 +901,9 @@ CHANGELOG                                                      *fuf-changelog*
   - Added new feature which is refining pattern.
   - Improved the rules for sorting completion items. Thanks to the suggestion
     by Nathan, the rule for boundary matching was implemented.
+  - Changed to open one line buffer of Fuzzyfinder with :topleft command
+    instead of :leftabove. The window will alway appear at the top and occupy
+    the full with of the vim window. Thanks to Jan Christoph.
   - Changed default filename of information file.
   - Removed the feature which is switching to an other mode in Fuzzyfinder.
   - Removed the feature which is temporarily switching 'ignorecase' in
