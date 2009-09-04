@@ -308,7 +308,7 @@ endfunction
 "
 function fuf#launch(modeName, initialPattern, partialMatching)
   if exists('s:runningHandler')
-    call fuf#echoWithHl('Fuzzyfinder is running.', 'WarningMsg')
+    call fuf#echoWithHl('FuzzyFinder is running.', 'WarningMsg')
   endif
   if count(g:fuf_modes, a:modeName) == 0
     echoerr 'This mode is not available: ' . a:modeName
@@ -677,8 +677,8 @@ endfunction
 "
 function s:warnOldInfoFile()
   call fuf#echoWithHl(printf("=================================================================\n" .
-        \                    "  Sorry, but your information file for Fuzzyfinder is no longer  \n" .
-        \                    "  compatible with this version of Fuzzyfinder. Please remove     \n" .
+        \                    "  Sorry, but your information file for FuzzyFinder is no longer  \n" .
+        \                    "  compatible with this version of FuzzyFinder. Please remove     \n" .
         \                    "  %-63s\n" .
         \                    "=================================================================\n" ,
         \                    '"' . expand(g:fuf_infoFile) . '".'),
@@ -760,13 +760,13 @@ let s:handlerBase = {}
 " "
 " s:handler.onOpen(expr, mode)
 " 
-" " Before entering Fuzzyfinder buffer. This function should return in a short time.
+" " Before entering FuzzyFinder buffer. This function should return in a short time.
 " s:handler.onModeEnterPre()
 "
-" " After entering Fuzzyfinder buffer.
+" " After entering FuzzyFinder buffer.
 " s:handler.onModeEnterPost()
 "
-" " After leaving Fuzzyfinder buffer.
+" " After leaving FuzzyFinder buffer.
 " s:handler.onModeLeavePost(opened)
 "
 " }}}2
