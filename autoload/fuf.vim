@@ -412,7 +412,7 @@ endfunction
 " LOCAL FUNCTIONS/VARIABLES {{{1
 
 let s:INFO_FILE_VERSION_LINE = "VERSION\t300"
-let s:PATH_SEPARATOR = (has('win32') || has('win64') ? '\' : '/')
+let s:PATH_SEPARATOR = (!&shellslash && (has('win32') || has('win64')) ? '\' : '/')
 let s:ABBR_SNIP_MASK = '...'
 let s:OPEN_MODE_CURRENT = 1
 let s:OPEN_MODE_SPLIT   = 2
