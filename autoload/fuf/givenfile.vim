@@ -33,7 +33,7 @@ endfunction
 
 "
 function fuf#givenfile#launch(initialPattern, partialMatching, items)
-  let s:items = map(copy(a:items), 'fuf#makeFileItem(v:val, 1)')
+  let s:items = map(copy(a:items), 'fuf#makePathItem(v:val, 1)')
   call fuf#mapToSetSerialIndex(s:items, 1)
   call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
   call fuf#launch(s:MODE_NAME, a:initialPattern, a:partialMatching)

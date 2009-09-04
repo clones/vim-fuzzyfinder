@@ -34,9 +34,17 @@ endfunction
 "
 function fuf#callbackitem#launch(initialPattern, partialMatching, listener, items, forPath)
   let s:listener = a:listener
-  let s:items = fuf#mapToSetSerialIndex(map(copy(a:items), '{ "word" : v:val }'), 1)
   let s:forPath = a:forPath
-  call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  if s:forPath
+    let s:items = map(copy(a:items), 'fuf#makePathItem(v:val, 1)')
+    call fuf#mapToSetSerialIndex(s:items, 1)
+    call fuf#mapToSetAbbrWithSnippedWordAsPath(s:items)
+  else
+    let s:items = map(copy(a:items), '{ "word" : v:val }')
+    let s:items = map(s:items, 'fuf#setBoundariesWithWord(v:val)')
+    call fuf#mapToSetSerialIndex(s:items, 1)
+    let s:items = map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  endif
   call fuf#launch(s:MODE_NAME, a:initialPattern, a:partialMatching)
 endfunction
 

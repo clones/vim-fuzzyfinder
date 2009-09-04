@@ -152,28 +152,21 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
-function fuf#setRanks(item, wordEval, patternEval, stats)
-  let rankPerfect = (a:wordEval == a:patternEval ? 0 : 1)
-  if a:wordEval == a:patternEval
-    let rankPerfect = 1
-    let rankMatching = 0
-  else
-    let rankPerfect = 2
-    let rankMatching = -s:evaluateMatchingRate(a:wordEval, a:patternEval)
-  endif
-  let a:item.ranks = [ rankPerfect, s:evaluateLearningRank(a:item.word, a:stats),
-        \              rankMatching, a:item.index ]
-  return a:item
-endfunction
-
-"
 function fuf#filterMatchesAndMapToSetRanks(items, patternSet, stats, forPath)
   " NOTE: To know an excess, plus 1 to limit number
   let result = fuf#filterWithLimit(
         \ a:items, a:patternSet.filteringExpr, g:fuf_enumeratingLimit + 1)
-  return map(result, (a:forPath
-        \ ? 'fuf#setRanks(v:val, v:val.tail, a:patternSet.rawTail, a:stats)'
-        \ : 'fuf#setRanks(v:val, v:val.word, a:patternSet.raw    , a:stats)'))
+  if a:forPath
+    let key = 'tail'
+    let patternRaw = a:patternSet.rawTail
+  else
+    let key = 'word'
+    let patternRaw = a:patternSet.raw
+  endif
+  let patternPartial = s:makePartialRegexpPattern(patternRaw)
+  let patternFuzzy   = s:makeFuzzyRegexpPattern(patternRaw)
+  let boundaryMatching = (patternRaw !~ '\U')
+  return map(result, 's:setRanks(v:val, key, patternPartial, patternFuzzy, boundaryMatching, a:stats)')
 endfunction
 
 "
@@ -248,14 +241,15 @@ function fuf#compareRanks(i1, i2)
   return 0
 endfunction
 
-" TODO rename to fuf#makePathItem
-" returns { 'word', 'head', 'tail' }
-function fuf#makeFileItem(fname, appendsDirSuffix)
+" returns { 'word', 'boundaries', 'head', 'tail' }
+function fuf#makePathItem(fname, appendsDirSuffix)
+  let item = fuf#splitPath(a:fname)
+  let item.boundaries = s:getWordBoundaries(item.tail)
   if a:appendsDirSuffix
     let suffix = (isdirectory(a:fname) ? s:PATH_SEPARATOR : '')
-    return extend({ 'word' : a:fname . suffix }, fuf#splitPath(a:fname), 'error') 
+    return extend({ 'word' : a:fname . suffix }, item, 'error') 
   else
-    return extend({ 'word' : a:fname }, fuf#splitPath(a:fname), 'error') 
+    return extend({ 'word' : a:fname }, item, 'error') 
   endif
 endfunction
 
@@ -268,7 +262,7 @@ function fuf#enumExpandedDirsEntries(dir, excluded)
         \       split(glob(dirNormalized . ".*"), "\n")
   " removes "*/." and "*/.."
   call filter(entries, 'v:val !~ ''\v(^|[/\\])\.\.?$''')
-  call map(entries, 'fuf#makeFileItem(v:val, 1)')
+  call map(entries, 'fuf#makePathItem(v:val, 1)')
   if len(a:excluded)
     call filter(entries, 'v:val.word !~ a:excluded')
   endif
@@ -296,6 +290,12 @@ function fuf#setAbbrWithFormattedWord(item)
   let abbrPrefix = (exists('a:item.abbrPrefix') ? a:item.abbrPrefix : '')
   let a:item.abbr = printf('%4d: ', a:item.index) . abbrPrefix . a:item.word
   let a:item.abbr = s:snipTail(a:item.abbr, g:fuf_maxMenuWidth - lenMenu, s:ABBR_SNIP_MASK)
+  return a:item
+endfunction
+
+"
+function fuf#setBoundariesWithWord(item)
+  let a:item.boundaries = s:getWordBoundaries(a:item.word)
   return a:item
 endfunction
 
@@ -474,30 +474,25 @@ function s:snipMid(str, len, mask)
         \ (len_tail > 0 ? a:str[-len_tail :] : '')
 endfunction
 
-" TODO: Consider rating algorism.
-" a range of return value is [0.0, 1.0]
-function s:evaluateMatchingRate(word, pattern)
-  if empty(a:pattern)
-    return 0.0
-  endif
-  let rate = 1.0
-  let matched = 1
-  let skipPenalty = 1.0
-  let iPattern = 0
-  for iWord in range(len(a:word))
-    if iPattern >= len(a:pattern)
-      let skipPenalty += 1
-      let rate = rate / sqrt(len(a:word) - iWord + 1)
-      break
-    elseif a:word[iWord] == a:pattern[iPattern]
-      let matched = 1
-      let iPattern += 1
-    elseif matched
-      let skipPenalty += 1
-      let matched = 0
-    endif
-  endfor
-  return rate / skipPenalty
+"
+function s:getWordBoundaries(word)
+  return substitute(a:word, '\a\zs\l\+\|\zs\A', '', 'g')
+endfunction
+
+"
+function s:setRanks(item, key, patternPartial, patternFuzzy, boundaryMatching, stats)
+  "let word2 = substitute(a:eval_word, '\a\zs\l\+\|\zs\A', '', 'g')
+  let a:item.ranks = [
+        \   s:evaluateLearningRank(a:item.word, a:stats),
+        \   (a:boundaryMatching
+        \    ? -s:scoreBoundaryMatching(a:item.boundaries, 
+        \                               a:patternPartial, a:patternFuzzy)
+        \    : 1.0),
+        \   -s:scoreSequentialMatching(a:item[a:key],
+        \                              a:patternPartial),
+        \   a:item.index,
+        \ ]
+  return a:item
 endfunction
 
 " 
@@ -508,6 +503,24 @@ function s:evaluateLearningRank(word, stats)
     endif
   endfor
   return len(a:stats)
+endfunction
+
+" range of return value is [0.0, 1.0]
+function s:scoreSequentialMatching(word, patternPartial)
+  let pos = match(a:word, a:patternPartial)
+  if pos < 0
+    return 0
+  endif
+  return 0.5 * (len(a:word) - matchend(a:word, a:patternPartial)) / len(a:word) +
+        \ (pos == 0 ? 0.5 : 0.0)
+endfunction
+
+" range of return value is [0.0, 1.0]
+function s:scoreBoundaryMatching(word, patternPartial, patternFuzzy)
+  if a:word !~ a:patternFuzzy
+    return 0
+  endif
+  return 0.5 + 0.5 * s:scoreSequentialMatching(a:word, a:patternPartial)
 endfunction
 
 "

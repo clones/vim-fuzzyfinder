@@ -379,11 +379,18 @@ Sort of Completion Items ~
 
 Fuzzyfinder sorts completion items with some rules:
 
-  TODO:
-        - A perfect matching puts first.
-        - A sequential matching puts higher than a fragmentary matching.
-        - A backward matching puts higher than a forward matching.
-        - A short item is put higher than a long item.
+        - If a pattern consists only of uppercase characters and matches an
+          item at only word boundaries of it, the item is placed upper. E.g.,
+          with a pattern "FB", items such as "fooBarBaz" and
+          "foo_bar_baz" is placed upper.
+        - An item, one part of which is matched with a whole pattern, is
+          placed upper. E.g., with the pattern "bc", the item "abc" is placed
+          upper than "bac". In such case, items, each having matching part at
+          the head of itself, are placed upper than others. E.g., with the
+          pattern "foo", the item "foobar" is placed upper than "foobarbaz".
+          And the shorter the length of the item after matching position puts
+          it higher. E.g., with the pattern "bar", the item "foobar" is placed
+          upper than "foobarbaz".
 
 Plus, Fuzzyfinder has a learning system. An item which has been completed in
 the past with current pattern is placed upper.
@@ -874,7 +881,7 @@ SPECIAL THANKS                                                    *fuf-thanks*
 - Nikolay Golubev
 - Brian Doyle
 - id:secondlife
-- Matt Tolton
+- Nathan Neff
 
 
 ==============================================================================
@@ -884,8 +891,9 @@ CHANGELOG                                                      *fuf-changelog*
   - Redesigned the whole plugin for improvements of maintainability and
     performance. "fuzzyfinder" is abbreviated to "fuf" in the sorce code and
     filenames. All commands and options are renamed.
-  - Added new feature which is a refining pattern. With this change, Adjusted
-    the rules for sorting completion items.
+  - Added new feature which is refining pattern.
+  - Improved the rules for sorting completion items. Thanks to the suggestion
+    by Nathan, the rule for boundary matching was implemented.
   - Changed default filename of information file.
   - Removed the feature which is switching to an other mode in Fuzzyfinder.
   - Removed the feature which is temporarily switching 'ignorecase' in
