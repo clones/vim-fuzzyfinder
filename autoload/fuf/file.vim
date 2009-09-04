@@ -82,8 +82,11 @@ endfunction
 function s:handler.onComplete(patternSet)
   let key = a:patternSet.rawHead . 'AVOIDING EMPTY KEY'
   if !exists('self.cache[key]')
+    " NOTE: filtering should be done with 'bufnr("^" . v:val.word . "$") != self.bufNrPrev'.
+    "       But it takes a lot of time!
+    let bufName = bufname(self.bufNrPrev)
     let self.cache[key] = filter(copy(s:enumItems(a:patternSet.rawHead)),
-          \                      'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
+          \                      'v:val.word != bufName')
   endif
   return fuf#filterMatchesAndMapToSetRanks(
         \ self.cache[key], a:patternSet,
