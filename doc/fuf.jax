@@ -582,8 +582,8 @@ See also: |fuf-vimrc-sample|
                                                        *g:fuf_modesDisable*  >
   let g:fuf_modesDisable = [ 'mrufile', 'mrucmd', ]
 <
-        無効lにするモード名のリスト。これに含まれるモードは初期化されず、イベ
-        ントの処理も行われません。
+        無効にするモード名のリスト。これに含まれるモードは初期化されず、イベン
+        トの処理も行われません。
 
                                                             *g:fuf_keyOpen*  >
   let g:fuf_keyOpen = '<CR>'
