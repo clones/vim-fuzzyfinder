@@ -2,7 +2,7 @@
 
         Copyright (c) 2007-2009 Takeshi NISHIDA
 
-Fuzzyfinder                                                *fuzzyfinder* *fuf*
+FuzzyFinder                                                *fuzzyfinder* *fuf*
 
 概要                            |fuf-introduction|
 インストール                    |fuf-installation|
@@ -18,7 +18,7 @@ CHANGELOG                       |fuf-changelog|
 ==============================================================================
 概要                                                        *fuf-introduction*
 
-Fuzzyfinder はバッファ/ファイル/コマンド/ブックマーク/タグに素早くアクセスする
+FuzzyFinder はバッファ/ファイル/コマンド/ブックマーク/タグに素早くアクセスする
 ための手段を提供します。入力されたパターンから変換されたあいまいパターンまたは
 部分一致パターンで検索を行います。
 
@@ -39,7 +39,7 @@ Fuzzyfinder はバッファ/ファイル/コマンド/ブックマーク/タグ�
 
 "ON" と入力すれば "OhLongLongLongLongLongName.txt" が選択できます. :-D
 
-Fuzzyfinder が検索できる対象は次の通りです:
+FuzzyFinder が検索できる対象は次の通りです:
         - バッファ
         - ファイル
         - ディレクトリ
@@ -49,10 +49,10 @@ Fuzzyfinder が検索できる対象は次の通りです:
         - タグ
         - タグファイルに含まれるファイル
 
-Fuzzyfinder は ファイルを検索したりアイテムを選択するシステムを利用するための
+FuzzyFinder は ファイルを検索したりアイテムを選択するシステムを利用するための
 API も提供します。
 
-Fuzzyfinder はマルチバイト文字をサポートしています。
+FuzzyFinder はマルチバイト文字をサポートしています。
 
 
 ==============================================================================
@@ -71,13 +71,13 @@ ZIPファイルをランタイムディレクトリに展開します。
 を新規ディレクトリに配置し、そのディレクトリのパスを 'runtimepath' に追加して
 ください。アンインストールも楽になります。
 
-その後 Fuzzyfinder のヘルプを有効にするためにタグファイルを更新してください。
+その後 FuzzyFinder のヘルプを有効にするためにタグファイルを更新してください。
 詳しくは|add-local-help|を参照してください。
 
 ==============================================================================
 使い方                                                             *fuf-usage*
 
-次のコマンドで Fuzzyfinder を起動します:
+次のコマンドで FuzzyFinder を起動します:
 
          コマンド                  モード ~
         |:FufBuffer|     - Buffer モード (|fuf-buffer-mode|)
@@ -94,11 +94,11 @@ ZIPファイルをランタイムディレクトリに展開します。
 これらのコマンドを実行するとパターンを入力するための1行のバッファを開き、イン
 サートモードを開始します。
 
-Fuzzyfinder は入力されたパターンにマッチするアイテムを検索し、それを補完メニュ
+FuzzyFinder は入力されたパターンにマッチするアイテムを検索し、それを補完メニュ
 ーに表示します。パターンマッチングの詳細は|fuf-search-patterns|を参照してくだ
 さい。
 
-多くのアイテムがマッチングする場合、Fuzzyfinder はレスポンスを向上させるために
+多くのアイテムがマッチングする場合、FuzzyFinder はレスポンスを向上させるために
 列挙するアイテムの数(|g:fuf_enumeratingLimit|)を制限し、その際、入力されたパタ
 ーンを"Error" グループでハイライトします。
 
@@ -155,8 +155,8 @@ Bookmark mode ~
 このモードは事前に追加したブックマークを選択してその行へジャンプするインターフ
 ェースを提供します。
 
-Fuzzyfinder はジャンプする行番号を調整します。ブックマークされた行がブックマー
-クされたときのパターンとマッチしない場合、Fuzzyfinder はブックマークされた位置
+FuzzyFinder はジャンプする行番号を調整します。ブックマークされた行がブックマー
+クされたときのパターンとマッチしない場合、FuzzyFinder はブックマークされた位置
 の周辺でマッチする行を探します。なのでブックマークした行が多少移動していたとし
 ても、そこでジャンプすることができます。ブックマークした行番号へ調整せずにジャ
 ンプしたい場合、|g:fuf_bookmark_searchRange|を 0 に設定してください。
@@ -192,7 +192,7 @@ API 関数:
         function fuf#givenfile#launch(
               \ initialPattern, partialMatching, items)
 <
-        initialPattern  - Fuzzyfinder 起動直後に挿入される文字列
+        initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
         items           - アイテムのリスト
 
@@ -213,7 +213,7 @@ API 関数:
         function fuf#givendir#launch(
               \ initialPattern, partialMatching, items)
 <
-        initialPattern  - Fuzzyfinder 起動直後に挿入される文字列
+        initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
         items           - アイテムのリスト
 
@@ -237,7 +237,7 @@ API 関数:
         function fuf#givencmd#launch(
               \ initialPattern, partialMatching, items)
 <
-        initialPattern  - Fuzzyfinder 起動直後に挿入される文字列
+        initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
         items           - アイテムのリスト
 
@@ -267,10 +267,10 @@ API 関数:
         function fuf#callbackfile#launch(
               \ initialPattern, partialMatching, listener)
 <
-        initialPattern  - Fuzzyfinder 起動直後に挿入される文字列
+        initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
         listener        - 'onComplete' と 'onAbort' を持つ|Dictionary|。これ
-                          らは Fuzzyfinder 終了時に呼ばれます。
+                          らは FuzzyFinder 終了時に呼ばれます。
                           listener.onComplete(item, method) は選択が完了したと
                           き、選択されたアイテム名とオープン方式番号の2引数と
                           共に呼ばれます。listener.onAbort() は選択を中止した
@@ -306,10 +306,10 @@ API 関数:
         function fuf#callbackitem#launch(
               \ initialPattern, partialMatching, listener, items, forPath)
 <
-        initialPattern  - Fuzzyfinder 起動直後に挿入される文字列
+        initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
         listener        - 'onComplete' と 'onAbort' を持つ|Dictionary|。これ
-                          らは Fuzzyfinder 終了時に呼ばれます。
+                          らは FuzzyFinder 終了時に呼ばれます。
                           listener.onComplete(item, method) は選択が完了したと
                           き、選択されたアイテム名とオープン方式番号の2引数と
                           共に呼ばれます。listener.onAbort() は選択を中止した
@@ -363,7 +363,7 @@ API 関数:
                                                 *fuf-sort-of-completion-items*
 補完アイテムのソート ~
 
-Fuzzyfinder は幾つかのルールに従って補完アイテムをソートします。
+FuzzyFinder は幾つかのルールに従って補完アイテムをソートします。
 
         - パターンが大文字英字のみで構成される場合、単語の境界文字にだけマッチ
           ングするアイテムは優先されます。 例えば、パターン "FB" ではアイテム
@@ -376,7 +376,7 @@ Fuzzyfinder は幾つかのルールに従って補完アイテムをソート�
           す。例えばパターン "bar" ではアイテム"foobar" は"foobarbaz"より優先
           されます。
 
-加えて、Fuzzyfinder には学習システムがあります。現在のパターンで、過去に補完さ
+加えて、FuzzyFinder には学習システムがあります。現在のパターンで、過去に補完さ
 れたことのあるアイテムを優先します。
 
                                                           *fuf-reusing-window*
@@ -419,7 +419,7 @@ Fuzzyfinder は幾つかのルールに従って補完アイテムをソート�
                                                         *fuf-information-file*
 情報ファイル ~
 
-Fuzzyfinder は補完統計、MRUデータ、ブックマークなどを
+FuzzyFinder は補完統計、MRUデータ、ブックマークなどを
 |g:fuf_infoFile|に書き込みます。
 
 :FufEditInfo コマンドは情報ファイルの編集を補助します。このコマンドを
@@ -463,7 +463,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                                     *:FufFile*
 :FufFile [{pattern}]
@@ -472,7 +472,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                          *:FufFileWithFullCwd*
 :FufFileWithFullCwd [{pattern}]
@@ -491,7 +491,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                           *:FufDirWithFullCwd*
 :FufDirWithFullCwd [{pattern}]
@@ -510,7 +510,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                                   *:FufMruCmd*
 :FufMruCmd [{pattern}]
@@ -519,7 +519,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                                 *:FufBookmark*
 :FufBookmark [{pattern}]
@@ -528,7 +528,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                                      *:FufTag*
 :FufTag [{pattern}]
@@ -537,7 +537,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                        *:FufTagWithCursorWord*
 :FufTagWithCursorWord [{pattern}]
@@ -550,7 +550,7 @@ See also: |fuf-vimrc-sample|
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
 
-        Fuzzyfinder 起動後に {pattern} が挿入されます。
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                                 *:FufEditInfo*
 :FufEditInfo

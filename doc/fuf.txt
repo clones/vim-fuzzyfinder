@@ -2,7 +2,7 @@
 
         Copyright (c) 2007-2009 Takeshi NISHIDA
 
-Fuzzyfinder                                                *fuzzyfinder* *fuf*
+FuzzyFinder                                                *fuzzyfinder* *fuf*
 
 INTRODUCTION                    |fuf-introduction|
 INSTALLATION                    |fuf-installation|
@@ -18,8 +18,8 @@ ABOUT                           |fuf-about|
 ==============================================================================
 INTRODUCTION                                                *fuf-introduction*
 
-Fuzzyfinder provides convenient ways to quickly reach the
-buffer/file/command/bookmark/tag you want. Fuzzyfinder searches by the
+FuzzyFinder provides convenient ways to quickly reach the
+buffer/file/command/bookmark/tag you want. FuzzyFinder searches by the
 fuzzy/partial pattern to which it converted an entered pattern.
 
         Entered pattern  Fuzzy pattern   Partial pattern ~
@@ -39,7 +39,7 @@ You will be happy when:
 
 Type "ON" and "OhLongLongLongLongLongName.txt" will be select. :D
 
-Fuzzyfinder can search:
+FuzzyFinder can search:
 
         - buffers
         - files
@@ -50,10 +50,10 @@ Fuzzyfinder can search:
         - tags
         - files which are included in current tagfiles
 
-Fuzzyfinder also provides APIs to use its system of searching files or
+FuzzyFinder also provides APIs to use its system of searching files or
 selecting items.
 
-Fuzzyfinder supports multibyte characters.
+FuzzyFinder supports multibyte characters.
 
 
 ==============================================================================
@@ -79,7 +79,7 @@ And then update your help tags files to enable fuzzyfinder help. See
 ==============================================================================
 USAGE                                                              *fuf-usage*
 
-You can launch Fuzzyfinder by following commands:
+You can launch FuzzyFinder by following commands:
 
          Command           Mode ~
         |:FufBuffer|     - Buffer mode (|fuf-buffer-mode|)
@@ -96,11 +96,11 @@ It is recommended to map these commands.
 These commands open 1-line buffer to enter search pattern and start insert
 mode.
 
-Fuzzyfinder searchs for matching items with an entered pattern and shows them
+FuzzyFinder searchs for matching items with an entered pattern and shows them
 in a completion menu. For more details on a pattern matching, see
 |fuf-search-patterns|.
 
-If there are a lot of matching items, Fuzzyfinder limits the number of
+If there are a lot of matching items, FuzzyFinder limits the number of
 enumerating items (|g:fuf_enumeratingLimit|) to speed up a response time, and
 highlights the pattern with "Error" group.
 
@@ -161,8 +161,8 @@ Bookmark mode ~
 This mode provides an interface to select one of the bookmarks you have added
 beforehand and jump to the line of the bookmark.
 
-Fuzzyfinder adjusts a line number for jump. If a line of bookmarked position
-does not match to a pattern when the bookmark was added, Fuzzyfinder searches
+FuzzyFinder adjusts a line number for jump. If a line of bookmarked position
+does not match to a pattern when the bookmark was added, FuzzyFinder searches
 a matching line around bookmarked position. So you can jump to a bookmarked
 line even if the line is out of bookmarked position. If you want to jump to
 bookmarked line number without the adjustment, set
@@ -201,7 +201,7 @@ API function:
               \ initialPattern, partialMatching, items)
 <
         initialPattern  - String which is inserted after launching
-                          Fuzzyfinder.
+                          FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
         items           - List of items.
@@ -224,7 +224,7 @@ API function:
               \ initialPattern, partialMatching, items)
 <
         initialPattern  - String which is inserted after launching
-                          Fuzzyfinder.
+                          FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
         items           - List of items.
@@ -250,7 +250,7 @@ API function:
               \ initialPattern, partialMatching, items)
 <
         initialPattern  - String which is inserted after launching
-                          Fuzzyfinder.
+                          FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
         items           - List of items.
@@ -283,11 +283,11 @@ API function:
               \ initialPattern, partialMatching, listener)
 <
         initialPattern  - String which is inserted after launching
-                          Fuzzyfinder.
+                          FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
         listener        - |Dictionary| which has 'onComplete' and 'onAbort'.
-                          They are called at the end of Fuzzyfinder.
+                          They are called at the end of FuzzyFinder.
                           listener.onComplete(item, method) is called with 2
                           arguments which are a name of selected item and a
                           number of open method when completed.
@@ -324,11 +324,11 @@ API function:
               \ initialPattern, partialMatching, listener, items, forPath)
 <
         initialPattern  - String which is inserted after launching
-                          Fuzzyfinder.
+                          FuzzyFinder.
         partialPatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
         listener        - |Dictionary| which has 'onComplete' and 'onAbort'.
-                          They are called at the end of Fuzzyfinder.
+                          They are called at the end of FuzzyFinder.
                           listener.onComplete(item, method) is called with 2
                           arguments which are a name of selected item and a
                           number of open method when completed.
@@ -369,8 +369,8 @@ refining pattern.
 A refining pattern is used to narrow down the list of matching items by
 another pattern.
 
-With a primary pattern, Fuzzyfinder does the selected one of a fuzzy matching
-and a partial matching. With a refining pattern, Fuzzyfinder always does a
+With a primary pattern, FuzzyFinder does the selected one of a fuzzy matching
+and a partial matching. With a refining pattern, FuzzyFinder always does a
 partial matching.
 
 If current mode targets file paths, a primary pattern can match 
@@ -387,7 +387,7 @@ done only for the tail (last component) of each path.
                                                 *fuf-sort-of-completion-items*
 Sort of Completion Items ~
 
-Fuzzyfinder sorts completion items with some rules:
+FuzzyFinder sorts completion items with some rules:
 
         - If a pattern consists only of uppercase characters and matches an
           item at only word boundaries of it, the item is placed upper. E.g.,
@@ -402,22 +402,22 @@ Fuzzyfinder sorts completion items with some rules:
           it higher. E.g., with the pattern "bar", the item "foobar" is placed
           upper than "foobarbaz".
 
-Plus, Fuzzyfinder has a learning system. An item which has been completed in
+Plus, FuzzyFinder has a learning system. An item which has been completed in
 the past with current pattern is placed upper.
 
                                                           *fuf-reusing-window*
 Reusing Of A Window Containing Target Buffer/File ~
 
 If a window containing target buffer is found in current tab page when
-Fuzzyfinder is going to open the buffer in a split new window, move to it. If
-a window containing target buffer is found in other tab page when Fuzzyfinder
+FuzzyFinder is going to open the buffer in a split new window, move to it. If
+a window containing target buffer is found in other tab page when FuzzyFinder
 is going to open the buffer in a new tab page, move to it.
 
 You can disable that feature via 'reuse_window' options if always want to open
 a buffer in a new window.
 
                                                              *fuf-hiding-menu*
-To Hide The Completion Menu Temporarily In Fuzzyfinder ~
+To Hide The Completion Menu Temporarily In FuzzyFinder ~
 
 You can close it by <C-e> and reopen it by <C-x><C-o>.
 
@@ -436,7 +436,7 @@ For example, set as below:
               \   ],
               \ }
 <
-and enter "doc:txt" in File mode, then Fuzzyfinder searches by following
+and enter "doc:txt" in File mode, then FuzzyFinder searches by following
 patterns:
 
         "~/project/**/doc/*t*x*t*"
@@ -447,7 +447,7 @@ and show concatenated search results.
                                                         *fuf-information-file*
 Information File ~
 
-Fuzzyfinder writes completion statistics, MRU data, bookmark, etc to
+FuzzyFinder writes completion statistics, MRU data, bookmark, etc to
 |g:fuf_infoFile|.
 
 |:FufEditInfo| command is helpful in editing your information file.
@@ -489,7 +489,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                     *:FufFile*
 :FufFile[!] [{pattern}]
@@ -498,7 +498,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                          *:FufFileWithFullCwd*
 :FufFileWithFullCwd[!] [{pattern}]
@@ -517,7 +517,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                           *:FufDirWithFullCwd*
 :FufDirWithFullCwd[!] [{pattern}]
@@ -536,7 +536,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                   *:FufMruCmd*
 :FufMruCmd[!] [{pattern}]
@@ -545,7 +545,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                 *:FufBookmark*
 :FufBookmark[!] [{pattern}]
@@ -554,7 +554,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                      *:FufTag*
 :FufTag[!] [{pattern}]
@@ -563,7 +563,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                        *:FufTagWithCursorWord*
 :FufTagWithCursorWord[!] [{pattern}]
@@ -576,7 +576,7 @@ See also: |fuf-vimrc-sample|
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
 
-        {pattern} will be inserted after launching Fuzzyfinder.
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                 *:FufEditInfo*
 :FufEditInfo
@@ -640,7 +640,7 @@ For All Modes ~
   let g:fuf_infoFile = '~/.vim-fuf'
 <
         Filename to write completion statistics, MRU data, bookmark, etc. If
-        empty string, Fuzzyfinder does not write to a file.
+        empty string, FuzzyFinder does not write to a file.
 
                                                           *g:fuf_abbrevMap*  >
   let g:fuf_abbrevMap = {}
@@ -657,7 +657,7 @@ For All Modes ~
                                                          *g:fuf_ignoreCase*  >
   let g:fuf_ignoreCase = 1
 <
-        If non-zero, Fuzzyfinder ignores case in search patterns.
+        If non-zero, FuzzyFinder ignores case in search patterns.
 
                                                             *g:fuf_smartBs*  >
   let g:fuf_smartBs = 1
@@ -669,7 +669,7 @@ For All Modes ~
                                                         *g:fuf_reuseWindow*  >
   let g:fuf_reuseWindow = 1
 <
-        If non-zero and when Fuzzyfinder opens a buffer which has already been
+        If non-zero and when FuzzyFinder opens a buffer which has already been
         opened, it reuses a window containing the target buffer.
 
                                                          *g:fuf_timeFormat*  >
@@ -685,7 +685,7 @@ For All Modes ~
                                                    *g:fuf_enumeratingLimit*  >
   let g:fuf_enumeratingLimit = 50
 <
-        To speed up the response time, Fuzzyfinder ends enumerating completion
+        To speed up the response time, FuzzyFinder ends enumerating completion
         items when found over this.
 
                                                        *g:fuf_maxMenuWidth*  >
@@ -697,7 +697,7 @@ For All Modes ~
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0
 <
-        If non-zero, Fuzzyfinder uses Migemo.
+        If non-zero, FuzzyFinder uses Migemo.
 
                                                  *fuf-options-for-buffer-mode*
 For Buffer Mode ~
@@ -819,7 +819,7 @@ For Bookmark Mode ~
                                                *g:fuf_bookmark_searchRange*  >
   let g:fuf_bookmark_searchRange = 400
 <
-        Number of lines which Fuzzyfinder searches a matching line from
+        Number of lines which FuzzyFinder searches a matching line from
         bookmarked position within.
 
                                                     *fuf-options-for-tag-mode*
@@ -901,13 +901,13 @@ CHANGELOG                                                      *fuf-changelog*
   - Added new feature which is refining pattern.
   - Improved the rules for sorting completion items. Thanks to the suggestion
     by Nathan, the rule for boundary matching was implemented.
-  - Changed to open one line buffer of Fuzzyfinder with :topleft command
+  - Changed to open one line buffer of FuzzyFinder with :topleft command
     instead of :leftabove. The window will alway appear at the top and occupy
     the full with of the vim window. Thanks to Jan Christoph.
   - Changed default filename of information file.
-  - Removed the feature which is switching to an other mode in Fuzzyfinder.
+  - Removed the feature which is switching to an other mode in FuzzyFinder.
   - Removed the feature which is temporarily switching 'ignorecase' in
-    Fuzzyfinder.
+    FuzzyFinder.
 
 2.22.3:
   - Fixed a bug that Fuzzyfinder could not open files with '$' in the name on
