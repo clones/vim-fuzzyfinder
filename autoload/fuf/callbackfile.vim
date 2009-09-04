@@ -48,7 +48,7 @@ let s:MODE_NAME = expand('<sfile>:t:r')
 function s:enumItems(dir)
   let key = getcwd() . "\n" . a:dir
   if !exists('s:cache[key]')
-    let s:cache[key] = fuf#enumExpandedDirsEntries(a:dir, g:fuf_callbackfile_excludedPath)
+    let s:cache[key] = fuf#enumExpandedDirsEntries(a:dir, g:fuf_callbackfile_exclude)
     if isdirectory(a:dir)
       call insert(s:cache[key], fuf#makePathItem(a:dir . '.', 0))
     endif

@@ -138,11 +138,16 @@ MRU-File mode ~
 
 このモードは最近使ったファイルを選択して開くインターフェースを提供します。
 
+|BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
+で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
+
                                                              *fuf-mrucmd-mode*
 MRU-Command mode ~
 
 このモードは最近使ったコマンドラインを選択して開くインターフェースを提供します
 。
+このモードに必要な、コマンドラインモードの <CR> のマッピングに副作用があるので、
+、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
 
                                                            *fuf-bookmark-mode*
 Bookmark mode ~
@@ -574,15 +579,11 @@ See also: |fuf-vimrc-sample|
                                                    *fuf-options-for-all-modes*
 全モード用 ~
 
-                                                              *g:fuf_modes*  >
-  let g:fuf_modes = [
-        \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
-        \   'bookmark', 'tag', 'taggedfile', 'givenfile',
-        \   'givendir', 'givencmd', 'callbackfile', 'callbackitem',
-        \ ]
+                                                       *g:fuf_modesDisable*  >
+  let g:fuf_modesDisable = [ 'mrufile', 'mrucmd', ]
 <
-        利用するモード名のリスト。これに含まれないモードは初期化されず、イベン
-        トの処理も行われません。
+        無効lにするモード名のリスト。これに含まれるモードは初期化されず、イベ
+        ントの処理も行われません。
 
                                                             *g:fuf_keyOpen*  >
   let g:fuf_keyOpen = '<CR>'
@@ -698,8 +699,8 @@ File モード用 ~
 <
         プロンプトをハイライトするグループ名。
 
-                                                  *g:fuf_file_excludedPath*  >
-  let g:fuf_file_excludedPath = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
+                                                       *g:fuf_file_exclude*  >
+  let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -716,8 +717,8 @@ Directory モード用 ~
 <
         プロンプトをハイライトするグループ名。
 
-                                                   *g:fuf_dir_excludedPath*  >
-  let g:fuf_dir_excludedPath = ''
+                                                        *g:fuf_dir_exclude*  >
+  let g:fuf_dir_exclude = ''
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -734,8 +735,8 @@ Mru-File モード用 ~
 <
         プロンプトをハイライトするグループ名。
 
-                                               *g:fuf_mrufile_excludedPath*  >
-  let g:fuf_mrufile_excludedPath = '\v\~$|\.bak$|\.swp$'
+                                                    *g:fuf_mrufile_exclude*  >
+  let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -757,8 +758,8 @@ Mru-Cmd モード用 ~
 <
         プロンプトをハイライトするグループ名。
 
-                                             *g:fuf_mrucmd_excludedCommand*  >
-  let g:fuf_mrucmd_excludedCommand = '^$'
+                                                     *g:fuf_mrucmd_exclude*  >
+  let g:fuf_mrucmd_exclude = '^$'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -817,6 +818,7 @@ Tagged-File モード用 ~
 vimrc の例                                                 *fuf-vimrc-example*
 
 >
+  let g:fuf_modesDisable = []
   let g:fuf_abbrevMap = {
         \   '^vr:' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . ''/**/'''),
         \   '^m0:' : [ '/mnt/d/0/', '/mnt/j/0/' ],

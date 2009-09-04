@@ -142,11 +142,18 @@ MRU-File mode ~
 This mode provides an interface to select a file from most recently used files
 and open it.
 
+This mode is set to disable in |g:fuf_modesDisable| by default because
+processes for this mode in |BufEnter| and |BufWritePost| could cause
+Performance issue.
+
                                                              *fuf-mrucmd-mode*
 MRU-Command mode ~
 
 This mode provides an interface to select a command from most recently used
 commands and execute it.
+
+This mode is set to disable in |g:fuf_modesDisable| by default because mapping
+<CR> of Command-line mode required by this mode has side effects.
 
                                                            *fuf-bookmark-mode*
 Bookmark mode ~
@@ -597,17 +604,13 @@ OPTIONS                                                          *fuf-options*
                                                    *fuf-options-for-all-modes*
 For All Modes ~
 
-                                                              *g:fuf_modes*  >
-  let g:fuf_modes = [
-        \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
-        \   'bookmark', 'tag', 'taggedfile', 'givenfile',
-        \   'givendir', 'givencmd', 'callbackfile', 'callbackitem',
-        \ ]
+                                                       *g:fuf_modesDisable*  >
+  let g:fuf_modesDisable = [ 'mrufile', 'mrucmd', ]
 <
-        List of mode names to use.
+        List of mode names to disable.
 
-        Modes which are not listed will never be initialized and never handle
-        any event.
+        Modes which are listed will never be initialized and never handle any
+        event.
 
                                                             *g:fuf_keyOpen*  >
   let g:fuf_keyOpen = '<CR>'
@@ -727,8 +730,8 @@ For File Mode ~
 <
         a highlight group name for a prompt string.
 
-                                                  *g:fuf_file_excludedPath*  >
-  let g:fuf_file_excludedPath = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
+                                                       *g:fuf_file_exclude*  >
+  let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -746,8 +749,8 @@ For Directory Mode ~
 <
         a highlight group name for a prompt string.
 
-                                                   *g:fuf_dir_excludedPath*  >
-  let g:fuf_dir_excludedPath = ''
+                                                        *g:fuf_dir_exclude*  >
+  let g:fuf_dir_exclude = ''
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -765,8 +768,8 @@ For Mru-File Mode ~
 <
         a highlight group name for a prompt string.
 
-                                               *g:fuf_mrufile_excludedPath*  >
-  let g:fuf_mrufile_excludedPath = '\v\~$|\.bak$|\.swp$'
+                                                    *g:fuf_mrufile_exclude*  >
+  let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -789,8 +792,8 @@ For Mru-Cmd Mode ~
 <
         a highlight group name for a prompt string.
 
-                                             *g:fuf_mrucmd_excludedCommand*  >
-  let g:fuf_mrucmd_excludedCommand = '^$'
+                                                     *g:fuf_mrucmd_exclude*  >
+  let g:fuf_mrucmd_exclude = '^$'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -850,6 +853,7 @@ For Tagged-File Mode ~
 VIMRC EXAMPLE                                               *fuf-vimrc-sample*
 
 >
+  let g:fuf_modesDisable = []
   let g:fuf_abbrevMap = {
         \   '^vr:' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . ''/**/'''),
         \   '^m0:' : [ '/mnt/d/0/', '/mnt/j/0/' ],
