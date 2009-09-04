@@ -371,6 +371,9 @@ only the tail (last component) of each path.
 With a refining pattern in such case, it can match anywhere on each
 path.
 
+When you enter a number as refining pattern, it also can match the index of
+each item.
+
 If current mode targets file paths, the matching with a primary pattern is
 done only for the tail (last component) of each path.
 
