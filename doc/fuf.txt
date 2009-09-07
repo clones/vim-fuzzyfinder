@@ -297,11 +297,11 @@ Example of use:
 >
         let listener = {}
 
-        function! listener.onComplete(item, method)
+        function listener.onComplete(item, method)
           echo "Item: " . a:item . "\nMethod: " . a:method
         endfunction
 
-        function! listener.onAbort()
+        function listener.onAbort()
           echo "Abort"
         endfunction
 
@@ -340,11 +340,11 @@ Example of use:
 >
         let listener = {}
 
-        function! listener.onComplete(item, method)
+        function listener.onComplete(item, method)
           echo "Item: " . a:item . "\nMethod: " . a:method
         endfunction
 
-        function! listener.onAbort()
+        function listener.onAbort()
           echo "Abort"
         endfunction
 
