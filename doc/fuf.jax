@@ -363,7 +363,7 @@ API 関数:
 チングはパスの末尾の部分だけに対して行われます。絞り込みパターンはパス全体に対
 して行われます。
 
-                                                *fuf-sort-of-completion-items*
+                                             *fuf-sorting-of-completion-items*
 補完アイテムのソート ~
 
 FuzzyFinder は幾つかのルールに従って補完アイテムをソートします。
