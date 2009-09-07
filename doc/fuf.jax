@@ -104,6 +104,9 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 
 補完メニューの最初のアイテムは自動的に選択状態になります。
 
+<C-t> (|g:fuf_keyPrevPattern|) と <C-^> (|g:fuf_keyNextPattern|) で、履歴から
+過去に入力したパターンを呼び出すことができます。
+
 いろいろな方法で、選択されたアイテムを開くことができます:
 
         <CR>  (|g:fuf_keyOpen|)        - 直前のウィンドウで開きます。
@@ -605,6 +608,16 @@ See also: |fuf-vimrc-sample|
   let g:fuf_keyOpenTabpage = '<C-l>'
 <
         補完を確定し、バッファ/ファイルを別タブページ開くキー。
+
+                                                     *g:fuf_keyPrevPattern*  >
+  let g:fuf_keyPrevPattern = '<C-t>'
+<
+        履歴から前の入力パターンを呼び出すキー。
+
+                                                     *g:fuf_keyNextPattern*  >
+  let g:fuf_keyNextPattern = '<C-^>'
+<
+        履歴から次の入力パターンを呼び出すキー。
 
                                                            *g:fuf_infoFile*  >
   let g:fuf_infoFile = '~/.vim-fuf'
