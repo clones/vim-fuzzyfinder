@@ -339,6 +339,8 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \   [ g:fuf_keyOpenTabpage, 'onCr(' . s:OPEN_MODE_TAB     . ', 0)' ],
         \   [ '<BS>'              , 'onBs()'                               ],
         \   [ '<C-h>'             , 'onBs()'                               ],
+        \   [ g:fuf_keyPrevPattern, 'onPatternSwitch(+1)'                  ],
+        \   [ g:fuf_keyNextPattern, 'onPatternSwitch(-1)'                  ],
         \ ]
     " hacks to be able to use feedkeys().
     execute printf('inoremap <buffer> <silent> %s <C-r>=%s%s ? "" : ""<CR>',
@@ -733,6 +735,11 @@ function s:onBs()
   call s:runningHandler.onBs()
 endfunction
 
+"
+function s:onPatternSwitch(shift)
+  call s:runningHandler.onPatternSwitch(a:shift)
+endfunction
+
 " }}}1
 "=============================================================================
 " s:handlerBase {{{1
@@ -902,6 +909,23 @@ function s:handlerBase.onBs()
     let numBs = 1
   endif
   call feedkeys((pumvisible() ? "\<C-e>" : "") . repeat("\<BS>", numBs), 'n')
+endfunction
+
+" TODO
+function s:handlerBase.onPatternSwitch(shift)
+  let patterns = map(copy(self.info.stats), 'v:val.pattern')
+  if !exists('self.indexRecalledPattern')
+    let self.indexRecalledPattern = -1
+  endif
+  let self.indexRecalledPattern += a:shift
+  if self.indexRecalledPattern < 0
+    let self.indexRecalledPattern = -1
+  elseif self.indexRecalledPattern >= len(patterns)
+    let self.indexRecalledPattern = len(patterns) - 1
+  else
+    call setline('.', self.getPrompt() . patterns[self.indexRecalledPattern])
+    call feedkeys("\<End>", 'n')
+  endif
 endfunction
 
 " }}}1

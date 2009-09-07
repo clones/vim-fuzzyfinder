@@ -106,6 +106,9 @@ highlights the pattern with "Error" group.
 
 The first item in the completion menu will be selected automatically.
 
+with <C-t> (|g:fuf_keyPrevPattern|) and <C-^> (|g:fuf_keyNextPattern|), You
+can recall patterns which have been entered before from history.
+
 You can open a selected item in various ways:
 
         <CR>  (|g:fuf_keyOpen|)        - opens in a previous window.
@@ -636,6 +639,17 @@ For All Modes ~
 
         Key mapped to select completion item or finish input and open a
         buffer/file in a new tab page.
+
+                                                     *g:fuf_keyPrevPattern*  >
+  let g:fuf_keyPrevPattern = '<C-t>'
+<
+        Key mapped to recall previous entered patten from history.
+
+                                                     *g:fuf_keyNextPattern*  >
+  let g:fuf_keyNextPattern = '<C-^>'
+<
+        Key mapped to recall next entered patten from history.
+
                                                            *g:fuf_infoFile*  >
   let g:fuf_infoFile = '~/.vim-fuf'
 <
@@ -893,6 +907,10 @@ SPECIAL THANKS                                                    *fuf-thanks*
 
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
+
+3.1:
+  - Added new feature to recall patterns which have been entered before from
+    history.
 
 3.0:
   - Redesigned the whole plugin for improvements of maintainability and
