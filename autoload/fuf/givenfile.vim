@@ -63,11 +63,6 @@ function s:handler.getPrompt()
 endfunction
 
 "
-function s:handler.getPromptHighlight()
-  return g:fuf_givenfile_promptHighlight
-endfunction
-
-"
 function s:handler.targetsPath()
   return 1
 endfunction

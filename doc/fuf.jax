@@ -636,6 +636,11 @@ See also: |fuf-vimrc-sample|
 <
         入力パターンをプライマリパターンと絞り込みパターン列に区切る文字列。
 
+                                                    *g:fuf_promptHighlight*  >
+  let g:fuf_promptHighlight = 'Question'
+<
+        プロンプトをハイライトするグループ名。
+
                                                          *g:fuf_ignoreCase*  >
   let g:fuf_ignoreCase = 1
 <
@@ -689,11 +694,6 @@ Buffer モード用 ~
 <
         プロンプト文字列。
 
-                                             *g:fuf_buffer_promptHighlight*  >
-  let g:fuf_buffer_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                                     *g:fuf_buffer_mruOrder*  >
   let g:fuf_buffer_mruOrder = 1
 <
@@ -706,11 +706,6 @@ File モード用 ~
   let g:fuf_file_prompt = '>File>'
 <
         プロンプト文字列。
-
-                                               *g:fuf_file_promptHighlight*  >
-  let g:fuf_file_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
 
                                                        *g:fuf_file_exclude*  >
   let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
@@ -725,11 +720,6 @@ Directory モード用 ~
 <
         プロンプト文字列。
 
-                                                *g:fuf_dir_promptHighlight*  >
-  let g:fuf_dir_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                                         *g:fuf_dir_exclude*  >
   let g:fuf_dir_exclude = ''
 <
@@ -742,11 +732,6 @@ Mru-File モード用 ~
   let g:fuf_mrufile_prompt = '>MruFile>'
 <
         プロンプト文字列。
-
-                                            *g:fuf_mrufile_promptHighlight*  >
-  let g:fuf_mrufile_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
 
                                                     *g:fuf_mrufile_exclude*  >
   let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
@@ -766,11 +751,6 @@ Mru-Cmd モード用 ~
 <
         プロンプト文字列。
 
-                                             *g:fuf_mrucmd_promptHighlight*  >
-  let g:fuf_mrucmd_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                                      *g:fuf_mrucmd_exclude*  >
   let g:fuf_mrucmd_exclude = '^$'
 <
@@ -789,11 +769,6 @@ Bookmark モード用 ~
 <
         プロンプト文字列。
 
-                                           *g:fuf_bookmark_promptHighlight*  >
-  let g:fuf_bookmark_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                             *g:fuf_bookmark_searchingRange*  >
   let g:fuf_bookmark_searchingRange = 400
 <
@@ -808,11 +783,6 @@ Tag モード用 ~
 <
         プロンプト文字列。
 
-                                                *g:fuf_tag_promptHighlight*  >
-  let g:fuf_tag_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                              *fuf-options-for-taggedfile-mode*
 Tagged-File モード用 ~
 
@@ -820,11 +790,6 @@ Tagged-File モード用 ~
   let g:fuf_taggedfile_prompt = '>TaggedFile>'
 <
         プロンプト文字列。
-
-                                         *g:fuf_taggedfile_promptHighlight*  >
-  let g:fuf_taggedfile_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
 
 
 ==============================================================================

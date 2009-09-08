@@ -668,6 +668,11 @@ For All Modes ~
         String which sparates a input pattern into a primary pattern and
         refining patterns.
 
+                                                    *g:fuf_promptHighlight*  >
+  let g:fuf_promptHighlight = 'Question'
+<
+        a highlight group name for a prompt string.
+
                                                          *g:fuf_ignoreCase*  >
   let g:fuf_ignoreCase = 1
 <
@@ -721,11 +726,6 @@ For Buffer Mode ~
 <
         A prompt string.
 
-                                             *g:fuf_buffer_promptHighlight*  >
-  let g:fuf_buffer_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
-
                                                     *g:fuf_buffer_mruOrder*  >
   let g:fuf_buffer_mruOrder = 1
 <
@@ -738,11 +738,6 @@ For File Mode ~
   let g:fuf_file_prompt = '>File>'
 <
         A prompt string.
-
-                                               *g:fuf_file_promptHighlight*  >
-  let g:fuf_file_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
 
                                                        *g:fuf_file_exclude*  >
   let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
@@ -758,11 +753,6 @@ For Directory Mode ~
 <
         A prompt string.
 
-                                                *g:fuf_dir_promptHighlight*  >
-  let g:fuf_dir_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
-
                                                         *g:fuf_dir_exclude*  >
   let g:fuf_dir_exclude = ''
 <
@@ -776,11 +766,6 @@ For Mru-File Mode ~
   let g:fuf_mrufile_prompt = '>MruFile>'
 <
         A prompt string.
-
-                                            *g:fuf_mrufile_promptHighlight*  >
-  let g:fuf_mrufile_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
 
                                                     *g:fuf_mrufile_exclude*  >
   let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
@@ -801,11 +786,6 @@ For Mru-Cmd Mode ~
 <
         A prompt string.
 
-                                             *g:fuf_mrucmd_promptHighlight*  >
-  let g:fuf_mrucmd_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
-
                                                      *g:fuf_mrucmd_exclude*  >
   let g:fuf_mrucmd_exclude = '^$'
 <
@@ -825,11 +805,6 @@ For Bookmark Mode ~
 <
         A prompt string.
 
-                                           *g:fuf_bookmark_promptHighlight*  >
-  let g:fuf_bookmark_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
-
                                                *g:fuf_bookmark_searchRange*  >
   let g:fuf_bookmark_searchRange = 400
 <
@@ -844,11 +819,6 @@ For Tag Mode ~
 <
         A prompt string.
 
-                                                *g:fuf_tag_promptHighlight*  >
-  let g:fuf_tag_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
-
                                              *fuf-options-for-taggedfile-mode*
 For Tagged-File Mode ~
 
@@ -856,11 +826,6 @@ For Tagged-File Mode ~
   let g:fuf_taggedfile_prompt = '>TaggedFile>'
 <
         A prompt string.
-
-                                         *g:fuf_taggedfile_promptHighlight*  >
-  let g:fuf_taggedfile_promptHighlight = 'Question'
-<
-        a highlight group name for a prompt string.
 
 
 ==============================================================================
@@ -907,6 +872,10 @@ SPECIAL THANKS                                                    *fuf-thanks*
 
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
+
+3.2:
+  - Added g:fuf_promptHighlight option to integrate such options for each
+    mode.
 
 3.1:
   - Added new feature to recall patterns which have been entered before from
