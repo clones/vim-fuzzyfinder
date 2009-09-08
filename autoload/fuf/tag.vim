@@ -59,7 +59,7 @@ function s:enumTags(tagFiles)
 endfunction
 
 "
-function! s:getTagList(tagfile)
+function s:getTagList(tagfile)
   let result = map(readfile(a:tagfile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
   return filter(result, 'v:val =~ ''\S''')
 endfunction
@@ -78,11 +78,6 @@ endfunction
 "
 function s:handler.getPrompt()
   return g:fuf_tag_prompt
-endfunction
-
-"
-function s:handler.getPromptHighlight()
-  return g:fuf_tag_promptHighlight
 endfunction
 
 "

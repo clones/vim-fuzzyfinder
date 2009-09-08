@@ -193,16 +193,17 @@ Given-File mode ~
 API 関数:
 >
         function fuf#givenfile#launch(
-              \ initialPattern, partialMatching, items)
+              \ initialPattern, partialMatching, prompt, items)
 <
         initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
+        prompt          - プロンプト文字列
         items           - アイテムのリスト
 
 利用例:
 >
         " ドットファイルを開く
-        call fuf#givenfile#launch('', 0, split(glob('~/.*'), "\n"))
+        call fuf#givenfile#launch('', 0, '>', split(glob('~/.*'), "\n"))
 <
 
                                                            *fuf-givendir-mode*
@@ -214,17 +215,18 @@ Given-Directory mode ~
 API 関数:
 >
         function fuf#givendir#launch(
-              \ initialPattern, partialMatching, items)
+              \ initialPattern, partialMatching, prompt, items)
 <
         initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
+        prompt          - プロンプト文字列
         items           - アイテムのリスト
 
 
 利用例:
 >
         " ランタイムディレクトリのどれかをカレントディレクトリにする
-        call fuf#givendir#launch('', 0, split(&runtimepath, ','))
+        call fuf#givendir#launch('', 0, '>', split(&runtimepath, ','))
 <
 
                                                            *fuf-givencmd-mode*
@@ -238,10 +240,11 @@ Given-Command mode ~
 API 関数:
 >
         function fuf#givencmd#launch(
-              \ initialPattern, partialMatching, items)
+              \ initialPattern, partialMatching, prompt, items)
 <
         initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
+        prompt          - プロンプト文字列
         items           - アイテムのリスト
 
 
@@ -256,7 +259,7 @@ API 関数:
         endfunction
 
         " ユーザー定義コマンドを選択して実行
-        call fuf#givencmd#launch('', 0, GetAllCommands())
+        call fuf#givencmd#launch('', 0, '>', GetAllCommands())
 
 <
 
@@ -268,10 +271,12 @@ Callback-File mode ~
 API 関数:
 >
         function fuf#callbackfile#launch(
-              \ initialPattern, partialMatching, listener)
+              \ initialPattern, partialMatching, prompt, exclude, listener)
 <
         initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
+        prompt          - プロンプト文字列
+        exclude         - 補完リストから除外したいアイテムの正規表現パターン
         listener        - 'onComplete' と 'onAbort' を持つ|Dictionary|。これ
                           らは FuzzyFinder 終了時に呼ばれます。
                           listener.onComplete(item, method) は選択が完了したと
@@ -292,10 +297,10 @@ API 関数:
         endfunction
 
         " カレントディレクトリからファイルを選択
-        call fuf#callbackfile#launch('', 0, listener)
+        call fuf#callbackfile#launch('', 0, '>', '', listener)
 
         " ホームディレクトリからファイルを選択
-        call fuf#callbackfile#launch('~/', 0, listener)
+        call fuf#callbackfile#launch('~/', 0, '>', '', listener)
 <
 
                                                        *fuf-callbackitem-mode*
@@ -307,10 +312,11 @@ Callback-Item mode ~
 API 関数:
 >
         function fuf#callbackitem#launch(
-              \ initialPattern, partialMatching, listener, items, forPath)
+              \ initialPattern, partialMatching, prompt, listener, items, forPath)
 <
         initialPattern  - FuzzyFinder 起動直後に挿入される文字列
         partialMatching - あいまい検索ではなく部分一致検索を行うか
+        prompt          - プロンプト文字列
         listener        - 'onComplete' と 'onAbort' を持つ|Dictionary|。これ
                           らは FuzzyFinder 終了時に呼ばれます。
                           listener.onComplete(item, method) は選択が完了したと
@@ -333,10 +339,10 @@ API 関数:
         endfunction
 
         " 与えられたリストからアイテムを選択
-        call fuf#callbackitem#launch('', 0, listener, ['ed', 'vi', 'vim'], 0)
+        call fuf#callbackitem#launch('', 0, '>', listener, ['ed', 'vi', 'vim'], 0)
 
         " 与えられたリストからファイルを選択
-        call fuf#callbackitem#launch('', 0, listener, ['../foo/bar', 'baz'], 1)
+        call fuf#callbackitem#launch('', 0, '>', listener, ['../foo/bar', 'baz'], 1)
 <
 
 ==============================================================================
@@ -636,6 +642,11 @@ See also: |fuf-vimrc-sample|
 <
         入力パターンをプライマリパターンと絞り込みパターン列に区切る文字列。
 
+                                                    *g:fuf_promptHighlight*  >
+  let g:fuf_promptHighlight = 'Question'
+<
+        プロンプトをハイライトするグループ名。
+
                                                          *g:fuf_ignoreCase*  >
   let g:fuf_ignoreCase = 1
 <
@@ -689,11 +700,6 @@ Buffer モード用 ~
 <
         プロンプト文字列。
 
-                                             *g:fuf_buffer_promptHighlight*  >
-  let g:fuf_buffer_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                                     *g:fuf_buffer_mruOrder*  >
   let g:fuf_buffer_mruOrder = 1
 <
@@ -706,11 +712,6 @@ File モード用 ~
   let g:fuf_file_prompt = '>File>'
 <
         プロンプト文字列。
-
-                                               *g:fuf_file_promptHighlight*  >
-  let g:fuf_file_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
 
                                                        *g:fuf_file_exclude*  >
   let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
@@ -725,11 +726,6 @@ Directory モード用 ~
 <
         プロンプト文字列。
 
-                                                *g:fuf_dir_promptHighlight*  >
-  let g:fuf_dir_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                                         *g:fuf_dir_exclude*  >
   let g:fuf_dir_exclude = ''
 <
@@ -742,11 +738,6 @@ Mru-File モード用 ~
   let g:fuf_mrufile_prompt = '>MruFile>'
 <
         プロンプト文字列。
-
-                                            *g:fuf_mrufile_promptHighlight*  >
-  let g:fuf_mrufile_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
 
                                                     *g:fuf_mrufile_exclude*  >
   let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
@@ -766,11 +757,6 @@ Mru-Cmd モード用 ~
 <
         プロンプト文字列。
 
-                                             *g:fuf_mrucmd_promptHighlight*  >
-  let g:fuf_mrucmd_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                                      *g:fuf_mrucmd_exclude*  >
   let g:fuf_mrucmd_exclude = '^$'
 <
@@ -789,11 +775,6 @@ Bookmark モード用 ~
 <
         プロンプト文字列。
 
-                                           *g:fuf_bookmark_promptHighlight*  >
-  let g:fuf_bookmark_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                             *g:fuf_bookmark_searchingRange*  >
   let g:fuf_bookmark_searchingRange = 400
 <
@@ -808,11 +789,6 @@ Tag モード用 ~
 <
         プロンプト文字列。
 
-                                                *g:fuf_tag_promptHighlight*  >
-  let g:fuf_tag_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
-
                                              *fuf-options-for-taggedfile-mode*
 Tagged-File モード用 ~
 
@@ -820,11 +796,6 @@ Tagged-File モード用 ~
   let g:fuf_taggedfile_prompt = '>TaggedFile>'
 <
         プロンプト文字列。
-
-                                         *g:fuf_taggedfile_promptHighlight*  >
-  let g:fuf_taggedfile_promptHighlight = 'Question'
-<
-        プロンプトをハイライトするグループ名。
 
 
 ==============================================================================

@@ -526,9 +526,9 @@ function s:scoreBoundaryMatching(word, patternPartial, patternFuzzy)
 endfunction
 
 "
-function s:highlightPrompt(prompt, highlight)
+function s:highlightPrompt(prompt)
   syntax clear
-  execute printf('syntax match %s /^\V%s/', a:highlight, escape(a:prompt, '\'))
+  execute printf('syntax match %s /^\V%s/', g:fuf_promptHighlight, escape(a:prompt, '\'))
 endfunction
 
 "
@@ -755,9 +755,6 @@ let s:handlerBase = {}
 " "
 " s:handler.getPrompt()
 " 
-" "
-" s:handler.getPromptHighlight()
-" 
 " " returns true if the mode deals with file paths.
 " s:handler.targetsPath()
 "
@@ -800,7 +797,7 @@ function s:handlerBase.complete(findstart, base)
   elseif  !self.existsPrompt(a:base)
     return []
   endif
-  call s:highlightPrompt(self.getPrompt(), self.getPromptHighlight())
+  call s:highlightPrompt(self.getPrompt())
   let result = []
   for patternBase in s:expandAbbrevMap(self.removePrompt(a:base), g:fuf_abbrevMap)
     let patternSet = s:makePatternSet(patternBase, self.targetsPath(), self.makeRegexpPattern)

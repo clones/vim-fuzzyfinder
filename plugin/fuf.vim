@@ -32,6 +32,7 @@ function s:initialize()
   call s:defineOption('g:fuf_infoFile'        , '~/.vim-fuf')
   call s:defineOption('g:fuf_abbrevMap'       , {})
   call s:defineOption('g:fuf_patternSeparator', ';')
+  call s:defineOption('g:fuf_promptHighlight' , 'Question')
   call s:defineOption('g:fuf_ignoreCase'      , 1)
   call s:defineOption('g:fuf_smartBs'         , 1)
   call s:defineOption('g:fuf_reuseWindow'     , 1)
@@ -41,53 +42,29 @@ function s:initialize()
   call s:defineOption('g:fuf_maxMenuWidth'    , 78)
   call s:defineOption('g:fuf_useMigemo'       , 0)
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_buffer_prompt'         , '>Buffer>')
-  call s:defineOption('g:fuf_buffer_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_buffer_mruOrder'       , 1)
+  call s:defineOption('g:fuf_buffer_prompt'  , '>Buffer>')
+  call s:defineOption('g:fuf_buffer_mruOrder', 1)
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_file_prompt'         , '>File>')
-  call s:defineOption('g:fuf_file_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_file_exclude'        , '\v\~$|\.o$|\.exe$|\.bak$|\.swp$')
+  call s:defineOption('g:fuf_file_prompt' , '>File>')
+  call s:defineOption('g:fuf_file_exclude', '\v\~$|\.o$|\.exe$|\.bak$|\.swp$')
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_dir_prompt'         , '>Dir>')
-  call s:defineOption('g:fuf_dir_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_dir_exclude'        , '')
+  call s:defineOption('g:fuf_dir_prompt' , '>Dir>')
+  call s:defineOption('g:fuf_dir_exclude', '')
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_mrufile_prompt'         , '>MruFile>')
-  call s:defineOption('g:fuf_mrufile_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_mrufile_exclude'        , '\v\~$|\.bak$|\.swp$')
-  call s:defineOption('g:fuf_mrufile_maxItem'        , 200)
+  call s:defineOption('g:fuf_mrufile_prompt' , '>MruFile>')
+  call s:defineOption('g:fuf_mrufile_exclude', '\v\~$|\.bak$|\.swp$')
+  call s:defineOption('g:fuf_mrufile_maxItem', 200)
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_mrucmd_prompt'         , '>MruCmd>')
-  call s:defineOption('g:fuf_mrucmd_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_mrucmd_exclude'        , '^$')
-  call s:defineOption('g:fuf_mrucmd_maxItem'        , 200)
+  call s:defineOption('g:fuf_mrucmd_prompt' , '>MruCmd>')
+  call s:defineOption('g:fuf_mrucmd_exclude', '^$')
+  call s:defineOption('g:fuf_mrucmd_maxItem', 200)
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_bookmark_prompt'         , '>Bookmark>')
-  call s:defineOption('g:fuf_bookmark_promptHighlight', 'Question')
+  call s:defineOption('g:fuf_bookmark_prompt'      , '>Bookmark>')
   call s:defineOption('g:fuf_bookmark_searchRange' , 400)
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_tag_prompt'         , '>Tag>')
-  call s:defineOption('g:fuf_tag_promptHighlight', 'Question')
+  call s:defineOption('g:fuf_tag_prompt', '>Tag>')
   "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_taggedfile_prompt'         , '>TaggedFile>')
-  call s:defineOption('g:fuf_taggedfile_promptHighlight', 'Question')
-  "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_givenfile_prompt'         , '>GivenFile>')
-  call s:defineOption('g:fuf_givenfile_promptHighlight', 'Question')
-  "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_givendir_prompt'         , '>GivenDir>')
-  call s:defineOption('g:fuf_givendir_promptHighlight', 'Question')
-  "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_givencmd_prompt'         , '>GivenCmd>')
-  call s:defineOption('g:fuf_givencmd_promptHighlight', 'Question')
-  "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_callbackfile_prompt'         , '>CallbackFile>')
-  call s:defineOption('g:fuf_callbackfile_promptHighlight', 'Question')
-  call s:defineOption('g:fuf_callbackfile_exclude'        , '')
-  "---------------------------------------------------------------------------
-  call s:defineOption('g:fuf_callbackitem_prompt'         , '>CallbackItem>')
-  call s:defineOption('g:fuf_callbackitem_promptHighlight', 'Question')
+  call s:defineOption('g:fuf_taggedfile_prompt', '>TaggedFile>')
   "---------------------------------------------------------------------------
   call filter(g:fuf_modes, 'count(g:fuf_modesDisable, v:val) == 0')
   for m in g:fuf_modes
