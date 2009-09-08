@@ -32,7 +32,8 @@ function fuf#givencmd#onInit()
 endfunction
 
 "
-function fuf#givencmd#launch(initialPattern, partialMatching, items)
+function fuf#givencmd#launch(initialPattern, partialMatching, prompt, items)
+  let s:prompt = (empty(a:prompt) ? '>' : a:prompt)
   let s:items = map(copy(a:items), '{ "word" : v:val }')
   let s:items = map(s:items, 'fuf#setBoundariesWithWord(v:val)')
   call fuf#mapToSetSerialIndex(s:items, 1)
@@ -59,7 +60,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_givencmd_prompt
+  return s:prompt
 endfunction
 
 "
