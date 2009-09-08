@@ -100,11 +100,6 @@ function s:handler.getPrompt()
 endfunction
 
 "
-function s:handler.getPromptHighlight()
-  return g:fuf_mrufile_promptHighlight
-endfunction
-
-"
 function s:handler.targetsPath()
   return 1
 endfunction
