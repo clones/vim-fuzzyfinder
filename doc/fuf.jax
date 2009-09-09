@@ -412,7 +412,7 @@ FuzzyFinder は幾つかのルールに従って補完アイテムをソート�
 
 例えば次のように設定したとします:
 >
-        let g:FuzzyFinderOptions.Base.abbrev_map  = {
+        let g:fuf_abbrevMap = {
               \   "^doc:" : [
               \     "~/project/**/doc/",
               \     ".vim/doc/",
@@ -583,7 +583,7 @@ See also: |fuf-vimrc-sample|
 
 
 ==============================================================================
-オプション                                *fuf-options* *g:FuzzyFinderOptions*
+OPTIONS                                                          *fuf-options*
 
                                                    *fuf-options-for-all-modes*
 全モード用 ~
