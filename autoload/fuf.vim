@@ -344,7 +344,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \ ]
     " hacks to be able to use feedkeys().
     execute printf('inoremap <buffer> <silent> %s <C-r>=%s%s ? "" : ""<CR>',
-          \        lhs, s:getSidPrefix(), rhs)
+          \        lhs, s:PREFIX_SID, rhs)
   endfor
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
@@ -411,6 +411,18 @@ endfunction
 
 " }}}1
 "=============================================================================
+" SID PREFIX {{{1
+
+function s:getSidPrefix()
+  return matchstr(expand('<sfile>'), '<SNR>\d\+_')
+endfunction
+
+let s:PREFIX_SID = s:getSidPrefix()
+
+delfunction s:getSidPrefix
+
+" }}}1
+"=============================================================================
 " LOCAL FUNCTIONS/VARIABLES {{{1
 
 let s:INFO_FILE_VERSION_LINE = "VERSION\t300"
@@ -420,11 +432,6 @@ let s:OPEN_MODE_CURRENT = 1
 let s:OPEN_MODE_SPLIT   = 2
 let s:OPEN_MODE_VSPLIT  = 3
 let s:OPEN_MODE_TAB     = 4
-
-"
-function s:getSidPrefix()
-  return matchstr(expand('<sfile>'), '<SNR>\d\+_')
-endfunction
 
 " wildcard -> regexp
 function s:convertWildcardToRegexp(expr)
@@ -877,7 +884,7 @@ endfunction
 function s:handlerBase.onCr(typeOpen, fCheckDir)
   if pumvisible()
     call feedkeys(printf("\<C-y>\<C-r>=%sonCr(%d, 1) ? '' : ''\<CR>",
-          \       s:getSidPrefix(), a:typeOpen), 'n')
+          \       s:PREFIX_SID, a:typeOpen), 'n')
     return
   endif
   if !empty(self.lastPattern)
