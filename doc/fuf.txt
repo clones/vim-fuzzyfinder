@@ -9,6 +9,7 @@ INSTALLATION                    |fuf-installation|
 USAGE                           |fuf-usage|
 MODES                           |fuf-modes|
 DETAILED TOPICS                 |fuf-detailed-topics|
+COMMANDS                        |fuf-commands|
 OPTIONS                         |fuf-options|
 VIMRC EXAMPLE                   |fuf-vimrc-sample|
 SPECIAL THANKS                  |fuf-thanks|

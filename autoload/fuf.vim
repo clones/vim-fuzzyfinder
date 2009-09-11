@@ -656,12 +656,12 @@ function s:activateFufBuffer()
   execute ':lcd ' . escape(cwd, ' ')
   call s:setLocalOptionsForFufBuffer()
   redraw " for 'lazyredraw'
-  if exists(':AutoComplPopLock') | execute ':AutoComplPopLock' | endif
+  if exists(':AcpPopLock') | execute ':AcpPopLock' | endif
 endfunction
 
 "
 function s:deactivateFufBuffer()
-  if exists(':AutoComplPopUnlock') | execute ':AutoComplPopUnlock' | endif
+  if exists(':AcpPopUnlock') | execute ':AcpPopUnlock' | endif
   " must close after returning to previous window
   wincmd p
   execute s:bufNrFuf . 'bdelete'
