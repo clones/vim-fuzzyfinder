@@ -870,13 +870,13 @@ function s:handlerBase.onInsertLeave()
   let lastPattern = self.removePrompt(getline('.'))
   call s:restoreTemporaryGlobalOptions()
   call s:deactivateFufBuffer()
-  let reserved = exists('s:reservedCommand')
-  if reserved
+  call fuf#saveInfoFile(s:runningHandler.getModeName(), s:runningHandler.info)
+  let fOpen = exists('s:reservedCommand')
+  if fOpen
     call self.onOpen(s:reservedCommand[0], s:reservedCommand[1])
     unlet s:reservedCommand
   endif
-  call self.onModeLeavePost(reserved)
-  call fuf#saveInfoFile(s:runningHandler.getModeName(), s:runningHandler.info)
+  call self.onModeLeavePost(fOpen)
   unlet s:runningHandler
 endfunction
 

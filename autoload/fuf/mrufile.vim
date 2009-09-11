@@ -46,7 +46,7 @@ let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
 function s:updateInfo()
-  if !empty(&buftype) || expand('%') !~ '\S'
+  if !empty(&buftype) || !filereadable(expand('%'))
     return
   endif
   let info = fuf#loadInfoFile(s:MODE_NAME)
