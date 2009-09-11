@@ -885,6 +885,8 @@ CHANGELOG                                                      *fuf-changelog*
     mode.
   - Changed APIs of Given-File, Given-Directory, Given-Command, Callback-File,
     and Callback-Item modes to be able to set a prompt string.
+  - Fixed a bug that MRU-File data was not updated When a file was opened with
+    FuzzyFinder.
 
 3.1:
   - Added new feature to recall patterns which have been entered before from

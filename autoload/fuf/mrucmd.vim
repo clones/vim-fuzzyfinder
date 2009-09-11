@@ -35,9 +35,7 @@ endfunction
 "
 function fuf#mrucmd#onCommandPre(cmd)
   if getcmdtype() =~ '^[:/?]'
-    let info = fuf#loadInfoFile(s:MODE_NAME)
-    call s:updateInfo(info, a:cmd)
-    call fuf#saveInfoFile(s:MODE_NAME, info)
+    call s:updateInfo(a:cmd)
   endif
 endfunction
 
@@ -49,10 +47,12 @@ endfunction
 let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
-function s:updateInfo(info, cmd)
-  let a:info.data = fuf#updateMruList(
-        \ a:info.data, { 'word' : a:cmd, 'time' : localtime() },
+function s:updateInfo(cmd)
+  let info = fuf#loadInfoFile(s:MODE_NAME)
+  let info.data = fuf#updateMruList(
+        \ info.data, { 'word' : a:cmd, 'time' : localtime() },
         \ g:fuf_mrucmd_maxItem, g:fuf_mrucmd_exclude)
+  call fuf#saveInfoFile(s:MODE_NAME, info)
 endfunction
 
 " }}}1
@@ -85,7 +85,7 @@ endfunction
 
 "
 function s:handler.onOpen(expr, mode)
-  call s:updateInfo(self.info, a:expr)
+  call s:updateInfo(a:expr)
   call histadd(a:expr[0], a:expr[1:])
   call feedkeys(a:expr . "\<CR>", 'n')
 endfunction
