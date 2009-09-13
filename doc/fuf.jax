@@ -9,8 +9,9 @@ FuzzyFinder                                                *fuzzyfinder* *fuf*
 使い方                          |fuf-usage|
 モード                          |fuf-modes|
 詳細なトピック                  |fuf-detailed-topics|
+コマンド                        |fuf-commands|
 オプション                      |fuf-options|
-VIMRC EXAMPLE                   |fuf-vimrc-sample|
+VIMRC の例                      |fuf-vimrc-sample|
 SPECIAL THANKS                  |fuf-thanks|
 CHANGELOG                       |fuf-changelog|
 あばうと                        |fuf-about|
@@ -118,7 +119,7 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 
 
 ==============================================================================
-モード                                                              *fuf-modes*
+モード                                                             *fuf-modes*
 
                                                              *fuf-buffer-mode*
 Buffer mode ~
@@ -583,7 +584,7 @@ See also: |fuf-vimrc-sample|
 
 
 ==============================================================================
-OPTIONS                                                          *fuf-options*
+オプション                                                       *fuf-options*
 
                                                    *fuf-options-for-all-modes*
 全モード用 ~
@@ -839,8 +840,7 @@ URL:        http://www.vim.org/scripts/script.php?script_id=1984
 
 バグや要望など ~
 
-http://bitbucket.org/ns9tks/vim-fuzzyfinder/issues/ に登録してもらえると助かり
-ます。
+こちらへどうぞ: http://bitbucket.org/ns9tks/vim-fuzzyfinder/issues/
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:
