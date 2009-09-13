@@ -19,6 +19,11 @@ function fuf#givendir#createHandler(base)
 endfunction
 
 "
+function fuf#givendir#getSwitchOrder()
+  return -1
+endfunction
+
+"
 function fuf#givendir#renewCache()
 endfunction
 

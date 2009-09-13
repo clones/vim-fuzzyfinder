@@ -19,6 +19,11 @@ function fuf#callbackitem#createHandler(base)
 endfunction
 
 "
+function fuf#callbackitem#getSwitchOrder()
+  return -1
+endfunction
+
+"
 function fuf#callbackitem#renewCache()
 endfunction
 

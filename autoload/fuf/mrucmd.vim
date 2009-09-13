@@ -19,6 +19,11 @@ function fuf#mrucmd#createHandler(base)
 endfunction
 
 "
+function fuf#mrucmd#getSwitchOrder()
+  return g:fuf_mrucmd_switchOrder
+endfunction
+
+"
 function fuf#mrucmd#renewCache()
 endfunction
 

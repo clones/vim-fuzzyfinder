@@ -19,6 +19,11 @@ function fuf#callbackfile#createHandler(base)
 endfunction
 
 "
+function fuf#callbackfile#getSwitchOrder()
+  return -1
+endfunction
+
+"
 function fuf#callbackfile#renewCache()
   let s:cache = {}
 endfunction
