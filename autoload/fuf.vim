@@ -496,7 +496,7 @@ function s:setRanks(item, key, patternPartial, patternFuzzy, boundaryMatching, s
         \   (a:boundaryMatching
         \    ? -s:scoreBoundaryMatching(a:item.boundaries, 
         \                               a:patternPartial, a:patternFuzzy)
-        \    : 1.0),
+        \    : 0.0),
         \   -s:scoreSequentialMatching(a:item[a:key],
         \                              a:patternPartial),
         \   a:item.index,
@@ -516,12 +516,12 @@ endfunction
 
 " range of return value is [0.0, 1.0]
 function s:scoreSequentialMatching(word, patternPartial)
-  let pos = match(a:word, a:patternPartial)
-  if pos < 0
-    return 0
+  let posEnd = matchend(a:word, a:patternPartial)
+  if posEnd <= 0
+    return 0.0
   endif
-  return 0.5 * (len(a:word) - matchend(a:word, a:patternPartial)) / len(a:word) +
-        \ (pos == 0 ? 0.5 : 0.0)
+  let posBegin = match(a:word, a:patternPartial)
+  return (posBegin == 0 ? 0.5 : 0.0) + 0.5 / (len(a:word) - posEnd + 1)
 endfunction
 
 " range of return value is [0.0, 1.0]
