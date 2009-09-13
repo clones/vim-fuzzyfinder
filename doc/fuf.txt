@@ -119,6 +119,9 @@ You can open a selected item in various ways:
 
 To cancel and return to previous window, just leave Insert mode.
 
+With <C-t> (|g:fuf_keyNextMode|) and <C-y> (|g:fuf_keyPrevMode|), You can
+switch current mode without leaving Insert mode .
+
 
 ==============================================================================
 MODES                                                              *fuf-modes*
