@@ -316,6 +316,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   endif
   let s:runningHandler = fuf#{a:modeName}#createHandler(copy(s:handlerBase))
   let s:runningHandler.info = fuf#loadInfoFile(s:runningHandler.getModeName())
+  let s:runningHandler.partialMatching = a:partialMatching
   let s:runningHandler.makeRegexpPattern = function(a:partialMatching
         \                                           ? 's:makePartialRegexpPattern'
         \                                           : 's:makeFuzzyRegexpPattern')
@@ -339,6 +340,8 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \   [ g:fuf_keyOpenTabpage, 'onCr(' . s:OPEN_MODE_TAB     . ', 0)' ],
         \   [ '<BS>'              , 'onBs()'                               ],
         \   [ '<C-h>'             , 'onBs()'                               ],
+        \   [ g:fuf_keyNextMode   , 'onSwitchMode(+1)'                     ],
+        \   [ g:fuf_keyPrevMode   , 'onSwitchMode(-1)'                     ],
         \   [ g:fuf_keyPrevPattern, 'onRecallPattern(+1)'                  ],
         \   [ g:fuf_keyNextPattern, 'onRecallPattern(-1)'                  ],
         \ ]
@@ -743,6 +746,11 @@ function s:onBs()
 endfunction
 
 "
+function s:onSwitchMode(shift)
+  call s:runningHandler.onSwitchMode(a:shift)
+endfunction
+
+"
 function s:onRecallPattern(shift)
   call s:runningHandler.onRecallPattern(a:shift)
 endfunction
@@ -868,6 +876,7 @@ endfunction
 "
 function s:handlerBase.onInsertLeave()
   let lastPattern = self.removePrompt(getline('.'))
+  let lastPartialMatching = s:runningHandler.partialMatching
   call s:restoreTemporaryGlobalOptions()
   call s:deactivateFufBuffer()
   call fuf#saveInfoFile(s:runningHandler.getModeName(), s:runningHandler.info)
@@ -878,6 +887,10 @@ function s:handlerBase.onInsertLeave()
   endif
   call self.onModeLeavePost(fOpen)
   unlet s:runningHandler
+  if exists('s:reservedMode')
+    call fuf#launch(s:reservedMode, lastPattern, lastPartialMatching)
+    unlet s:reservedMode
+  endif
 endfunction
 
 "
@@ -913,6 +926,22 @@ function s:handlerBase.onBs()
     let numBs = 1
   endif
   call feedkeys((pumvisible() ? "\<C-e>" : "") . repeat("\<BS>", numBs), 'n')
+endfunction
+
+"
+function s:handlerBase.onSwitchMode(shift)
+  let modes = copy(g:fuf_modes)
+  call map(modes, '{ "ranks": [ fuf#{v:val}#getSwitchOrder(), v:val ] }')
+  call filter(modes, 'v:val.ranks[0] >= 0')
+  call sort(modes, 'fuf#compareRanks')
+  let s:reservedMode = self.getModeName()
+  for i in range(len(modes))
+    if modes[i].ranks[1] == self.getModeName()
+      let s:reservedMode = modes[(i + a:shift) % len(modes)].ranks[1]
+      break
+    endif
+  endfor
+  call feedkeys("\<Esc>", 'n') " stopinsert doesn't work.
 endfunction
 
 "

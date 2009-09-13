@@ -208,7 +208,7 @@ API function:
                           FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
-        prompt          - A prompt string
+        prompt          - Prompt string
         items           - List of items.
 
 Example of use:
@@ -232,7 +232,7 @@ API function:
                           FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
-        prompt          - A prompt string
+        prompt          - Prompt string
         items           - List of items.
 
 
@@ -259,7 +259,7 @@ API function:
                           FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
-        prompt          - A prompt string
+        prompt          - Prompt string
         items           - List of items.
 
 
@@ -293,7 +293,7 @@ API function:
                           FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
-        prompt          - A prompt string.
+        prompt          - Prompt string.
         exclude         - Regexp pattern for items which you want to exclude
                           from completion list.
         listener        - |Dictionary| which has 'onComplete' and 'onAbort'.
@@ -337,7 +337,7 @@ API function:
                           FuzzyFinder.
         partialMatching - If non-zero, enable a partial matching instead of a
                           fuzzy matching.
-        prompt          - A prompt string
+        prompt          - Prompt string
         listener        - |Dictionary| which has 'onComplete' and 'onAbort'.
                           They are called at the end of FuzzyFinder.
                           listener.onComplete(item, method) is called with 2
@@ -648,13 +648,23 @@ For All Modes ~
         Key mapped to select completion item or finish input and open a
         buffer/file in a new tab page.
 
+                                                        *g:fuf_keyNextMode*  >
+  let g:fuf_keyNextMode = '<C-t>'
+<
+        Key mapped to switch to next mode.
+
+                                                        *g:fuf_keyPrevMode*  >
+  let g:fuf_keyPrevMode = '<C-y>'
+<
+        Key mapped to switch to previous mode.
+
                                                      *g:fuf_keyPrevPattern*  >
-  let g:fuf_keyPrevPattern = '<C-t>'
+  let g:fuf_keyPrevPattern = '<C-o>'
 <
         Key mapped to recall previous entered patten from history.
 
                                                      *g:fuf_keyNextPattern*  >
-  let g:fuf_keyNextPattern = '<C-^>'
+  let g:fuf_keyNextPattern = '<C-_>'
 <
         Key mapped to recall next entered patten from history.
 
@@ -732,7 +742,13 @@ For Buffer Mode ~
                                                       *g:fuf_buffer_prompt*  >
   let g:fuf_buffer_prompt = '>Buffer>'
 <
-        A prompt string.
+        Prompt string.
+
+                                                 *g:fuf_buffer_switchOrder*  >
+  let g:fuf_buffer_switchOrder = 10
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                                     *g:fuf_buffer_mruOrder*  >
   let g:fuf_buffer_mruOrder = 1
@@ -745,7 +761,13 @@ For File Mode ~
                                                         *g:fuf_file_prompt*  >
   let g:fuf_file_prompt = '>File>'
 <
-        A prompt string.
+        Prompt string.
+
+                                                   *g:fuf_file_switchOrder*  >
+  let g:fuf_file_switchOrder = 20
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                                        *g:fuf_file_exclude*  >
   let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
@@ -759,7 +781,13 @@ For Directory Mode ~
                                                          *g:fuf_dir_prompt*  >
   let g:fuf_dir_prompt = '>Dir>'
 <
-        A prompt string.
+        Prompt string.
+
+                                                    *g:fuf_dir_switchOrder*  >
+  let g:fuf_dir_switchOrder = 30
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                                         *g:fuf_dir_exclude*  >
   let g:fuf_dir_exclude = ''
@@ -773,7 +801,13 @@ For Mru-File Mode ~
                                                      *g:fuf_mrufile_prompt*  >
   let g:fuf_mrufile_prompt = '>MruFile>'
 <
-        A prompt string.
+        Prompt string.
+
+                                                *g:fuf_mrufile_switchOrder*  >
+  let g:fuf_mrufile_switchOrder = 40
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                                     *g:fuf_mrufile_exclude*  >
   let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
@@ -792,7 +826,13 @@ For Mru-Cmd Mode ~
                                                       *g:fuf_mrucmd_prompt*  >
   let g:fuf_mrucmd_prompt = '>MruCmd>'
 <
-        A prompt string.
+        Prompt string.
+
+                                                 *g:fuf_mrucmd_switchOrder*  >
+  let g:fuf_mrucmd_switchOrder = 50
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                                      *g:fuf_mrucmd_exclude*  >
   let g:fuf_mrucmd_exclude = '^$'
@@ -811,7 +851,13 @@ For Bookmark Mode ~
                                                     *g:fuf_bookmark_prompt*  >
   let g:fuf_bookmark_prompt = '>Bookmark>'
 <
-        A prompt string.
+        Prompt string.
+
+                                               *g:fuf_bookmark_switchOrder*  >
+  let g:fuf_bookmark_switchOrder = 60
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                                *g:fuf_bookmark_searchRange*  >
   let g:fuf_bookmark_searchRange = 400
@@ -825,7 +871,13 @@ For Tag Mode ~
                                                          *g:fuf_tag_prompt*  >
   let g:fuf_tag_prompt = '>Tag>'
 <
-        A prompt string.
+        Prompt string.
+
+                                                    *g:fuf_tag_switchOrder*  >
+  let g:fuf_tag_switchOrder = 70
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
                                              *fuf-options-for-taggedfile-mode*
 For Tagged-File Mode ~
@@ -833,7 +885,13 @@ For Tagged-File Mode ~
                                                   *g:fuf_taggedfile_prompt*  >
   let g:fuf_taggedfile_prompt = '>TaggedFile>'
 <
-        A prompt string.
+        Prompt string.
+
+                                             *g:fuf_taggedfile_switchOrder*  >
+  let g:fuf_taggedfile_switchOrder = 80
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
 
 
 ==============================================================================
@@ -886,9 +944,12 @@ CHANGELOG                                                      *fuf-changelog*
     mode.
   - Changed APIs of Given-File, Given-Directory, Given-Command, Callback-File,
     and Callback-Item modes to be able to set a prompt string.
+  - Changed default values of g:fuf_keyPrevPattern and g:fuf_keyNextPattern.
   - Fixed a bug that MRU-File data was not updated When a file was opened with
     FuzzyFinder.
-  - Fixed a bug with scoring matchings for sorting.
+  - Fixed a bug with scoring matchings for sorting. Thanks to Vincent.
+  - Brought back the removed feature which is switching to an other mode in
+    FuzzyFinder.
 
 3.1:
   - Added new feature to recall patterns which have been entered before from

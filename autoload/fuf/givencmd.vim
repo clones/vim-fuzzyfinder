@@ -19,6 +19,11 @@ function fuf#givencmd#createHandler(base)
 endfunction
 
 "
+function fuf#givencmd#getSwitchOrder()
+  return -1
+endfunction
+
+"
 function fuf#givencmd#renewCache()
 endfunction
 

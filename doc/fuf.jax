@@ -616,6 +616,16 @@ See also: |fuf-vimrc-sample|
 <
         補完を確定し、バッファ/ファイルを別タブページ開くキー。
 
+                                                        *g:fuf_keyNextMode*  >
+  let g:fuf_keyNextMode = '<C-t>'
+<
+        次のモードに切り替えるキー。
+
+                                                        *g:fuf_keyPrevMode*  >
+  let g:fuf_keyPrevMode = '<C-y>'
+<
+        前のモードに切り替えるキー。
+
                                                      *g:fuf_keyPrevPattern*  >
   let g:fuf_keyPrevPattern = '<C-t>'
 <
@@ -701,6 +711,12 @@ Buffer モード用 ~
 <
         プロンプト文字列。
 
+                                                 *g:fuf_buffer_switchOrder*  >
+  let g:fuf_buffer_switchOrder = 10
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
                                                     *g:fuf_buffer_mruOrder*  >
   let g:fuf_buffer_mruOrder = 1
 <
@@ -713,6 +729,12 @@ File モード用 ~
   let g:fuf_file_prompt = '>File>'
 <
         プロンプト文字列。
+
+                                                   *g:fuf_file_switchOrder*  >
+  let g:fuf_file_switchOrder = 20
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
 
                                                        *g:fuf_file_exclude*  >
   let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
@@ -727,6 +749,12 @@ Directory モード用 ~
 <
         プロンプト文字列。
 
+                                                    *g:fuf_dir_switchOrder*  >
+  let g:fuf_dir_switchOrder = 30
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
                                                         *g:fuf_dir_exclude*  >
   let g:fuf_dir_exclude = ''
 <
@@ -739,6 +767,12 @@ Mru-File モード用 ~
   let g:fuf_mrufile_prompt = '>MruFile>'
 <
         プロンプト文字列。
+
+                                                *g:fuf_mrufile_switchOrder*  >
+  let g:fuf_mrufile_switchOrder = 40
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
 
                                                     *g:fuf_mrufile_exclude*  >
   let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
@@ -758,6 +792,12 @@ Mru-Cmd モード用 ~
 <
         プロンプト文字列。
 
+                                                 *g:fuf_mrucmd_switchOrder*  >
+  let g:fuf_mrucmd_switchOrder = 50
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
                                                      *g:fuf_mrucmd_exclude*  >
   let g:fuf_mrucmd_exclude = '^$'
 <
@@ -776,6 +816,12 @@ Bookmark モード用 ~
 <
         プロンプト文字列。
 
+                                               *g:fuf_bookmark_switchOrder*  >
+  let g:fuf_bookmark_switchOrder = 60
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
                                             *g:fuf_bookmark_searchingRange*  >
   let g:fuf_bookmark_searchingRange = 400
 <
@@ -790,6 +836,12 @@ Tag モード用 ~
 <
         プロンプト文字列。
 
+                                                    *g:fuf_tag_switchOrder*  >
+  let g:fuf_tag_switchOrder = 70
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
                                              *fuf-options-for-taggedfile-mode*
 Tagged-File モード用 ~
 
@@ -797,6 +849,12 @@ Tagged-File モード用 ~
   let g:fuf_taggedfile_prompt = '>TaggedFile>'
 <
         プロンプト文字列。
+
+                                             *g:fuf_taggedfile_switchOrder*  >
+  let g:fuf_taggedfile_switchOrder = 80
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
 
 
 ==============================================================================

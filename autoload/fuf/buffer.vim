@@ -19,6 +19,11 @@ function fuf#buffer#createHandler(base)
 endfunction
 
 "
+function fuf#buffer#getSwitchOrder()
+  return g:fuf_buffer_switchOrder
+endfunction
+
+"
 function fuf#buffer#renewCache()
 endfunction
 

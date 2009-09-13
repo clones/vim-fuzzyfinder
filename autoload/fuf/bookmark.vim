@@ -19,6 +19,11 @@ function fuf#bookmark#createHandler(base)
 endfunction
 
 "
+function fuf#bookmark#getSwitchOrder()
+  return g:fuf_bookmark_switchOrder
+endfunction
+
+"
 function fuf#bookmark#renewCache()
 endfunction
 

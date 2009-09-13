@@ -19,6 +19,11 @@ function fuf#mrufile#createHandler(base)
 endfunction
 
 "
+function fuf#mrufile#getSwitchOrder()
+  return g:fuf_mrufile_switchOrder
+endfunction
+
+"
 function fuf#mrufile#renewCache()
   let s:cache = {}
 endfunction

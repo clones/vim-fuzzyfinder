@@ -19,6 +19,11 @@ function fuf#dir#createHandler(base)
 endfunction
 
 "
+function fuf#dir#getSwitchOrder()
+  return g:fuf_dir_switchOrder
+endfunction
+
+"
 function fuf#dir#renewCache()
   let s:cache = {}
 endfunction

@@ -19,6 +19,11 @@ function fuf#file#createHandler(base)
 endfunction
 
 "
+function fuf#file#getSwitchOrder()
+  return g:fuf_file_switchOrder
+endfunction
+
+"
 function fuf#file#renewCache()
   let s:cache = {}
 endfunction

@@ -19,6 +19,11 @@ function fuf#tag#createHandler(base)
 endfunction
 
 "
+function fuf#tag#getSwitchOrder()
+  return g:fuf_tag_switchOrder
+endfunction
+
+"
 function fuf#tag#renewCache()
   let s:cache = {}
 endfunction
