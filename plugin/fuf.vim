@@ -69,6 +69,7 @@ function s:initialize()
   call s:defineOption('g:fuf_bookmark_prompt'     , '>Bookmark>')
   call s:defineOption('g:fuf_bookmark_switchOrder', 60)
   call s:defineOption('g:fuf_bookmark_searchRange', 400)
+  call s:defineOption('g:fuf_bookmark_keyDelete'  , '<C-]>')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_tag_prompt'     , '>Tag>')
   call s:defineOption('g:fuf_tag_switchOrder', 70)

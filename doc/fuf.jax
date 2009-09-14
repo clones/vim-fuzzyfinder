@@ -125,23 +125,23 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 モード                                                             *fuf-modes*
 
                                                              *fuf-buffer-mode*
-Buffer mode ~
+Buffer モード ~
 
 このモードはバッファを選択して開くインターフェースを提供します。
 
                                                                *fuf-file-mode*
-File mode ~
+File モード ~
 
 このモードはファイルを検索して開くインターフェースを提供します。
 
                                                                 *fuf-dir-mode*
-Directory mode ~
+Directory モード ~
 
 このモードはディレクトリを検索してカレントディレクトリを変更するインターフェー
 スを提供します。
 
                                                             *fuf-mrufile-mode*
-MRU-File mode ~
+MRU-File モード ~
 
 このモードは最近使ったファイルを選択して開くインターフェースを提供します。
 
@@ -149,7 +149,7 @@ MRU-File mode ~
 で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
 
                                                              *fuf-mrucmd-mode*
-MRU-Command mode ~
+MRU-Command モード ~
 
 このモードは最近使ったコマンドラインを選択して開くインターフェースを提供します
 。
@@ -157,10 +157,13 @@ MRU-Command mode ~
 、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
 
                                                            *fuf-bookmark-mode*
-Bookmark mode ~
+Bookmark モード ~
 
 このモードは事前に追加したブックマークを選択してその行へジャンプするインターフ
 ェースを提供します。
+
+|:FufAddBookmark|コマンドでカーソルのある行をブックマークに追加できます。この
+コマンドを実行すると、ブックマーク名の入力を求められます。
 
 FuzzyFinder はジャンプする行番号を調整します。ブックマークされた行がブックマー
 クされたときのパターンとマッチしない場合、FuzzyFinder はブックマークされた位置
@@ -168,13 +171,11 @@ FuzzyFinder はジャンプする行番号を調整します。ブックマー�
 ても、そこでジャンプすることができます。ブックマークした行番号へ調整せずにジャ
 ンプしたい場合、|g:fuf_bookmark_searchRange|を 0 に設定してください。
 
-|:FufAddBookmark|コマンドでカーソルのある行をブックマークに追加できます。この
-コマンドを実行すると、ブックマーク名の入力を求められます。
-
-ブックマークを削除するには|:FufEditInfo|コマンドを利用してください。
+Bookmark モード中に <C-]> (|g:fuf_bookmark_keyDelete|) を押すと選択したブックマ
+ークを削除することができます。
 
                                                                 *fuf-tag-mode*
-Tag mode ~
+Tag モード ~
 
 このモードはタグを選択してその定義へジャンプするインターフェースを提供します。
 
@@ -184,13 +185,13 @@ Tag mode ~
 <
 
                                                          *fuf-taggedfile-mode*
-Tagged-File mode ~
+Tagged-File モード ~
 
 このモードはタグファイルに含まれるファイルを選択して開くインターフェースを提供
 します。
 
                                                           *fuf-givenfile-mode*
-Given-File mode ~
+Given-File モード ~
 
 このモードは与えられたリストから選択されたファイルを開く API を提供します。
 
@@ -211,7 +212,7 @@ API 関数:
 <
 
                                                            *fuf-givendir-mode*
-Given-Directory mode ~
+Given-Directory モード ~
 
 このモードは与えられたリストから選択されたディレクトリにカレントディレクトリを
 変更する API を提供します。
@@ -234,7 +235,7 @@ API 関数:
 <
 
                                                            *fuf-givencmd-mode*
-Given-Command mode ~
+Given-Command モード ~
 
 このモードは与えられたリストから選択されたコマンドを実行する API を提供します。
 
@@ -268,7 +269,7 @@ API 関数:
 <
 
                                                        *fuf-callbackfile-mode*
-Callback-File mode ~
+Callback-File モード ~
 
 このモードはファイルを検索して選択されたファイルパスを得る API を提供します。
 
@@ -308,7 +309,7 @@ API 関数:
 <
 
                                                        *fuf-callbackitem-mode*
-Callback-Item mode ~
+Callback-Item モード ~
 
 このモードは与えられたリストから選択されたアイテムを得るための API を提供しま
 す。
@@ -825,11 +826,16 @@ Bookmark モード用 ~
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
 
-                                            *g:fuf_bookmark_searchingRange*  >
-  let g:fuf_bookmark_searchingRange = 400
+                                               *g:fuf_bookmark_searchRange*  >
+  let g:fuf_bookmark_searchRange = 400
 <
         ジャンプするとき、ブックマークした位置からこの行数の範囲内でブックマー
         クしたときのパターンとマッチする行を探します。
+
+                                                 *g:fuf_bookmark_keyDelete*  >
+  let g:fuf_bookmark_keyDelete = '<C-]>'
+<
+        選択したブックマークを削除するキー。
 
                                                     *fuf-options-for-tag-mode*
 Tag モード用 ~
