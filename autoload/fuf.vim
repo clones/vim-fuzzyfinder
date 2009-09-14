@@ -63,56 +63,6 @@ function fuf#getCurrentTagFiles()
   return sort(filter(map(tagfiles(), 'fnamemodify(v:val, '':p'')'), 'filereadable(v:val)'))
 endfunction
 
-" 'str' -> '\V\.\*s\.\*t\.\*r\.\*'
-function s:makeFuzzyRegexpPattern(pattern)
-  let wi = ''
-  for c in split(a:pattern, '\zs')
-    if wi =~ '[^*?]$' && c !~ '[*?]'
-      let wi .= '*'
-    endif
-    let wi .= c
-  endfor
-  return s:convertWildcardToRegexp(wi)
-        \ . s:makeAdditionalMigemoPattern(a:pattern)
-endfunction
-
-" 'str' -> '\Vstr'
-" 'st*r' -> '\Vst\.\*r'
-function s:makePartialRegexpPattern(pattern)
-  return s:convertWildcardToRegexp(a:pattern)
-        \ . s:makeAdditionalMigemoPattern(a:pattern)
-endfunction
-
-" 
-function s:makeRefiningExpr(pattern)
-  if a:pattern =~ '\D'
-    return printf('v:val.word =~ %s', string(s:makePartialRegexpPattern(a:pattern)))
-  endif
-  return printf('(v:val.word =~ %s || v:val.index == %d)',
-        \       string(s:makePartialRegexpPattern(a:pattern)), a:pattern)
-endfunction
-
-" 
-function s:makePatternSet(patternBase, forPath, makeRegexpPattern)
-  let patternSet = {}
-  let [patternSet.raw; refinings] =
-        \ split(a:patternBase, g:fuf_patternSeparator, 1)
-  if a:forPath
-    let patternSet.raw = fuf#expandTailDotSequenceToParentDir(patternSet.raw)
-    let pair = fuf#splitPath(patternSet.raw)
-    let patternSet.rawHead = pair.head
-    let patternSet.rawTail = pair.tail
-    let patternSet.re = a:makeRegexpPattern(patternSet.rawTail)
-    let primaryExpr = 'v:val.tail =~ ' . string(patternSet.re)
-  else
-    let patternSet.re = a:makeRegexpPattern(patternSet.raw)
-    let primaryExpr = 'v:val.word =~ ' . string(patternSet.re)
-  endif
-  let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
-  let patternSet.filteringExpr = join([primaryExpr] + refiningExprs, ' && ')
-  return patternSet
-endfunction
-
 "
 function fuf#mapToSetSerialIndex(in, offset)
   for i in range(len(a:in))
@@ -306,6 +256,14 @@ function fuf#defineLaunchCommand(CmdName, modeName, prefixInitialPattern)
 endfunction
 
 "
+function fuf#defineKeyMappingInHandler(key, func)
+    " hacks to be able to use feedkeys().
+    execute printf(
+          \ 'inoremap <buffer> <silent> %s <C-r>=fuf#getRunningHandler().%s ? "" : ""<CR>',
+          \ a:key, a:func)
+endfunction
+
+"
 function fuf#launch(modeName, initialPattern, partialMatching)
   if exists('s:runningHandler')
     call fuf#echoWithHl('FuzzyFinder is running.', 'WarningMsg')
@@ -333,7 +291,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
     autocmd InsertLeave  <buffer> nested call s:runningHandler.onInsertLeave()
   augroup END
   " local mapping
-  for [lhs, rhs] in [
+  for [key, func] in [
         \   [ g:fuf_keyOpen       , 'onCr(' . s:OPEN_MODE_CURRENT . ', 0)' ],
         \   [ g:fuf_keyOpenSplit  , 'onCr(' . s:OPEN_MODE_SPLIT   . ', 0)' ],
         \   [ g:fuf_keyOpenVsplit , 'onCr(' . s:OPEN_MODE_VSPLIT  . ', 0)' ],
@@ -345,9 +303,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \   [ g:fuf_keyPrevPattern, 'onRecallPattern(+1)'                  ],
         \   [ g:fuf_keyNextPattern, 'onRecallPattern(-1)'                  ],
         \ ]
-    " hacks to be able to use feedkeys().
-    execute printf('inoremap <buffer> <silent> %s <C-r>=%s%s ? "" : ""<CR>',
-          \        lhs, s:PREFIX_SID, rhs)
+    call fuf#defineKeyMappingInHandler(key, func)
   endfor
   " Starts Insert mode and makes CursorMovedI event now. Command prompt is
   " needed to forces a completion menu to update every typing.
@@ -408,21 +364,14 @@ function fuf#editInfoFile()
 endfunction
 
 " 
+function fuf#getRunningHandler()
+  return s:runningHandler
+endfunction
+
+" 
 function fuf#onComplete(findstart, base)
   return s:runningHandler.complete(a:findstart, a:base)
 endfunction
-
-" }}}1
-"=============================================================================
-" SID PREFIX {{{1
-
-function s:getSidPrefix()
-  return matchstr(expand('<sfile>'), '<SNR>\d\+_')
-endfunction
-
-let s:PREFIX_SID = s:getSidPrefix()
-
-delfunction s:getSidPrefix
 
 " }}}1
 "=============================================================================
@@ -445,12 +394,62 @@ function s:convertWildcardToRegexp(expr)
   return '\V' . re
 endfunction
 
+" 'str' -> '\V\.\*s\.\*t\.\*r\.\*'
+function s:makeFuzzyRegexpPattern(pattern)
+  let wi = ''
+  for c in split(a:pattern, '\zs')
+    if wi =~ '[^*?]$' && c !~ '[*?]'
+      let wi .= '*'
+    endif
+    let wi .= c
+  endfor
+  return s:convertWildcardToRegexp(wi)
+        \ . s:makeAdditionalMigemoPattern(a:pattern)
+endfunction
+
+" 'str' -> '\Vstr'
+" 'st*r' -> '\Vst\.\*r'
+function s:makePartialRegexpPattern(pattern)
+  return s:convertWildcardToRegexp(a:pattern)
+        \ . s:makeAdditionalMigemoPattern(a:pattern)
+endfunction
+
 " 
 function s:makeAdditionalMigemoPattern(pattern)
   if !g:fuf_useMigemo || a:pattern =~ '[^\x01-\x7e]'
     return ''
   endif
   return '\|\m' . substitute(migemo(a:pattern), '\\_s\*', '.*', 'g')
+endfunction
+
+" 
+function s:makeRefiningExpr(pattern)
+  if a:pattern =~ '\D'
+    return printf('v:val.word =~ %s', string(s:makePartialRegexpPattern(a:pattern)))
+  endif
+  return printf('(v:val.word =~ %s || v:val.index == %d)',
+        \       string(s:makePartialRegexpPattern(a:pattern)), a:pattern)
+endfunction
+
+" 
+function s:makePatternSet(patternBase, forPath, makeRegexpPattern)
+  let patternSet = {}
+  let [patternSet.raw; refinings] =
+        \ split(a:patternBase, g:fuf_patternSeparator, 1)
+  if a:forPath
+    let patternSet.raw = fuf#expandTailDotSequenceToParentDir(patternSet.raw)
+    let pair = fuf#splitPath(patternSet.raw)
+    let patternSet.rawHead = pair.head
+    let patternSet.rawTail = pair.tail
+    let patternSet.re = a:makeRegexpPattern(patternSet.rawTail)
+    let primaryExpr = 'v:val.tail =~ ' . string(patternSet.re)
+  else
+    let patternSet.re = a:makeRegexpPattern(patternSet.raw)
+    let primaryExpr = 'v:val.word =~ ' . string(patternSet.re)
+  endif
+  let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
+  let patternSet.filteringExpr = join([primaryExpr] + refiningExprs, ' && ')
+  return patternSet
 endfunction
 
 " Snips a:str and add a:mask if the length of a:str is more than a:len
@@ -743,26 +742,6 @@ function s:onBufWriteCmdInfoFile()
   echo "Information file updated"
 endfunction
 
-"
-function s:onCr(typeOpen, fCheckDir)
-  call s:runningHandler.onCr(a:typeOpen, a:fCheckDir)
-endfunction
-
-"
-function s:onBs()
-  call s:runningHandler.onBs()
-endfunction
-
-"
-function s:onSwitchMode(shift)
-  call s:runningHandler.onSwitchMode(a:shift)
-endfunction
-
-"
-function s:onRecallPattern(shift)
-  call s:runningHandler.onRecallPattern(a:shift)
-endfunction
-
 " }}}1
 "=============================================================================
 " s:handlerBase {{{1
@@ -883,20 +862,19 @@ endfunction
 
 "
 function s:handlerBase.onInsertLeave()
+  unlet s:runningHandler
   let lastPattern = self.removePrompt(getline('.'))
-  let lastPartialMatching = s:runningHandler.partialMatching
   call s:restoreTemporaryGlobalOptions()
   call s:deactivateFufBuffer()
-  call fuf#saveInfoFile(s:runningHandler.getModeName(), s:runningHandler.info)
+  call fuf#saveInfoFile(self.getModeName(), self.info)
   let fOpen = exists('s:reservedCommand')
   if fOpen
     call self.onOpen(s:reservedCommand[0], s:reservedCommand[1])
     unlet s:reservedCommand
   endif
   call self.onModeLeavePost(fOpen)
-  unlet s:runningHandler
   if exists('s:reservedMode')
-    call fuf#launch(s:reservedMode, lastPattern, lastPartialMatching)
+    call fuf#launch(s:reservedMode, lastPattern, self.partialMatching)
     unlet s:reservedMode
   endif
 endfunction
@@ -904,8 +882,8 @@ endfunction
 "
 function s:handlerBase.onCr(typeOpen, fCheckDir)
   if pumvisible()
-    call feedkeys(printf("\<C-y>\<C-r>=%sonCr(%d, 1) ? '' : ''\<CR>",
-          \       s:PREFIX_SID, a:typeOpen), 'n')
+    call feedkeys(printf("\<C-y>\<C-r>=fuf#getRunningHandler().onCr(%d, 1) ? '' : ''\<CR>",
+          \       a:typeOpen), 'n')
     return
   endif
   if !empty(self.lastPattern)

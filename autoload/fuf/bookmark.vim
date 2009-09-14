@@ -44,6 +44,7 @@ endfunction
 " LOCAL FUNCTIONS/VARIABLES {{{1
 
 let s:MODE_NAME = expand('<sfile>:t:r')
+let s:OPEN_MODE_DELETE = -1
 
 "
 function s:getSelectedText()
@@ -139,6 +140,12 @@ endfunction
 
 "
 function s:handler.onOpen(expr, mode)
+  if a:mode == s:OPEN_MODE_DELETE
+    call filter(self.info.data, 'v:val.word !=# a:expr')
+    call fuf#saveInfoFile(s:MODE_NAME, self.info)
+    call fuf#launch(s:MODE_NAME, self.lastPattern, self.partialMatching)
+    return
+  endif
   call filter(self.items, 'v:val.word ==# a:expr')
   if empty(self.items)
     return ''
@@ -153,6 +160,8 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
+  call fuf#defineKeyMappingInHandler(g:fuf_bookmark_keyDelete,
+        \                            'onCr(' . s:OPEN_MODE_DELETE . ', 0)')
   let self.items = copy(self.info.data)
   let self.items = map(self.items, 'fuf#setMenuWithFormattedTime(v:val)')
   let self.items = map(self.items, 'fuf#setBoundariesWithWord(v:val)')
