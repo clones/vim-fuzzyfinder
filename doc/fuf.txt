@@ -107,7 +107,7 @@ highlights the pattern with "Error" group.
 
 The first item in the completion menu will be selected automatically.
 
-with <C-t> (|g:fuf_keyPrevPattern|) and <C-^> (|g:fuf_keyNextPattern|), You
+with <C-s> (|g:fuf_keyPrevPattern|) and <C-^> (|g:fuf_keyNextPattern|), You
 can recall patterns which have been entered before from history.
 
 You can open a selected item in various ways:
@@ -662,7 +662,7 @@ For All Modes ~
         Key mapped to switch to previous mode.
 
                                                      *g:fuf_keyPrevPattern*  >
-  let g:fuf_keyPrevPattern = '<C-o>'
+  let g:fuf_keyPrevPattern = '<C-s>'
 <
         Key mapped to recall previous entered patten from history.
 
@@ -941,6 +941,9 @@ SPECIAL THANKS                                                    *fuf-thanks*
 
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
+
+3.3:
+  - Changed default values of g:fuf_keyPrevPattern.
 
 3.2:
   - Added g:fuf_promptHighlight option to integrate such options for each

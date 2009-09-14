@@ -105,7 +105,7 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 
 補完メニューの最初のアイテムは自動的に選択状態になります。
 
-<C-t> (|g:fuf_keyPrevPattern|) と <C-^> (|g:fuf_keyNextPattern|) で、履歴から
+<C-s> (|g:fuf_keyPrevPattern|) と <C-^> (|g:fuf_keyNextPattern|) で、履歴から
 過去に入力したパターンを呼び出すことができます。
 
 いろいろな方法で、選択されたアイテムを開くことができます:
@@ -117,10 +117,8 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 
 キャンセルして直前のウィンドウに戻るには、インサートモードを抜けてください。
 
-You can switch current mode without leaving Insert mode with <C-t>
-
-(|g:fuf_keyNextMode|) と <C-y> (|g:fuf_keyPrevMode|) で、インサートモードを抜
-けることなくカレントモードを切り替えることが出来ます。
+<C-t> (|g:fuf_keyNextMode|) と <C-y> (|g:fuf_keyPrevMode|) で、インサートモー
+ドを抜けることなくカレントモードを切り替えることが出来ます。
 
 
 ==============================================================================
@@ -632,7 +630,7 @@ See also: |fuf-vimrc-sample|
         前のモードに切り替えるキー。
 
                                                      *g:fuf_keyPrevPattern*  >
-  let g:fuf_keyPrevPattern = '<C-t>'
+  let g:fuf_keyPrevPattern = '<C-s>'
 <
         履歴から前の入力パターンを呼び出すキー。
 
