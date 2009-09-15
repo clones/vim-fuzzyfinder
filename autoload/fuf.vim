@@ -72,11 +72,11 @@ function fuf#mapToSetSerialIndex(in, offset)
 endfunction
 
 "
-function fuf#updateMruList(mrulist, newItem, maxItem, excluded)
+function fuf#updateMruList(mrulist, newItem, maxItem, exclude)
   let result = copy(a:mrulist)
   let result = filter(result,'v:val.word != a:newItem.word')
   let result = insert(result, a:newItem)
-  let result = filter(result, 'v:val.word !~ a:excluded')
+  let result = filter(result, 'v:val.word !~ a:exclude')
   return result[0 : a:maxItem - 1]
 endfunction
 
@@ -102,21 +102,14 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
-function fuf#filterMatchesAndMapToSetRanks(items, patternSet, stats, forPath)
+function fuf#filterMatchesAndMapToSetRanks(items, patternSet, stats)
   " NOTE: To know an excess, plus 1 to limit number
   let result = fuf#filterWithLimit(
         \ a:items, a:patternSet.filteringExpr, g:fuf_enumeratingLimit + 1)
-  if a:forPath
-    let key = 'tail'
-    let patternRaw = a:patternSet.rawTail
-  else
-    let key = 'word'
-    let patternRaw = a:patternSet.raw
-  endif
-  let patternPartial = s:makePartialRegexpPattern(patternRaw)
-  let patternFuzzy   = s:makeFuzzyRegexpPattern(patternRaw)
-  let boundaryMatching = (patternRaw !~ '\U')
-  return map(result, 's:setRanks(v:val, key, patternPartial, patternFuzzy, boundaryMatching, a:stats)')
+  let patternPartial = s:makePartialRegexpPattern(a:patternSet.rawPrimary)
+  let patternFuzzy   = s:makeFuzzyRegexpPattern(a:patternSet.rawPrimary)
+  let boundaryMatching = (a:patternSet.rawPrimary !~ '\U')
+  return map(result, 's:setRanks(v:val, patternPartial, patternFuzzy, boundaryMatching, a:stats)')
 endfunction
 
 "
@@ -191,20 +184,33 @@ function fuf#compareRanks(i1, i2)
   return 0
 endfunction
 
-" returns { 'word', 'boundaries', 'head', 'tail' }
-function fuf#makePathItem(fname, appendsDirSuffix)
-  let item = fuf#splitPath(a:fname)
-  let item.boundaries = s:getWordBoundaries(item.tail)
-  if a:appendsDirSuffix
-    let suffix = (isdirectory(a:fname) ? s:PATH_SEPARATOR : '')
-    return extend({ 'word' : a:fname . suffix }, item, 'error') 
-  else
-    return extend({ 'word' : a:fname }, item, 'error') 
-  endif
+" returns { 'word', 'wordPrimary', 'boundaries', 'menu' }
+function fuf#makePathItem(fname, menu, appendsDirSuffix)
+  let tail = fuf#splitPath(a:fname).tail
+  let dirSuffix = (a:appendsDirSuffix
+        \          ? (isdirectory(a:fname) ? s:PATH_SEPARATOR : '')
+        \          : '')
+  return {
+        \   'word'        : a:fname . dirSuffix,
+        \   'wordPrimary' : tail,
+        \   'boundaries'  : s:getWordBoundaries(tail),
+        \   'menu'        : a:menu,
+        \ }
+endfunction
+
+"TODO
+" returns { 'word', 'wordPrimary', 'boundaries', 'menu' }
+function fuf#makeNonPathItem(word, menu)
+  return {
+        \   'word'        : a:word,
+        \   'wordPrimary' : a:word,
+        \   'boundaries'  : s:getWordBoundaries(a:word),
+        \   'menu'        : a:menu,
+        \ }
 endfunction
 
 "
-function fuf#enumExpandedDirsEntries(dir, excluded)
+function fuf#enumExpandedDirsEntries(dir, exclude)
   " Substitutes "\" because on Windows, "**\" doesn't include ".\",
   " but "**/" include "./". I don't know why.
   let dirNormalized = substitute(a:dir, '\', '/', 'g')
@@ -212,9 +218,9 @@ function fuf#enumExpandedDirsEntries(dir, excluded)
         \       split(glob(dirNormalized . ".*"), "\n")
   " removes "*/." and "*/.."
   call filter(entries, 'v:val !~ ''\v(^|[/\\])\.\.?$''')
-  call map(entries, 'fuf#makePathItem(v:val, 1)')
-  if len(a:excluded)
-    call filter(entries, 'v:val.word !~ a:excluded')
+  call map(entries, 'fuf#makePathItem(v:val, "", 1)')
+  if len(a:exclude)
+    call filter(entries, 'v:val.word !~ a:exclude')
   endif
   return entries
 endfunction
@@ -229,23 +235,11 @@ function fuf#mapToSetAbbrWithSnippedWordAsPath(items)
 endfunction
 
 "
-function fuf#setMenuWithFormattedTime(item)
-  let a:item.menu = strftime(g:fuf_timeFormat, a:item.time)
-  return a:item
-endfunction
-
-"
 function fuf#setAbbrWithFormattedWord(item)
   let lenMenu = (exists('a:item.menu') ? len(a:item.menu) + 2 : 0)
   let abbrPrefix = (exists('a:item.abbrPrefix') ? a:item.abbrPrefix : '')
   let a:item.abbr = printf('%4d: ', a:item.index) . abbrPrefix . a:item.word
   let a:item.abbr = s:snipTail(a:item.abbr, g:fuf_maxMenuWidth - lenMenu, s:ABBR_SNIP_MASK)
-  return a:item
-endfunction
-
-"
-function fuf#setBoundariesWithWord(item)
-  let a:item.boundaries = s:getWordBoundaries(a:item.word)
   return a:item
 endfunction
 
@@ -424,11 +418,12 @@ endfunction
 
 " 
 function s:makeRefiningExpr(pattern)
+  let expr = 'v:val.word =~ %s' . string(s:makePartialRegexpPattern(a:pattern))
   if a:pattern =~ '\D'
-    return printf('v:val.word =~ %s', string(s:makePartialRegexpPattern(a:pattern)))
+    return expr
+  else
+    return '(' . expr . ' || v:val.index == ' . a:pattern . ')'
   endif
-  return printf('(v:val.word =~ %s || v:val.index == %d)',
-        \       string(s:makePartialRegexpPattern(a:pattern)), a:pattern)
 endfunction
 
 " 
@@ -438,15 +433,12 @@ function s:makePatternSet(patternBase, forPath, makeRegexpPattern)
         \ split(a:patternBase, g:fuf_patternSeparator, 1)
   if a:forPath
     let patternSet.raw = fuf#expandTailDotSequenceToParentDir(patternSet.raw)
-    let pair = fuf#splitPath(patternSet.raw)
-    let patternSet.rawHead = pair.head
-    let patternSet.rawTail = pair.tail
-    let patternSet.re = a:makeRegexpPattern(patternSet.rawTail)
-    let primaryExpr = 'v:val.tail =~ ' . string(patternSet.re)
+    let patternSet.rawPrimary = fuf#splitPath(patternSet.raw).tail
   else
-    let patternSet.re = a:makeRegexpPattern(patternSet.raw)
-    let primaryExpr = 'v:val.word =~ ' . string(patternSet.re)
+    let patternSet.rawPrimary = patternSet.raw
   endif
+  let primaryExpr = 'v:val.wordPrimary =~ ' .
+        \           string(a:makeRegexpPattern(patternSet.rawPrimary))
   let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
   let patternSet.filteringExpr = join([primaryExpr] + refiningExprs, ' && ')
   return patternSet
@@ -491,7 +483,7 @@ function s:getWordBoundaries(word)
 endfunction
 
 "
-function s:setRanks(item, key, patternPartial, patternFuzzy, boundaryMatching, stats)
+function s:setRanks(item, patternPartial, patternFuzzy, boundaryMatching, stats)
   "let word2 = substitute(a:eval_word, '\a\zs\l\+\|\zs\A', '', 'g')
   let a:item.ranks = [
         \   s:evaluateLearningRank(a:item.word, a:stats),
@@ -499,7 +491,7 @@ function s:setRanks(item, key, patternPartial, patternFuzzy, boundaryMatching, s
         \    ? -s:scoreBoundaryMatching(a:item.boundaries, 
         \                               a:patternPartial, a:patternFuzzy)
         \    : 0.0),
-        \   -s:scoreSequentialMatching(a:item[a:key],
+        \   -s:scoreSequentialMatching(a:item.wordPrimary,
         \                              a:patternPartial),
         \   a:item.index,
         \ ]

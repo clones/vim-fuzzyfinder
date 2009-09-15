@@ -134,8 +134,7 @@ endfunction
 "
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
-        \ self.items, a:patternSet,
-        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+        \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
@@ -145,13 +144,14 @@ function s:handler.onOpen(expr, mode)
     call fuf#saveInfoFile(s:MODE_NAME, self.info)
     call fuf#launch(s:MODE_NAME, self.lastPattern, self.partialMatching)
     return
+  elseif
+    for item in self.info.data
+      if item.word ==# a:expr
+        call s:jumpToBookmark(item.path, a:mode, item.pattern, item.lnum)
+        break
+      endif
+    endfor
   endif
-  call filter(self.items, 'v:val.word ==# a:expr')
-  if empty(self.items)
-    return ''
-  endif
-  call s:jumpToBookmark(
-        \ self.items[0].path, a:mode, self.items[0].pattern, self.items[0].lnum)
 endfunction
 
 "
@@ -163,10 +163,9 @@ function s:handler.onModeEnterPost()
   call fuf#defineKeyMappingInHandler(g:fuf_bookmark_keyDelete,
         \                            'onCr(' . s:OPEN_MODE_DELETE . ', 0)')
   let self.items = copy(self.info.data)
-  let self.items = map(self.items, 'fuf#setMenuWithFormattedTime(v:val)')
-  let self.items = map(self.items, 'fuf#setBoundariesWithWord(v:val)')
+  call map(self.items, 'fuf#makeNonPathItem(v:val.word, strftime(g:fuf_timeFormat, v:val.time))')
   call fuf#mapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
 endfunction
 
 "

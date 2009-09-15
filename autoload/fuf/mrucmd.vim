@@ -84,8 +84,7 @@ endfunction
 "
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
-        \ self.items, a:patternSet,
-        \ self.getFilteredStats(a:patternSet.raw), self.targetsPath())
+        \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
@@ -101,11 +100,10 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
-  let self.items = deepcopy(self.info.data)
-  let self.items = map(self.items, 'fuf#setMenuWithFormattedTime(v:val)')
-  let self.items = map(self.items, 'fuf#setBoundariesWithWord(v:val)')
+  let self.items = copy(self.info.data)
+  call map(self.items, 'fuf#makeNonPathItem(v:val.word, strftime(g:fuf_timeFormat, v:val.time))')
   call fuf#mapToSetSerialIndex(self.items, 1)
-  let self.items = map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
 endfunction
 
 "
