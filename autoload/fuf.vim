@@ -415,11 +415,11 @@ endfunction
 
 " 
 function s:makeRefiningExpr(pattern)
-  let expr = 'v:val.word =~ %s' . string(s:makePartialRegexpPattern(a:pattern))
+  let expr = 'v:val.word =~ ' . string(s:makePartialRegexpPattern(a:pattern))
   if a:pattern =~ '\D'
     return expr
   else
-    return '(' . expr . ' || v:val.index == ' . a:pattern . ')'
+    return '(' . expr . ' || v:val.index == ' . string(a:pattern) . ')'
   endif
 endfunction
 
