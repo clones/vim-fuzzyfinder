@@ -129,19 +129,19 @@ endfunction
 
 "
 function fuf#openBuffer(bufNr, mode, reuse)
-  if a:reuse && ((a:mode == s:OPEN_MODE_SPLIT &&
+  if a:reuse && ((a:mode == s:OPEN_TYPE_SPLIT &&
         \         s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)) ||
-        \        (a:mode == s:OPEN_MODE_VSPLIT &&
+        \        (a:mode == s:OPEN_TYPE_VSPLIT &&
         \         s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)) ||
-        \        (a:mode == s:OPEN_MODE_TAB &&
+        \        (a:mode == s:OPEN_TYPE_TAB &&
         \         s:moveToWindowOfBufferInOtherTabPage(a:bufNr)))
     return
   endif
   execute printf({
-        \   s:OPEN_MODE_CURRENT : ':%sbuffer'           ,
-        \   s:OPEN_MODE_SPLIT   : ':%ssbuffer'          ,
-        \   s:OPEN_MODE_VSPLIT  : ':vertical :%ssbuffer',
-        \   s:OPEN_MODE_TAB     : ':tab :%ssbuffer'     ,
+        \   s:OPEN_TYPE_CURRENT : ':%sbuffer'           ,
+        \   s:OPEN_TYPE_SPLIT   : ':%ssbuffer'          ,
+        \   s:OPEN_TYPE_VSPLIT  : ':vertical :%ssbuffer',
+        \   s:OPEN_TYPE_TAB     : ':tab :%ssbuffer'     ,
         \ }[a:mode], a:bufNr)
 endfunction
 
@@ -152,10 +152,10 @@ function fuf#openFile(path, mode, reuse)
     call fuf#openBuffer(bufNr, a:mode, a:reuse)
   else
     execute {
-          \   s:OPEN_MODE_CURRENT : ':edit '   ,
-          \   s:OPEN_MODE_SPLIT   : ':split '  ,
-          \   s:OPEN_MODE_VSPLIT  : ':vsplit ' ,
-          \   s:OPEN_MODE_TAB     : ':tabedit ',
+          \   s:OPEN_TYPE_CURRENT : ':edit '   ,
+          \   s:OPEN_TYPE_SPLIT   : ':split '  ,
+          \   s:OPEN_TYPE_VSPLIT  : ':vsplit ' ,
+          \   s:OPEN_TYPE_TAB     : ':tabedit ',
           \ }[a:mode] . fnameescape(fnamemodify(a:path, ':~:.'))
   endif
 endfunction
@@ -163,10 +163,10 @@ endfunction
 "
 function fuf#openTag(tag, mode)
   execute {
-        \   s:OPEN_MODE_CURRENT : ':tjump '           ,
-        \   s:OPEN_MODE_SPLIT   : ':stjump '          ,
-        \   s:OPEN_MODE_VSPLIT  : ':vertical :stjump ',
-        \   s:OPEN_MODE_TAB     : ':tab :stjump '     ,
+        \   s:OPEN_TYPE_CURRENT : ':tjump '           ,
+        \   s:OPEN_TYPE_SPLIT   : ':stjump '          ,
+        \   s:OPEN_TYPE_VSPLIT  : ':vertical :stjump ',
+        \   s:OPEN_TYPE_TAB     : ':tab :stjump '     ,
         \ }[a:mode] . a:tag
 endfunction
 
@@ -286,10 +286,10 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   augroup END
   " local mapping
   for [key, func] in [
-        \   [ g:fuf_keyOpen       , 'onCr(' . s:OPEN_MODE_CURRENT . ', 0)' ],
-        \   [ g:fuf_keyOpenSplit  , 'onCr(' . s:OPEN_MODE_SPLIT   . ', 0)' ],
-        \   [ g:fuf_keyOpenVsplit , 'onCr(' . s:OPEN_MODE_VSPLIT  . ', 0)' ],
-        \   [ g:fuf_keyOpenTabpage, 'onCr(' . s:OPEN_MODE_TAB     . ', 0)' ],
+        \   [ g:fuf_keyOpen       , 'onCr(' . s:OPEN_TYPE_CURRENT . ', 0)' ],
+        \   [ g:fuf_keyOpenSplit  , 'onCr(' . s:OPEN_TYPE_SPLIT   . ', 0)' ],
+        \   [ g:fuf_keyOpenVsplit , 'onCr(' . s:OPEN_TYPE_VSPLIT  . ', 0)' ],
+        \   [ g:fuf_keyOpenTabpage, 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
         \   [ '<BS>'              , 'onBs()'                               ],
         \   [ '<C-h>'             , 'onBs()'                               ],
         \   [ g:fuf_keyNextMode   , 'onSwitchMode(+1)'                     ],
@@ -374,10 +374,10 @@ endfunction
 let s:INFO_FILE_VERSION_LINE = "VERSION\t300"
 let s:PATH_SEPARATOR = (!&shellslash && (has('win32') || has('win64')) ? '\' : '/')
 let s:ABBR_SNIP_MASK = '...'
-let s:OPEN_MODE_CURRENT = 1
-let s:OPEN_MODE_SPLIT   = 2
-let s:OPEN_MODE_VSPLIT  = 3
-let s:OPEN_MODE_TAB     = 4
+let s:OPEN_TYPE_CURRENT = 1
+let s:OPEN_TYPE_SPLIT   = 2
+let s:OPEN_TYPE_VSPLIT  = 3
+let s:OPEN_TYPE_TAB     = 4
 
 " wildcard -> regexp
 function s:convertWildcardToRegexp(expr)
@@ -872,10 +872,10 @@ function s:handlerBase.onInsertLeave()
 endfunction
 
 "
-function s:handlerBase.onCr(typeOpen, fCheckDir)
+function s:handlerBase.onCr(openType, fCheckDir)
   if pumvisible()
-    call feedkeys(printf("\<C-y>\<C-r>=fuf#getRunningHandler().onCr(%d, 1) ? '' : ''\<CR>",
-          \       a:typeOpen), 'n')
+    call feedkeys(printf("\<C-y>\<C-r>=fuf#getRunningHandler().onCr(%d, %d) ? '' : ''\<CR>",
+          \              a:openType, self.targetsPath()), 'n')
     return
   endif
   if !empty(self.lastPattern)
@@ -884,7 +884,7 @@ function s:handlerBase.onCr(typeOpen, fCheckDir)
   if a:fCheckDir && getline('.') =~ '[/\\]$'
     return
   endif
-  let s:reservedCommand = [self.removePrompt(getline('.')), a:typeOpen]
+  let s:reservedCommand = [self.removePrompt(getline('.')), a:openType]
   call feedkeys("\<Esc>", 'n') " stopinsert behavior is strange...
 endfunction
 
