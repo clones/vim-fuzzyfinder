@@ -269,9 +269,6 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler = fuf#{a:modeName}#createHandler(copy(s:handlerBase))
   let s:runningHandler.info = fuf#loadInfoFile(s:runningHandler.getModeName())
   let s:runningHandler.partialMatching = a:partialMatching
-  let s:runningHandler.makeRegexpPattern = function(a:partialMatching
-        \                                           ? 's:makePartialRegexpPattern'
-        \                                           : 's:makeFuzzyRegexpPattern')
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
   call s:runningHandler.onModeEnterPre()
@@ -427,7 +424,7 @@ function s:makeRefiningExpr(pattern)
 endfunction
 
 " 
-function s:makePatternSet(patternBase, forPath, makeRegexpPattern)
+function s:makePatternSet(patternBase, forPath, partialMatching)
   let patternSet = {}
   let [patternSet.raw; refinings] =
         \ split(a:patternBase, g:fuf_patternSeparator, 1)
@@ -437,8 +434,10 @@ function s:makePatternSet(patternBase, forPath, makeRegexpPattern)
   else
     let patternSet.rawPrimary = patternSet.raw
   endif
-  let primaryExpr = 'v:val.wordPrimary =~ ' .
-        \           string(a:makeRegexpPattern(patternSet.rawPrimary))
+  let rePrimary = (a:partialMatching
+        \          ? s:makePartialRegexpPattern(patternSet.rawPrimary)
+        \          : s:makeFuzzyRegexpPattern  (patternSet.rawPrimary))
+  let primaryExpr = 'v:val.wordPrimary =~ ' . string(rePrimary)
   let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
   let patternSet.filteringExpr = join([primaryExpr] + refiningExprs, ' && ')
   return patternSet
@@ -794,7 +793,7 @@ function s:handlerBase.complete(findstart, base)
   call s:highlightPrompt(self.getPrompt())
   let result = []
   for patternBase in s:expandAbbrevMap(self.removePrompt(a:base), g:fuf_abbrevMap)
-    let patternSet = s:makePatternSet(patternBase, self.targetsPath(), self.makeRegexpPattern)
+    let patternSet = s:makePatternSet(patternBase, self.targetsPath(), self.partialMatching)
     let result += self.onComplete(patternSet)
     if len(result) > g:fuf_enumeratingLimit
       let result = result[ : g:fuf_enumeratingLimit - 1]
