@@ -5,7 +5,10 @@
 "=============================================================================
 " LOAD GUARD {{{1
 
-if exists('g:loaded_fuf') || v:version < 702
+if exists('g:loaded_fuf')
+  finish
+elseif v:version < 702
+  echoerr 'FuzzyFinder does not support this version of vim (' . v:version . ').'
   finish
 endif
 let g:loaded_fuf = 1
