@@ -952,6 +952,7 @@ CHANGELOG                                                      *fuf-changelog*
   - Added new feature which deletes selected bookmark with FuzzyFinder and
     g:fuf_bookmark_keyDelete option.
   - Changed default values of g:fuf_keyPrevPattern.
+  - Changed to show error message when incompatible with a installed vim.
 
 3.2:
   - Added g:fuf_promptHighlight option to integrate such options for each
