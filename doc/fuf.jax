@@ -89,6 +89,8 @@ ZIPファイルをランタイムディレクトリに展開します。
         |:FufBookmark|   - Bookmark モード (|fuf-bookmark-mode|)
         |:FufTag|        - Tag モード (|fuf-tag-mode|)
         |:FufTaggedFile| - Tagged-File モード (|fuf-taggedfile-mode|)
+        |:FufJumpList|   - Jump-List モード (|fuf-jumplist-mode|)
+        |:FufChangeList| - Change-List モード (|fuf-changelist-mode|)
 
 これらのコマンドを押しやすいキーにマッピングすることを推奨します。
 
@@ -189,6 +191,18 @@ Tagged-File モード ~
 
 このモードはタグファイルに含まれるファイルを選択して開くインターフェースを提供
 します。
+
+                                                           *fuf-jumplist-mode*
+Jump-List モード ~
+
+このモードは|jumplist|から選択した位置へジャンプするインターフェースを提供しま
+す。
+
+                                                         *fuf-changelist-mode*
+Change-List モード ~
+
+このモードは|changelist|から選択した位置へジャンプするインターフェースを提供し
+ます。
 
                                                           *fuf-givenfile-mode*
 Given-File モード ~
@@ -566,6 +580,24 @@ See also: |fuf-vimrc-sample|
 
         FuzzyFinder 起動後に {pattern} が挿入されます。
 
+                                                                *:FufJumpList*
+:FufJumpList [{pattern}]
+        Jump-List モードを起動します。
+
+        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
+        うになります。
+
+        FuzzyFinder 起動後に {pattern} が挿入されます。
+
+                                                              *:FufChangeList*
+:FufChangeList [{pattern}]
+        Change-List モードを起動します。
+
+        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
+        うになります。
+
+        FuzzyFinder 起動後に {pattern} が挿入されます。
+
                                                                 *:FufEditInfo*
 :FufEditInfo
         情報ファイルを編集するためのバッファを開きます。詳しくは
@@ -768,7 +800,7 @@ Directory モード用 ~
 Mru-File モード用 ~
 
                                                      *g:fuf_mrufile_prompt*  >
-  let g:fuf_mrufile_prompt = '>MruFile>'
+  let g:fuf_mrufile_prompt = '>Mru-File>'
 <
         プロンプト文字列。
 
@@ -792,7 +824,7 @@ Mru-File モード用 ~
 Mru-Cmd モード用 ~
 
                                                       *g:fuf_mrucmd_prompt*  >
-  let g:fuf_mrucmd_prompt = '>MruCmd>'
+  let g:fuf_mrucmd_prompt = '>Mru-Cmd>'
 <
         プロンプト文字列。
 
@@ -855,12 +887,40 @@ Tag モード用 ~
 Tagged-File モード用 ~
 
                                                   *g:fuf_taggedfile_prompt*  >
-  let g:fuf_taggedfile_prompt = '>TaggedFile>'
+  let g:fuf_taggedfile_prompt = '>Tagged-File>'
 <
         プロンプト文字列。
 
                                              *g:fuf_taggedfile_switchOrder*  >
   let g:fuf_taggedfile_switchOrder = 80
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
+                                               *fuf-options-for-jumplist-mode*
+Jump-List モード用 ~
+
+                                                    *g:fuf_jumplist_prompt*  >
+  let g:fuf_jumplist_prompt = '>Jump-List>'
+<
+        プロンプト文字列。
+
+                                               *g:fuf_jumplist_switchOrder*  >
+  let g:fuf_jumplist_switchOrder = 90
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
+                                             *fuf-options-for-changelist-mode*
+Change-List モード用 ~
+
+                                                  *g:fuf_changelist_prompt*  >
+  let g:fuf_changelist_prompt = '>Change-List>'
+<
+        プロンプト文字列。
+
+                                             *g:fuf_changelist_switchOrder*  >
+  let g:fuf_changelist_switchOrder = 100
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -891,6 +951,8 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-f>t     :FufTag!<CR>
   noremap  <silent> g]         :FufTagWithCursorWord!<CR>
   nnoremap <silent> <C-f><C-f> :FufTaggedFile<CR>
+  nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
+  nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
   nnoremap <silent> <C-f><C-e> :FufEditInfo<CR>
