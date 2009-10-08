@@ -138,10 +138,10 @@ function fuf#openBuffer(bufNr, mode, reuse)
     return
   endif
   execute printf({
-        \   s:OPEN_TYPE_CURRENT : ':%sbuffer'           ,
-        \   s:OPEN_TYPE_SPLIT   : ':%ssbuffer'          ,
-        \   s:OPEN_TYPE_VSPLIT  : ':vertical :%ssbuffer',
-        \   s:OPEN_TYPE_TAB     : ':tab :%ssbuffer'     ,
+        \   s:OPEN_TYPE_CURRENT : '%sbuffer'          ,
+        \   s:OPEN_TYPE_SPLIT   : '%ssbuffer'         ,
+        \   s:OPEN_TYPE_VSPLIT  : 'vertical %ssbuffer',
+        \   s:OPEN_TYPE_TAB     : 'tab %ssbuffer'     ,
         \ }[a:mode], a:bufNr)
 endfunction
 
@@ -152,10 +152,10 @@ function fuf#openFile(path, mode, reuse)
     call fuf#openBuffer(bufNr, a:mode, a:reuse)
   else
     execute {
-          \   s:OPEN_TYPE_CURRENT : ':edit '   ,
-          \   s:OPEN_TYPE_SPLIT   : ':split '  ,
-          \   s:OPEN_TYPE_VSPLIT  : ':vsplit ' ,
-          \   s:OPEN_TYPE_TAB     : ':tabedit ',
+          \   s:OPEN_TYPE_CURRENT : 'edit '   ,
+          \   s:OPEN_TYPE_SPLIT   : 'split '  ,
+          \   s:OPEN_TYPE_VSPLIT  : 'vsplit ' ,
+          \   s:OPEN_TYPE_TAB     : 'tabedit ',
           \ }[a:mode] . fnameescape(fnamemodify(a:path, ':~:.'))
   endif
 endfunction
@@ -163,11 +163,21 @@ endfunction
 "
 function fuf#openTag(tag, mode)
   execute {
-        \   s:OPEN_TYPE_CURRENT : ':tjump '           ,
-        \   s:OPEN_TYPE_SPLIT   : ':stjump '          ,
-        \   s:OPEN_TYPE_VSPLIT  : ':vertical :stjump ',
-        \   s:OPEN_TYPE_TAB     : ':tab :stjump '     ,
+        \   s:OPEN_TYPE_CURRENT : 'tjump '          ,
+        \   s:OPEN_TYPE_SPLIT   : 'stjump '         ,
+        \   s:OPEN_TYPE_VSPLIT  : 'vertical stjump ',
+        \   s:OPEN_TYPE_TAB     : 'tab stjump '     ,
         \ }[a:mode] . a:tag
+endfunction
+
+"
+function fuf#prejump(mode)
+  execute {
+        \   s:OPEN_TYPE_CURRENT : ''         ,
+        \   s:OPEN_TYPE_SPLIT   : 'split'    ,
+        \   s:OPEN_TYPE_VSPLIT  : 'vsplit'   ,
+        \   s:OPEN_TYPE_TAB     : 'tab split',
+        \ }[a:mode] 
 endfunction
 
 "
