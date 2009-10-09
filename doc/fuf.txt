@@ -11,7 +11,7 @@ MODES                           |fuf-modes|
 DETAILED TOPICS                 |fuf-detailed-topics|
 COMMANDS                        |fuf-commands|
 OPTIONS                         |fuf-options|
-VIMRC EXAMPLE                   |fuf-vimrc-sample|
+VIMRC EXAMPLE                   |fuf-vimrc-example|
 SPECIAL THANKS                  |fuf-thanks|
 CHANGELOG                       |fuf-changelog|
 ABOUT                           |fuf-about|
@@ -52,6 +52,7 @@ FuzzyFinder can search:
         - files which are included in current tagfiles
         - jump list
         - change list
+        - quickfix
 
 FuzzyFinder also provides APIs to use its system of searching files or
 selecting items.
@@ -95,6 +96,7 @@ You can launch FuzzyFinder by following commands:
         |:FufTaggedFile| - Tagged-File mode (|fuf-taggedfile-mode|)
         |:FufJumpList|   - Jump-List mode (|fuf-jumplist-mode|)
         |:FufChangeList| - Change-List mode (|fuf-changelist-mode|)
+        |:FufQuickfix|   - Quickfix mode (|fuf-quickfix-mode|)
 
 It is recommended to map these commands.
 
@@ -205,14 +207,20 @@ in current tagfiles and open it.
                                                            *fuf-jumplist-mode*
 Jump-List mode ~
 
-This mode provides an interface to select one from the |jumplist| and jump to
-the position.
+This mode provides an interface to select one from the |jumplist| of the
+current window and jump to the position.
 
                                                          *fuf-changelist-mode*
 Change-List mode ~
 
-This mode provides an interface to select one from the |changelist| and jump
-to the position.
+This mode provides an interface to select one from the |changelist| of the
+current buffer and jump to the position.
+
+                                                           *fuf-quickfix-mode*
+Quickfix mode ~
+
+This mode provides an interface to select one from the |quickfix| list and
+jump to the position.
 
                                                           *fuf-givenfile-mode*
 Given-File mode ~
@@ -511,7 +519,7 @@ Migemo is a search method for Japanese language.
 ==============================================================================
 COMMANDS                                                        *fuf-commands*
 
-See also: |fuf-vimrc-sample|
+See also: |fuf-vimrc-example|
 
                                                                   *:FufBuffer*
 :FufBuffer[!] [{pattern}]
@@ -621,6 +629,15 @@ See also: |fuf-vimrc-sample|
                                                               *:FufChangeList*
 :FufChangeList[!] [{pattern}]
         Launchs Change-List mode.
+
+        If a command was executed with a ! modifier, it does a partial
+        matching instead of a fuzzy matching.
+
+        {pattern} will be inserted after launching FuzzyFinder.
+
+                                                                *:FufQuickfix*
+:FufQuickfix[!] [{pattern}]
+        Launchs Quickfix mode.
 
         If a command was executed with a ! modifier, it does a partial
         matching instead of a fuzzy matching.
@@ -964,9 +981,23 @@ For Change-List Mode ~
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
+                                             *fuf-options-for-quickfix-mode*
+For Quickfix Mode ~
+
+                                                  *g:fuf_quickfix_prompt*  >
+  let g:fuf_quickfix_prompt = '>Quickfix>'
+<
+        Prompt string.
+
+                                             *g:fuf_quickfix_switchOrder*  >
+  let g:fuf_quickfix_switchOrder = 110
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
+
 
 ==============================================================================
-VIMRC EXAMPLE                                               *fuf-vimrc-sample*
+VIMRC EXAMPLE                                              *fuf-vimrc-example*
 
 >
   let g:fuf_modesDisable = []
@@ -992,6 +1023,7 @@ VIMRC EXAMPLE                                               *fuf-vimrc-sample*
   nnoremap <silent> <C-f><C-f> :FufTaggedFile<CR>
   nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
   nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
+  nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
   nnoremap <silent> <C-f><C-e> :FufEditInfo<CR>
@@ -1013,8 +1045,8 @@ SPECIAL THANKS                                                    *fuf-thanks*
 CHANGELOG                                                      *fuf-changelog*
 
 3.3:
-  - Added Jump-List mode and Change-List mode which enable jumps with jump
-    list and change list.
+  - Added Jump-List mode, Change-List mode, and Quickfix mode which enable
+    jumps with jump list, change list, and quickfix list.
   - Added new feature which deletes selected bookmark with FuzzyFinder and
     g:fuf_bookmark_keyDelete option.
   - Changed default values of g:fuf_keyPrevPattern.
