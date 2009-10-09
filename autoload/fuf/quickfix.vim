@@ -111,8 +111,8 @@ endfunction
 function s:handler.onModeEnterPost()
   let self.items = getqflist()
   call map(self.items, 's:makeItem(v:val)')
-  call filter(self.items, '!empty(v:val)')
   call fuf#mapToSetSerialIndex(self.items, 1)
+  call filter(self.items, 'exists("v:val.word")')
   call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
 endfunction
 
