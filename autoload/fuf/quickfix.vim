@@ -4,37 +4,37 @@
 "=============================================================================
 " LOAD GUARD {{{1
 
-if exists('g:loaded_autoload_fuf_changelist') || v:version < 702
+if exists('g:loaded_autoload_fuf_quickfix') || v:version < 702
   finish
 endif
-let g:loaded_autoload_fuf_changelist = 1
+let g:loaded_autoload_fuf_quickfix = 1
 
 " }}}1
 "=============================================================================
 " GLOBAL FUNCTIONS {{{1
 
 "
-function fuf#changelist#createHandler(base)
+function fuf#quickfix#createHandler(base)
   return a:base.concretize(copy(s:handler))
 endfunction
 
 "
-function fuf#changelist#getSwitchOrder()
-  return g:fuf_changelist_switchOrder
+function fuf#quickfix#getSwitchOrder()
+  return g:fuf_quickfix_switchOrder
 endfunction
 
 "
-function fuf#changelist#renewCache()
+function fuf#quickfix#renewCache()
 endfunction
 
 "
-function fuf#changelist#requiresOnCommandPre()
+function fuf#quickfix#requiresOnCommandPre()
   return 0
 endfunction
 
 "
-function fuf#changelist#onInit()
-  call fuf#defineLaunchCommand('FufChangeList', s:MODE_NAME, '""')
+function fuf#quickfix#onInit()
+  call fuf#defineLaunchCommand('FufQuickfix', s:MODE_NAME, '""')
 endfunction
 
 " }}}1
@@ -44,36 +44,27 @@ endfunction
 let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
-function s:getChangesLines()
+function s:getJumpsLines()
   redir => result
-  :silent changes
+  :silent jumps
   redir END
   return split(result, "\n")
 endfunction
 
 "
-function s:parseChangesLine(line)
-  " return matchlist(a:line, '^\(.\)\s\+\(\d\+\)\s\(.*\)$')
-  let elements = matchlist(a:line, '\v^(.)\s*(\d+)\s+(\d+)\s+(\d+)\s*(.*)$')
-  if empty(elements)
-    return {}
-  endif
-  return  {
-        \   'prefix': elements[1],
-        \   'count' : elements[2],
-        \   'text'  : printf('|%d:%d|%s', elements[3], elements[4], elements[5]),
-        \ }
+function s:parseJumpsLine(line)
+  return matchlist(a:line, '^\(.\)\s\+\(\d\+\)\s\(.*\)$')
 endfunction
 
 "
-function s:makeItem(line)
-  let parsed = s:parseChangesLine(a:line)
-  if empty(parsed)
+function s:makeItem(qfItem)
+  if !a:qfItem.valid
     return {}
   endif
-  let item = fuf#makeNonPathItem(parsed.text, '')
-  let item.abbrPrefix = parsed.prefix
-  return item
+  return fuf#makeNonPathItem(
+        \ printf('%s|%d:%d|%s', bufname(a:qfItem.bufnr), a:qfItem.lnum,
+        \        a:qfItem.col, matchstr(a:qfItem.text, '\s*\zs.*\S'))
+        \ , '')
 endfunction
 
 " }}}1
@@ -89,7 +80,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_changelist_prompt
+  return g:fuf_quickfix_prompt
 endfunction
 
 "
@@ -106,31 +97,21 @@ endfunction
 "
 function s:handler.onOpen(expr, mode)
   call fuf#prejump(a:mode)
-  let older = 0
-  for line in reverse(s:getChangesLines())
-    if stridx(line, '>') == 0
-      let older = 1
-    endif
-    let elements = s:parseChangesLine(line)
-    if !empty(elements) && elements[3] ==# a:expr
-      if elements[2] != 0
-        execute 'normal! ' . elements[2] . (older ? 'g;' : 'g,') . 'zvzz'
-      endif
-      break
-    endif
-  endfor
+  call filter(self.items, 'v:val.word ==# a:expr')
+  if !empty(self.items)
+    execute 'cc ' . self.items[0].index
+  endif
 endfunction
 
 "
 function s:handler.onModeEnterPre()
-  let self.items = s:getChangesLines()
 endfunction
 
 "
 function s:handler.onModeEnterPost()
+  let self.items = getqflist()
   call map(self.items, 's:makeItem(v:val)')
   call filter(self.items, '!empty(v:val)')
-  call reverse(self.items)
   call fuf#mapToSetSerialIndex(self.items, 1)
   call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
 endfunction

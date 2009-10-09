@@ -11,7 +11,7 @@ FuzzyFinder                                                *fuzzyfinder* *fuf*
 詳細なトピック                  |fuf-detailed-topics|
 コマンド                        |fuf-commands|
 オプション                      |fuf-options|
-VIMRC の例                      |fuf-vimrc-sample|
+VIMRC の例                      |fuf-vimrc-example|
 SPECIAL THANKS                  |fuf-thanks|
 CHANGELOG                       |fuf-changelog|
 あばうと                        |fuf-about|
@@ -91,6 +91,7 @@ ZIPファイルをランタイムディレクトリに展開します。
         |:FufTaggedFile| - Tagged-File モード (|fuf-taggedfile-mode|)
         |:FufJumpList|   - Jump-List モード (|fuf-jumplist-mode|)
         |:FufChangeList| - Change-List モード (|fuf-changelist-mode|)
+        |:FufQuickfix|   - Quickfix モード (|fuf-quickfix-mode|)
 
 これらのコマンドを押しやすいキーにマッピングすることを推奨します。
 
@@ -195,14 +196,20 @@ Tagged-File モード ~
                                                            *fuf-jumplist-mode*
 Jump-List モード ~
 
-このモードは|jumplist|から選択した位置へジャンプするインターフェースを提供しま
-す。
+このモードはカレントウィンドウの|jumplist|から選択した位置へジャンプするインタ
+ーフェースを提供します。
 
                                                          *fuf-changelist-mode*
 Change-List モード ~
 
-このモードは|changelist|から選択した位置へジャンプするインターフェースを提供し
-ます。
+このモードはカレントバッファの|changelist|から選択した位置へジャンプするインタ
+ーフェースを提供します。
+
+                                                         *fuf-quickfix-mode*
+Quickfix モード ~
+
+このモードは|quickfix|リストから選択した位置へジャンプするインターフェースを提
+供します。
 
                                                           *fuf-givenfile-mode*
 Given-File モード ~
@@ -482,7 +489,7 @@ Migemo とは ~
 ==============================================================================
 コマンド                                                        *fuf-commands*
 
-See also: |fuf-vimrc-sample|
+See also: |fuf-vimrc-example|
 
                                                                   *:FufBuffer*
 :FufBuffer [{pattern}]
@@ -592,6 +599,15 @@ See also: |fuf-vimrc-sample|
                                                               *:FufChangeList*
 :FufChangeList [{pattern}]
         Change-List モードを起動します。
+
+        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
+        うになります。
+
+        FuzzyFinder 起動後に {pattern} が挿入されます。
+
+                                                                *:FufQuickfix*
+:FufQuickfix [{pattern}]
+        Quickfix モードを起動します。
 
         ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
         うになります。
@@ -925,6 +941,20 @@ Change-List モード用 ~
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
 
+                                             *fuf-options-for-quickfix-mode*
+Quickfix モード用 ~
+
+                                                  *g:fuf_quickfix_prompt*  >
+  let g:fuf_quickfix_prompt = '>Quickfix>'
+<
+        プロンプト文字列。
+
+                                             *g:fuf_quickfix_switchOrder*  >
+  let g:fuf_quickfix_switchOrder = 110
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
 
 ==============================================================================
 vimrc の例                                                 *fuf-vimrc-example*
@@ -953,6 +983,7 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-f><C-f> :FufTaggedFile<CR>
   nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
   nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
+  nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
   nnoremap <silent> <C-f><C-e> :FufEditInfo<CR>

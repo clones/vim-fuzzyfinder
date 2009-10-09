@@ -23,7 +23,7 @@ function s:initialize()
   call s:defineOption('g:fuf_modes'  , [
         \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
         \   'bookmark', 'tag', 'taggedfile',
-        \   'jumplist', 'changelist',
+        \   'jumplist', 'changelist', 'quickfix',
         \   'givenfile', 'givendir', 'givencmd',
         \   'callbackfile', 'callbackitem',
         \ ])
@@ -87,6 +87,9 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_changelist_prompt'     , '>Change-List>')
   call s:defineOption('g:fuf_changelist_switchOrder', 100)
+  "---------------------------------------------------------------------------
+  call s:defineOption('g:fuf_quickfix_prompt'     , '>Quickfix>')
+  call s:defineOption('g:fuf_quickfix_switchOrder', 110)
   "---------------------------------------------------------------------------
   call filter(g:fuf_modes, 'count(g:fuf_modesDisable, v:val) == 0')
   for m in g:fuf_modes
