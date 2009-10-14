@@ -111,10 +111,10 @@ function s:handler.onOpen(expr, mode)
     if stridx(line, '>') == 0
       let older = 1
     endif
-    let elements = s:parseChangesLine(line)
-    if !empty(elements) && elements[3] ==# a:expr
-      if elements[2] != 0
-        execute 'normal! ' . elements[2] . (older ? 'g;' : 'g,') . 'zvzz'
+    let parsed = s:parseChangesLine(line)
+    if !empty(parsed) && parsed.text ==# a:expr
+      if parsed.count != 0
+        execute 'normal! ' . parsed.count . (older ? 'g;' : 'g,') . 'zvzz'
       endif
       break
     endif
