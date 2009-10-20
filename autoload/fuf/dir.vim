@@ -83,6 +83,11 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   let items = s:enumItems(fuf#splitPath(a:patternSet.raw).head)
   return fuf#filterMatchesAndMapToSetRanks(
@@ -90,8 +95,8 @@ function s:handler.onComplete(patternSet)
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
-  execute ':cd ' . fnameescape(a:expr)
+function s:handler.onOpen(word, mode)
+  execute ':cd ' . fnameescape(a:word)
 endfunction
 
 "

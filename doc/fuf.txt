@@ -1044,6 +1044,9 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
+3.4: TODO
+  - Added new feature which makes it possible to preview selected item.
+
 3.3:
   - Added Jump-List mode, Change-List mode, and Quickfix mode which enable
     jumps with jump list, change list, and quickfix list.

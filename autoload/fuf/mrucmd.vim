@@ -82,16 +82,21 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
         \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
-  call s:updateInfo(a:expr)
-  call histadd(a:expr[0], a:expr[1:])
-  call feedkeys(a:expr . "\<CR>", 'n')
+function s:handler.onOpen(word, mode)
+  call s:updateInfo(a:word)
+  call histadd(a:word[0], a:word[1:])
+  call feedkeys(a:word . "\<CR>", 'n')
 endfunction
 
 "

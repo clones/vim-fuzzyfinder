@@ -82,14 +82,19 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
         \ s:items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
-  call s:listener.onComplete(a:expr, a:mode)
+function s:handler.onOpen(word, mode)
+  call s:listener.onComplete(a:word, a:mode)
 endfunction
 
 "

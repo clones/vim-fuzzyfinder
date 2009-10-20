@@ -93,6 +93,14 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  if !filereadable(expand(a:word))
+    return []
+  endif
+  return readfile(expand(a:word), '', g:fuf_previewHeight)
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   let items = s:enumNonCurrentItems(
         \ fuf#splitPath(a:patternSet.raw).head, self.bufNrPrev, self.cache)
@@ -101,8 +109,8 @@ function s:handler.onComplete(patternSet)
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
-  call fuf#openFile(a:expr, a:mode, g:fuf_reuseWindow)
+function s:handler.onOpen(word, mode)
+  call fuf#openFile(a:word, a:mode, g:fuf_reuseWindow)
 endfunction
 
 "
