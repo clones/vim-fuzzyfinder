@@ -89,15 +89,20 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
         \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
+function s:handler.onOpen(word, mode)
   call fuf#prejump(a:mode)
-  call filter(self.items, 'v:val.word ==# a:expr')
+  call filter(self.items, 'v:val.word ==# a:word')
   if !empty(self.items)
     execute 'cc ' . self.items[0].index
   endif

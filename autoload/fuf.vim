@@ -285,6 +285,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   call s:activateFufBuffer()
   call s:setTemporaryGlobalOption('completeopt', 'menuone')
   call s:setTemporaryGlobalOption('ignorecase', g:fuf_ignoreCase)
+  call s:setTemporaryGlobalOption('cmdheight', g:fuf_previewHeight + 1)
   " local autocommands
   augroup FuzzyfinderLocal
     autocmd!
@@ -299,6 +300,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \   [ g:fuf_keyOpenTabpage, 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
         \   [ '<BS>'              , 'onBs()'                               ],
         \   [ '<C-h>'             , 'onBs()'                               ],
+        \   [ g:fuf_keyPreview    , 'onPreviewBase()'                      ],
         \   [ g:fuf_keyNextMode   , 'onSwitchMode(+1)'                     ],
         \   [ g:fuf_keyPrevMode   , 'onSwitchMode(-1)'                     ],
         \   [ g:fuf_keyPrevPattern, 'onRecallPattern(+1)'                  ],
@@ -311,6 +313,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   call setline(1, s:runningHandler.getPrompt() . a:initialPattern)
   call s:runningHandler.onModeEnterPost()
   call feedkeys("A", 'n') " startinsert! does not work in InsertLeave event handler
+  redraw
 endfunction
 
 "
@@ -765,7 +768,7 @@ let s:handlerBase = {}
 " s:handler.onComplete(patternSet)
 " 
 " "
-" s:handler.onOpen(expr, mode)
+" s:handler.onOpen(word, mode)
 " 
 " " Before entering FuzzyFinder buffer. This function should return in a short time.
 " s:handler.onModeEnterPre()
@@ -816,6 +819,7 @@ function s:handlerBase.complete(findstart, base)
   else
     call sort(result, 'fuf#compareRanks')
     call feedkeys("\<C-p>\<Down>", 'n')
+    let self.lastFirstWord = result[0].word
   endif
   return result
 endfunction
@@ -913,6 +917,23 @@ function s:handlerBase.onBs()
     let numBs = 1
   endif
   call feedkeys((pumvisible() ? "\<C-e>" : "") . repeat("\<BS>", numBs), 'n')
+endfunction
+
+"
+function s:handlerBase.onPreviewBase()
+  if g:fuf_previewHeight <= 0
+    return
+  elseif !pumvisible()
+    return
+  elseif !self.existsPrompt(getline('.'))
+    let lines = self.makePreviewLines(self.removePrompt(getline('.')))
+  elseif !exists('self.lastFirstWord')
+    return
+  else
+    let lines = self.makePreviewLines(self.lastFirstWord)
+  endif
+  redraw
+  echo join(lines[: g:fuf_previewHeight - 1], "\n")
 endfunction
 
 "

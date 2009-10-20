@@ -132,21 +132,26 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
         \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
+function s:handler.onOpen(word, mode)
   if a:mode == s:OPEN_TYPE_DELETE
-    call filter(self.info.data, 'v:val.word !=# a:expr')
+    call filter(self.info.data, 'v:val.word !=# a:word')
     call fuf#saveInfoFile(s:MODE_NAME, self.info)
     call fuf#launch(s:MODE_NAME, self.lastPattern, self.partialMatching)
     return
   elseif
     for item in self.info.data
-      if item.word ==# a:expr
+      if item.word ==# a:word
         call s:jumpToBookmark(item.path, a:mode, item.pattern, item.lnum)
         break
       endif

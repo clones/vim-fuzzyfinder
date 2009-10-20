@@ -109,17 +109,36 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  let bufNr = s:getBufNrFromItems(self.items, a:word)
+  if bufNr >= 0
+    return getbufline(bufNr, 1, 10)
+  endif
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
         \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
-  " filter the selected item to get the buffer number for handling unnamed buffer
-  call filter(self.items, 'v:val.word ==# a:expr')
-  if !empty(self.items)
-    call fuf#openBuffer(self.items[0].bufNr, a:mode, g:fuf_reuseWindow)
+function s:getBufNrFromItems(items, word)
+  " not use bufnr() in order to handle unnamed buffer
+  for item in a:items
+    if item.word ==# a:word
+      return item.bufNr
+    endif
+  endfor
+  return -1
+endfunction
+
+"
+function s:handler.onOpen(word, mode)
+  let bufNr = s:getBufNrFromItems(self.items, a:word)
+  if bufNr >= 0
+    call fuf#openBuffer(bufNr, a:mode, g:fuf_reuseWindow)
   endif
 endfunction
 

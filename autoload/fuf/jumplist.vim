@@ -106,13 +106,18 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   return fuf#filterMatchesAndMapToSetRanks(
         \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
+function s:handler.onOpen(word, mode)
   call fuf#prejump(a:mode)
   let older = 0
   for line in reverse(s:getJumpsLines())
@@ -120,7 +125,7 @@ function s:handler.onOpen(expr, mode)
       let older = 1
     endif
     let parsed = s:parseJumpsLine(line, self.bufNrPrev)
-    if !empty(parsed) && parsed.text ==# a:expr
+    if !empty(parsed) && parsed.text ==# a:word
       if parsed.count != 0
         execute 'normal! ' . parsed.count . (older ? "\<C-o>" : "\<C-i>") . 'zvzz'
       endif

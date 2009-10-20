@@ -90,6 +90,11 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePreviewLines(word)
+  return []
+endfunction
+
+"
 function s:handler.onComplete(patternSet)
   let items = s:enumTags(self.tagFiles)
   return fuf#filterMatchesAndMapToSetRanks(
@@ -97,8 +102,8 @@ function s:handler.onComplete(patternSet)
 endfunction
 
 "
-function s:handler.onOpen(expr, mode)
-  call fuf#openTag(a:expr, a:mode)
+function s:handler.onOpen(word, mode)
+  call fuf#openTag(a:word, a:mode)
 endfunction
 
 "
