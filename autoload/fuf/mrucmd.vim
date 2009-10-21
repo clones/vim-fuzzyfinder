@@ -77,6 +77,11 @@ function s:handler.getPrompt()
 endfunction
 
 "
+function s:handler.getPreviewHeight()
+  return 0
+endfunction
+
+"
 function s:handler.targetsPath()
   return 0
 endfunction

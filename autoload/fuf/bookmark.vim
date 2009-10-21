@@ -110,6 +110,16 @@ function s:bookmarkHere(word)
   call fuf#saveInfoFile(s:MODE_NAME, info)
 endfunction
 
+"
+function s:findItem(items, word)
+  for item in a:items
+    if item.word ==# a:word
+      return item
+    endif
+  endfor
+  return {}
+endfunction
+
 " }}}1
 "=============================================================================
 " s:handler {{{1
@@ -127,13 +137,22 @@ function s:handler.getPrompt()
 endfunction
 
 "
+function s:handler.getPreviewHeight()
+  return g:fuf_previewHeight
+endfunction
+
+"
 function s:handler.targetsPath()
   return 0
 endfunction
 
 "
 function s:handler.makePreviewLines(word)
-  return []
+  let item = s:findItem(self.info.data, a:word)
+  if !filereadable(expand(item.path))
+    return []
+  endif
+  return readfile(expand(item.path), '', self.getPreviewHeight())
 endfunction
 
 "
@@ -149,13 +168,11 @@ function s:handler.onOpen(word, mode)
     call fuf#saveInfoFile(s:MODE_NAME, self.info)
     call fuf#launch(s:MODE_NAME, self.lastPattern, self.partialMatching)
     return
-  elseif
-    for item in self.info.data
-      if item.word ==# a:word
+  else
+    let item = s:findItem(self.info.data, a:word)
+    if !empty(item)
         call s:jumpToBookmark(item.path, a:mode, item.pattern, item.lnum)
-        break
-      endif
-    endfor
+    endif
   endif
 endfunction
 

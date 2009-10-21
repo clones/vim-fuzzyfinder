@@ -85,13 +85,21 @@ function s:handler.getPrompt()
 endfunction
 
 "
+function s:handler.getPreviewHeight()
+  return g:fuf_previewHeight
+endfunction
+
+"
 function s:handler.targetsPath()
   return 0
 endfunction
 
-"
+" 'cmd' is '/hoge' or line number
 function s:handler.makePreviewLines(word)
-  return []
+  " TODO show around the last cursor position
+  "      if only one tag is matched
+  let tags = taglist('^' . a:word . '$')
+  return map(tags, 'v:val.filename . ":\t" . v:val.cmd')
 endfunction
 
 "
