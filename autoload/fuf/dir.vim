@@ -78,13 +78,18 @@ function s:handler.getPrompt()
 endfunction
 
 "
+function s:handler.getPreviewHeight()
+  return g:fuf_previewHeight
+endfunction
+
+"
 function s:handler.targetsPath()
   return 1
 endfunction
 
 "
 function s:handler.makePreviewLines(word)
-  return []
+  return split(glob(fnamemodify(a:word, ':p') . '*'), "\n")
 endfunction
 
 "

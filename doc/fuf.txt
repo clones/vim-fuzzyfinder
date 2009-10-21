@@ -703,6 +703,12 @@ For All Modes ~
         Key mapped to select completion item or finish input and open a
         buffer/file in a new tab page.
 
+                                                         *g:fuf_keyPreview*  >
+  let g:fuf_keyPreview = '<C-@>'
+<
+
+        [TODO]
+
                                                         *g:fuf_keyNextMode*  >
   let g:fuf_keyNextMode = '<C-t>'
 <
@@ -785,6 +791,11 @@ For All Modes ~
 <
         If a length of a completion item is more than this, it is snipped in
         completion menu.
+
+                                                      *g:fuf_previewHeight*  >
+  let g:fuf_previewHeight = 5
+<
+        [TODO]
 
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0

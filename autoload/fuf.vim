@@ -113,6 +113,34 @@ function fuf#filterMatchesAndMapToSetRanks(items, patternSet, stats)
 endfunction
 
 "
+function fuf#makePreviewLinesAround(lines, lnum, maxHeight)
+  if empty(a:lines) || a:maxHeight <= 0
+    return []
+  endif
+  let beg = max([0, a:lnum - 1 - a:maxHeight / 2]) 
+  let end = min([beg + a:maxHeight, len(a:lines)])
+  let beg = max([0, end - a:maxHeight])
+  return a:lines[beg : end - 1]
+endfunction
+
+"
+function fuf#readViminfo()
+  if !exists('s:fnameViminfo')
+    let s:fnameViminfo = tempname()
+    "let lines = readfile(expand(&))
+    "call writefile(lines, expand(s:fnameViminfo))
+  endif
+  let viminfoOrig = &viminfo
+  set viminfo='1000
+  execute 'wviminfo ' . s:fnameViminfo
+  let &viminfo = viminfoOrig
+  let lines = readfile(s:fnameViminfo)
+  return lines
+  for l in lines
+  endfor
+endfunction
+
+"
 function fuf#echoWithHl(msg, hl)
   execute "echohl " . a:hl
   echo a:msg
@@ -208,7 +236,6 @@ function fuf#makePathItem(fname, menu, appendsDirSuffix)
         \ }
 endfunction
 
-"TODO
 " returns { 'word', 'wordPrimary', 'boundaries', 'menu' }
 function fuf#makeNonPathItem(word, menu)
   return {
@@ -282,10 +309,13 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
   call s:runningHandler.onModeEnterPre()
-  call s:activateFufBuffer()
   call s:setTemporaryGlobalOption('completeopt', 'menuone')
   call s:setTemporaryGlobalOption('ignorecase', g:fuf_ignoreCase)
-  call s:setTemporaryGlobalOption('cmdheight', g:fuf_previewHeight + 1)
+  if s:runningHandler.getPreviewHeight() > 0
+    call s:setTemporaryGlobalOption(
+          \ 'cmdheight', s:runningHandler.getPreviewHeight() + 1)
+  endif
+  call s:activateFufBuffer()
   " local autocommands
   augroup FuzzyfinderLocal
     autocmd!
@@ -353,7 +383,7 @@ endfunction
 "
 function fuf#editInfoFile()
   new
-  file `='[fuf-info]'`
+  silent file `='[fuf-info]'`
   let s:bufNrInfo = bufnr('%')
   setlocal filetype=vim
   setlocal bufhidden=delete
@@ -628,11 +658,11 @@ let s:bufNrFuf = -1
 function s:openFufBuffer()
   if !bufexists(s:bufNrFuf)
     topleft 1new
-    file `='[fuf]'`
+    silent file `='[fuf]'`
     let s:bufNrFuf = bufnr('%')
   elseif bufwinnr(s:bufNrFuf) == -1
     topleft 1split
-    execute s:bufNrFuf . 'buffer'
+    execute 'silent ' . s:bufNrFuf . 'buffer'
     delete _
   elseif bufwinnr(s:bufNrFuf) != bufwinnr('%')
     execute bufwinnr(s:bufNrFuf) . 'wincmd w'
@@ -921,7 +951,7 @@ endfunction
 
 "
 function s:handlerBase.onPreviewBase()
-  if g:fuf_previewHeight <= 0
+  if self.getPreviewHeight() <= 0
     return
   elseif !pumvisible()
     return
@@ -933,7 +963,7 @@ function s:handlerBase.onPreviewBase()
     let lines = self.makePreviewLines(self.lastFirstWord)
   endif
   redraw
-  echo join(lines[: g:fuf_previewHeight - 1], "\n")
+  echo join(lines[: self.getPreviewHeight() - 1], "\n")
 endfunction
 
 "

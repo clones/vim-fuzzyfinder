@@ -88,12 +88,18 @@ function s:handler.getPrompt()
 endfunction
 
 "
+function s:handler.getPreviewHeight()
+  return g:fuf_previewHeight
+endfunction
+
+"
 function s:handler.targetsPath()
   return 1
 endfunction
 
 "
 function s:handler.makePreviewLines(word)
+  " TODO show around the last cursor position
   return []
 endfunction
 
