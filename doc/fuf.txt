@@ -1057,6 +1057,9 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.4: TODO
   - Added new feature which makes it possible to preview selected item.
+  - Fixed a bug that an exclude pattern of File, Dir, and Callback-File mode
+    can't be changed.
+
 
 3.3:
   - Added Jump-List mode, Change-List mode, and Quickfix mode which enable
