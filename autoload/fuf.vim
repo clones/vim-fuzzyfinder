@@ -103,13 +103,26 @@ endfunction
 
 "
 function fuf#filterMatchesAndMapToSetRanks(items, patternSet, stats)
-  " NOTE: To know an excess, plus 1 to limit number
+  " NOTE: In order to know an excess, plus 1 to limit number
   let result = fuf#filterWithLimit(
         \ a:items, a:patternSet.filteringExpr, g:fuf_enumeratingLimit + 1)
   let patternPartial = s:makePartialRegexpPattern(a:patternSet.rawPrimary)
   let patternFuzzy   = s:makeFuzzyRegexpPattern(a:patternSet.rawPrimary)
   let boundaryMatching = (a:patternSet.rawPrimary !~ '\U')
   return map(result, 's:setRanks(v:val, patternPartial, patternFuzzy, boundaryMatching, a:stats)')
+endfunction
+
+"
+function fuf#getFileLines(fname)
+  let lines = getbufline('^' . a:fname . '$', 1, '$')
+  if !empty(lines)
+    return lines
+  endif
+  try
+    return readfile(expand(a:fname))
+  catch /.*/ 
+  endtry
+  return []
 endfunction
 
 "
@@ -121,23 +134,6 @@ function fuf#makePreviewLinesAround(lines, lnum, maxHeight)
   let end = min([beg + a:maxHeight, len(a:lines)])
   let beg = max([0, end - a:maxHeight])
   return a:lines[beg : end - 1]
-endfunction
-
-"
-function fuf#readViminfo()
-  if !exists('s:fnameViminfo')
-    let s:fnameViminfo = tempname()
-    "let lines = readfile(expand(&))
-    "call writefile(lines, expand(s:fnameViminfo))
-  endif
-  let viminfoOrig = &viminfo
-  set viminfo='1000
-  execute 'wviminfo ' . s:fnameViminfo
-  let &viminfo = viminfoOrig
-  let lines = readfile(s:fnameViminfo)
-  return lines
-  for l in lines
-  endfor
 endfunction
 
 "
