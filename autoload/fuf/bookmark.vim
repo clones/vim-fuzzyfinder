@@ -67,18 +67,22 @@ endfunction
 " a:range. if not found, jumps to a:lnum.
 function s:jumpToBookmark(path, mode, pattern, lnum)
   call fuf#openFile(a:path, a:mode, g:fuf_reuseWindow)
-  let ln = a:lnum
-  for i in range(0, g:fuf_bookmark_searchRange)
-    if a:lnum + i <= line('$') && getline(a:lnum + i) =~ a:pattern
-      let ln += i
-      break
-    elseif a:lnum - i >= 1 && getline(a:lnum - i) =~ a:pattern
-      let ln -= i
-      break
+  call cursor(s:getMatchingLineNumber(getline(1, '$'), a:pattern, a:lnum), 0)
+  normal! zvzz
+endfunction
+
+"
+function s:getMatchingLineNumber(lines, pattern, lnumBegin)
+  let l = min([a:lnumBegin, len(a:lines)])
+  for [l0, l1] in map(range(0, g:fuf_bookmark_searchRange),
+        \             '[l + v:val, l - v:val]')
+    if l0 <= len(a:lines) && a:lines[l0 - 1] =~ a:pattern
+      return l0
+    elseif l1 >= 0 && a:lines[l1 - 1] =~ a:pattern
+      return l1
     endif
   endfor
-  call cursor(ln, 0)
-  normal! zvzz
+  return l
 endfunction
 
 "
@@ -149,10 +153,12 @@ endfunction
 "
 function s:handler.makePreviewLines(word)
   let item = s:findItem(self.info.data, a:word)
-  if !filereadable(expand(item.path))
+  let lines = fuf#getFileLines(item.path)
+  if empty(lines)
     return []
   endif
-  return readfile(expand(item.path), '', self.getPreviewHeight())
+  let lnum = s:getMatchingLineNumber(lines, item.pattern, item.lnum)
+  return fuf#makePreviewLinesAround(lines, lnum, self.getPreviewHeight())
 endfunction
 
 "
