@@ -48,18 +48,18 @@ let s:OPEN_TYPE_DELETE = -1
 
 "
 function s:getSelectedText()
-  let regUN = [@", getregtype('"')]
-  let reg0  = [@0, getregtype('0')]
+  let reg_ = [@", getregtype('"')]
+  let regA = [@a, getregtype('a')]
   if mode() =~# "[vV\<C-v>]"
-    silent normal! ygv
+    silent normal! "aygv
   else
     let pos = getpos('.')
-    silent normal! gvy
+    silent normal! gv"ay
     call setpos('.', pos)
   endif
-  let text = @"
-  call setreg('"', regUN[0], regUN[1])
-  call setreg('0', reg0[0], reg0[1])
+  let text = @a
+  call setreg('"', reg_[0], reg_[1])
+  call setreg('a', regA[0], regA[1])
   return text
 endfunction
 
