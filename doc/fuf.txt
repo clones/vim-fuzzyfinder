@@ -836,7 +836,7 @@ For File Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                                        *g:fuf_file_exclude*  >
-  let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
+  let g:fuf_file_exclude = '\v\~$|\.(o|exe|bak|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -856,7 +856,7 @@ For Directory Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                                         *g:fuf_dir_exclude*  >
-  let g:fuf_dir_exclude = ''
+  let g:fuf_dir_exclude = '\v(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -876,7 +876,7 @@ For Mru-File Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                                     *g:fuf_mrufile_exclude*  >
-  let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
+  let g:fuf_mrufile_exclude = '\v\~$|\.(bak|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -1057,6 +1057,11 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.4: TODO
   - Added new feature which makes it possible to preview selected item.
+  - Changed the default values of g:fuf_file_exclude and g:fuf_dir_exclude in
+    order to ignore ".hg", ".git", and ".bzr" directories.
+  - Changed the default value of g:fuf_mrufile_exclude in order to ignore
+    network files (\\*) on Windows and ignore /mnt/* and /media/* on Unix like
+    systems.
   - Fixed a bug that an exclude pattern of File, Dir, and Callback-File mode
     can't be changed.
 
@@ -1205,7 +1210,7 @@ CHANGELOG                                                      *fuf-changelog*
   - Removed 'matching_limit' option. Use 'enumerating_limit' instead.
 
 2.13:
-  - Fixed a bug that a directory disappeared when a file in that directroy was
+  - Fixed a bug that a directory disappeared when a file in that directory was
     being opened in File/Mru-File mode.
 
 2.12:
@@ -1215,7 +1220,7 @@ CHANGELOG                                                      *fuf-changelog*
 
 2.11:
   - Changed that a dot sequence of entered pattern is expanded to parent
-    directroies in File/Dir mode.
+    directories in File/Dir mode.
     E.g.: "foo/...bar" -> "foo/../../bar"
   - Fixed a bug that a prompt string was excessively inserted.
 
@@ -1248,7 +1253,7 @@ CHANGELOG                                                      *fuf-changelog*
 2.7:
   - Changed to find an item whose index is matched with the number suffixed
     with entered pattern.
-  - Fixed the cache bug after changing current directroy in File mode.
+  - Fixed the cache bug after changing current directory in File mode.
 
 2.6.2:
   - Fixed not to miss changes in options when updates the MRU information.

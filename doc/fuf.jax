@@ -789,7 +789,7 @@ File モード用 ~
         には切り替えません。
 
                                                        *g:fuf_file_exclude*  >
-  let g:fuf_file_exclude = '\v\~$|\.o$|\.exe$|\.bak$|\.swp$'
+  let g:fuf_file_exclude = '\v\~$|\.(o|exe|bak|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -808,7 +808,7 @@ Directory モード用 ~
         には切り替えません。
 
                                                         *g:fuf_dir_exclude*  >
-  let g:fuf_dir_exclude = ''
+  let g:fuf_dir_exclude = '\v(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -827,7 +827,7 @@ Mru-File モード用 ~
         には切り替えません。
 
                                                     *g:fuf_mrufile_exclude*  >
-  let g:fuf_mrufile_exclude = '\v\~$|\.bak$|\.swp$'
+  let g:fuf_mrufile_exclude = '\v\~$|\.(bak|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
