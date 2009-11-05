@@ -57,15 +57,15 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_file_prompt'     , '>File>')
   call s:defineOption('g:fuf_file_switchOrder', 20)
-  call s:defineOption('g:fuf_file_exclude'    , '\v\~$|\.o$|\.exe$|\.bak$|\.swp$')
+  call s:defineOption('g:fuf_file_exclude'    , '\v\~$|\.(o|exe|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_dir_prompt'     , '>Dir>')
   call s:defineOption('g:fuf_dir_switchOrder', 30)
-  call s:defineOption('g:fuf_dir_exclude'    , '')
+  call s:defineOption('g:fuf_dir_exclude'    , '\v(^|[/\\])\.(hg|git|bzr)($|[/\\])')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_mrufile_prompt'     , '>Mru-File>')
   call s:defineOption('g:fuf_mrufile_switchOrder', 40)
-  call s:defineOption('g:fuf_mrufile_exclude'    , '\v\~$|\.bak$|\.swp$')
+  call s:defineOption('g:fuf_mrufile_exclude'    , '\v\~$|\.(bak|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)')
   call s:defineOption('g:fuf_mrufile_maxItem'    , 200)
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_mrucmd_prompt'     , '>Mru-Cmd>')
