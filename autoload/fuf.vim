@@ -760,7 +760,7 @@ function s:activateFufBuffer()
   let cwd = getcwd()
   call s:openFufBuffer()
   " lcd ... : countermeasure against auto-cd script
-  execute ':lcd ' . escape(cwd, ' ')
+  lcd `=cwd`
   call s:setLocalOptionsForFufBuffer()
   redraw " for 'lazyredraw'
   if exists(':AcpLock')
