@@ -1106,7 +1106,6 @@ CHANGELOG                                                      *fuf-changelog*
   - Fixed a bug that an exclude pattern of File, Dir, and Callback-File mode
     can't be changed.
 
-
 3.3:
   - Added Jump-List mode, Change-List mode, and Quickfix mode which enable
     jumps with jump list, change list, and quickfix list.
