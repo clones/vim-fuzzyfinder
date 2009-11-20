@@ -238,43 +238,66 @@ function fuf#makeNonPathItem(word, menu)
 endfunction
 
 "
-function fuf#makePatternSetForPath(patternBase, partialMatching, tailOnly)
-  let MakeMatchingExpr = function(a:partialMatching
-        \                         ? 's:makePartialMatchingExpr'
-        \                         : 's:makeFuzzyMatchingExpr')
-  let [primary; refinings] =
-        \ split(s:toLowerForIgnoringCase(a:patternBase),
-        \       g:fuf_patternSeparator, 1)
-  let primary = fuf#expandTailDotSequenceToParentDir(primary)
-  let primaryPair = fuf#splitPath(primary)
-  let primaryExprs =
-        \ [MakeMatchingExpr('v:val.wordForPrimaryTail', primaryPair.tail)]
-  if !a:tailOnly
-    call insert(primaryExprs,
-          \ MakeMatchingExpr('v:val.wordForPrimaryHead', primaryPair.head))
-  endif
-  return s:constructPatternSet(
-        \   primary,
-        \   fuf#splitPath(primary).tail, 
-        \   primaryExprs,
-        \   map(refinings, 's:makeRefiningExpr(v:val)'),
-        \ )
+function s:parsePrimaryPatternForPathTail(pattern)
+  let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
+  let pair = fuf#splitPath(pattern)
+  return [
+        \   pattern,
+        \   pair.tail,
+        \   [
+        \     ['v:val.wordForPrimaryTail', pair.tail],
+        \   ],
+        \ ]
 endfunction
 
 "
-function fuf#makePatternSetForNonPath(patternBase, partialMatching)
+function s:parsePrimaryPatternForPath(pattern)
+  let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
+  let pair = fuf#splitPath(pattern)
+  if g:fuf_splitPathMatching
+    let matches = [
+        \     ['v:val.wordForPrimaryHead', pair.head],
+        \     ['v:val.wordForPrimaryTail', pair.tail],
+        \   ]
+  else
+    let matches = [
+          \     ['v:val.wordForPrimaryHead . v:val.wordForPrimaryTail', pattern],
+          \   ]
+  endif
+  return [
+        \   pattern,
+        \   pair.tail,
+        \   matches,
+        \ ]
+endfunction
+
+"
+function s:parsePrimaryPatternForNonPath(pattern)
+  return [
+        \   a:pattern,
+        \   a:pattern,
+        \   [
+        \     ['v:val.wordForPrimary', a:pattern],
+        \   ],
+        \ ]
+endfunction
+
+"
+function fuf#makePatternSet(patternBase, parser, partialMatching)
   let MakeMatchingExpr = function(a:partialMatching
         \                         ? 's:makePartialMatchingExpr'
         \                         : 's:makeFuzzyMatchingExpr')
   let [primary; refinings] =
         \ split(s:toLowerForIgnoringCase(a:patternBase),
         \       g:fuf_patternSeparator, 1)
-  return s:constructPatternSet(
-        \   primary,
-        \   primary, 
-        \   [MakeMatchingExpr('v:val.wordForPrimary', primary)],
-        \   map(refinings, 's:makeRefiningExpr(v:val)'),
-        \ )
+  let [primary, primaryForRank, matchingPairs] = call(a:parser, [primary])
+  let primaryExprs  = map(matchingPairs, 'MakeMatchingExpr(v:val[0], v:val[1])')
+  let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
+  return  {
+        \   'primary'       : primary,
+        \   'primaryForRank': primaryForRank,
+        \   'filteringExpr' : join(primaryExprs + refiningExprs, ' && '),
+        \ }
 endfunction
 
 "
@@ -499,15 +522,6 @@ function s:makeAdditionalMigemoPattern(pattern)
     return ''
   endif
   return '\|\m' . substitute(migemo(a:pattern), '\\_s\*', '.*', 'g')
-endfunction
-
-" 
-function s:constructPatternSet(primary, primaryForRank, primaryExprs, refiningExprs)
-  return  {
-        \   'primary'       : a:primary,
-        \   'primaryForRank': a:primaryForRank,
-        \   'filteringExpr' : join(a:primaryExprs + a:refiningExprs, ' && '),
-        \ }
 endfunction
 
 " Snips a:str and add a:mask if the length of a:str is more than a:len

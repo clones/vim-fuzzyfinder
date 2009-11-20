@@ -395,8 +395,9 @@ API 関数:
 絞り込みパターンとして数値を入力した場合、アイテムのインデックスに対しても
 マッチングします。
 
-カレントモードがファイルパスを検索対象としている場合、プライマリパターンのマッ
-チングは head 部と tail 部に分けて行われます。
+ファイルパスの静的な集合を対象とするモード (Buffer, MRU-File モードなど。File,
+Directory モードなどではない) で|g:fuf_splitPathMatching|が真の場合、プライマ
+リパターンのマッチングは head 部とtail 部に分けて行われます。
 >
           head   tail
         |------||-----|
@@ -737,6 +738,14 @@ See also: |fuf-vimrc-example|
   let g:fuf_ignoreCase = 1
 <
         真なら、大文字小文字を無視します。
+
+                                                  *g:fuf_splitPathMatching*  >
+  let g:fuf_splitPathMatching = 1
+<
+        真なら、プライマリパターンのマッチングは head 部とtail 部に分けて行わ
+        れます。
+
+        See also: |fuf-search-patterns|
 
                                                             *g:fuf_smartBs*  >
   let g:fuf_smartBs = 1
