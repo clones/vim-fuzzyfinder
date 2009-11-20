@@ -128,6 +128,11 @@ To cancel and return to previous window, just leave Insert mode.
 With <C-t> (|g:fuf_keyNextMode|) and <C-y> (|g:fuf_keyPrevMode|), You can
 switch current mode without leaving Insert mode .
 
+You can preview selected item with <C-@> (|g:fuf_keyPreview|) in some modes.
+Repeating the key on the same item might show another information. The height
+of command-line area is changed to |g:fuf_previewHeight| when you launch a
+mode supporting preview.
+
 
 ==============================================================================
 MODES                                                              *fuf-modes*
@@ -728,7 +733,9 @@ For All Modes ~
   let g:fuf_keyPreview = '<C-@>'
 <
 
-        [TODO]
+        Key mapped to show information of selected completion item on
+        command-line area. This key makes sense only in modes supporting
+        preview.
 
                                                         *g:fuf_keyNextMode*  >
   let g:fuf_keyNextMode = '<C-t>'
@@ -824,7 +831,9 @@ For All Modes ~
                                                       *g:fuf_previewHeight*  >
   let g:fuf_previewHeight = 5
 <
-        [TODO]
+        'cmdheight' is set to this when a mode supporting preview is launched.
+        Information of selected completion item will be shown on command-line
+        area.
 
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0
@@ -1085,7 +1094,8 @@ SPECIAL THANKS                                                    *fuf-thanks*
 CHANGELOG                                                      *fuf-changelog*
 
 3.4:
-  - [TODO] Added new feature which makes it possible to preview selected item.
+  - Added new feature which makes it possible to preview selected completion
+    item.
   - Changed matching rules and added g:fuf_splitPathMatching.
   - Changed sorting rules.
   - Changed the default values of g:fuf_file_exclude and g:fuf_dir_exclude in

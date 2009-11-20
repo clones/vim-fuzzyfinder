@@ -68,6 +68,24 @@ function s:getTagList(tagfile)
   return filter(result, 'v:val =~# ''\S''')
 endfunction
 
+"
+function s:getMatchingIndex(lines, cmd)
+  if a:cmd !~# '\D'
+    return str2nr(a:cmd)
+  endif
+  let pattern = matchstr(a:cmd, '^\/\^\zs.*\ze\$\/$')
+  if empty(pattern)
+    return -1
+  endif
+  for i in range(len(a:lines))
+    if a:lines[i] ==# pattern
+      let gm = i . pattern
+      return i
+    endif
+  endfor
+  return -1
+endfunction
+
 " }}}1
 "=============================================================================
 " s:handler {{{1
@@ -100,12 +118,18 @@ function s:handler.makePatternSet(patternBase)
         \                   self.partialMatching)
 endfunction
 
-" 'cmd' is '/hoge' or line number
-function s:handler.makePreviewLines(word)
-  " TODO show around the last cursor position
-  "      if only one tag is matched
+" 'cmd' is '/^hoge hoge$/' or line number
+function s:handler.makePreviewLines(word, count)
   let tags = taglist('^' . a:word . '$')
-  return map(tags, 'v:val.filename . ":\t" . v:val.cmd')
+  if empty(tags)
+    return []
+  endif
+  let i = a:count % len(tags)
+  let title = printf('(%d/%d) %s', i + 1, len(tags), tags[i].filename)
+  let lines = fuf#getFileLines(tags[i].filename)
+  let index = s:getMatchingIndex(lines, tags[i].cmd)
+  return [title] + fuf#makePreviewLinesAround(
+        \ lines, (index < 0 ? [] : [index]), 0, self.getPreviewHeight() - 1)
 endfunction
 
 "

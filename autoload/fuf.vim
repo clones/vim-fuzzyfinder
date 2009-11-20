@@ -102,27 +102,51 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
-function fuf#getFileLines(fname)
-  let lines = getbufline('^' . a:fname . '$', 1, '$')
+function fuf#getFileLines(file)
+  let bufnr = (type(a:file) ==# type(0) ? a:file : bufnr('^' . a:file . '$'))
+  let lines = getbufline(bufnr, 1, '$')
   if !empty(lines)
     return lines
   endif
   try
-    return readfile(expand(a:fname))
+    return readfile(expand(a:file))
   catch /.*/ 
   endtry
   return []
 endfunction
 
 "
-function fuf#makePreviewLinesAround(lines, lnum, maxHeight)
+function fuf#makePreviewLinesAround(lines, indices, page, maxHeight)
+  let index = ((empty(a:indices) ? 0 : a:indices[0])
+        \ + a:page * a:maxHeight) % len(a:lines)
   if empty(a:lines) || a:maxHeight <= 0
     return []
   endif
-  let beg = max([0, a:lnum - 1 - a:maxHeight / 2])
+  let beg = max([0, index - a:maxHeight / 2])
   let end = min([beg + a:maxHeight, len(a:lines)])
   let beg = max([0, end - a:maxHeight])
-  return a:lines[beg : end - 1]
+  let lines = []
+  for i in range(beg, end - 1)
+    let mark = (count(a:indices, i) ? '>' : ' ')
+    call add(lines, printf('%s%4d ', mark, i + 1) . a:lines[i])
+  endfor
+  return lines
+endfunction
+
+" a:file: a path string or a buffer number
+function fuf#makePreviewLinesForFile(file, count, maxHeight)
+  let lines = fuf#getFileLines(a:file)
+  if empty(lines)
+    return []
+  endif
+  let bufnr = (type(a:file) ==# type(0) ? a:file : bufnr('^' . a:file . '$'))
+  if exists('s:bufferCursorPosMap[bufnr]')
+    let indices = [s:bufferCursorPosMap[bufnr][1] - 1]
+  else
+    let indices = []
+  endif
+  return fuf#makePreviewLinesAround(
+        \ lines, indices, a:count, a:maxHeight)
 endfunction
 
 "
@@ -371,7 +395,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   endif
   call s:activateFufBuffer()
   " local autocommands
-  augroup FuzzyfinderLocal
+  augroup FufLocal
     autocmd!
     autocmd CursorMovedI <buffer>        call s:runningHandler.onCursorMovedI()
     autocmd InsertLeave  <buffer> nested call s:runningHandler.onInsertLeave()
@@ -1015,14 +1039,23 @@ function s:handlerBase.onPreviewBase()
   elseif !pumvisible()
     return
   elseif !self.existsPrompt(getline('.'))
-    let lines = self.makePreviewLines(self.removePrompt(getline('.')))
+    let word = self.removePrompt(getline('.'))
   elseif !exists('self.lastFirstWord')
     return
   else
-    let lines = self.makePreviewLines(self.lastFirstWord)
+    let word = self.lastFirstWord
   endif
   redraw
-  echo join(lines[: self.getPreviewHeight() - 1], "\n")
+  if exists('self.lastPreviewInfo') && self.lastPreviewInfo.word ==# word
+    let self.lastPreviewInfo.count += 1
+  else
+    let self.lastPreviewInfo = {'word': word, 'count': 0}
+  endif
+  let lines = self.makePreviewLines(word, self.lastPreviewInfo.count)
+  let lines = lines[: self.getPreviewHeight() - 1]
+  call map(lines, 'substitute(v:val, "\t", repeat(" ", &tabstop), "g")')
+  call map(lines, 's:snipTail(v:val, &columns - 1, s:ABBR_SNIP_MASK)')
+  echo join(lines, "\n")
 endfunction
 
 "
@@ -1057,6 +1090,17 @@ function s:handlerBase.onRecallPattern(shift)
     call feedkeys("\<End>", 'n')
   endif
 endfunction
+
+" }}}1
+"=============================================================================
+" INITIALIZATION {{{1
+
+augroup FufGlobal
+  autocmd!
+  autocmd BufLeave * let s:bufferCursorPosMap[bufnr('')] = getpos('.')
+augroup END
+
+let s:bufferCursorPosMap = {}
 
 " }}}1
 "=============================================================================

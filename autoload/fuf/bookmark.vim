@@ -157,14 +157,15 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
+function s:handler.makePreviewLines(word, count)
   let item = s:findItem(self.info.data, a:word)
   let lines = fuf#getFileLines(item.path)
   if empty(lines)
     return []
   endif
-  let lnum = s:getMatchingLineNumber(lines, item.pattern, item.lnum)
-  return fuf#makePreviewLinesAround(lines, lnum, self.getPreviewHeight())
+  let index = s:getMatchingLineNumber(lines, item.pattern, item.lnum) - 1
+  return fuf#makePreviewLinesAround(
+        \ lines, [index], a:count, self.getPreviewHeight())
 endfunction
 
 "

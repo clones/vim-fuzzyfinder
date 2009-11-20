@@ -104,12 +104,8 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
-  if !filereadable(expand(a:word))
-    return []
-  endif
-  " TODO show around the last cursor position
-  return readfile(expand(a:word), '', self.getPreviewHeight())
+function s:handler.makePreviewLines(word, count)
+  return fuf#makePreviewLinesForFile(a:word, count, self.getPreviewHeight())
 endfunction
 
 "

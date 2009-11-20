@@ -61,6 +61,7 @@ function s:parseChangesLine(line)
   return  {
         \   'prefix': elements[1],
         \   'count' : elements[2],
+        \   'lnum'  : elements[3],
         \   'text'  : printf('|%d:%d|%s', elements[3], elements[4], elements[5]),
         \ }
 endfunction
@@ -73,6 +74,7 @@ function s:makeItem(line)
   endif
   let item = fuf#makeNonPathItem(parsed.text, '')
   let item.abbrPrefix = parsed.prefix
+  let item.lnum = parsed.lnum
   return item
 endfunction
 
@@ -109,9 +111,14 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
-  " TODO show around the last cursor position
-  return []
+function s:handler.makePreviewLines(word, count)
+  let items = filter(copy(self.items), 'v:val.word ==# a:word')
+  if empty(items)
+    return []
+  endif
+  let lines = fuf#getFileLines(self.bufNrPrev)
+  return fuf#makePreviewLinesAround(
+        \ lines, [items[0].lnum - 1], a:count, self.getPreviewHeight())
 endfunction
 
 "
