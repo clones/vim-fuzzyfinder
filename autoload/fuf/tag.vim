@@ -149,10 +149,12 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
+  let &l:tags = join(self.tagFiles, ',')
 endfunction
 
 "
 function s:handler.onModeLeavePost(opened)
+  let &l:tags = ''
 endfunction
 
 " }}}1
