@@ -20,7 +20,7 @@ ABOUT                           |fuf-about|
 INTRODUCTION                                                *fuf-introduction*
 
 FuzzyFinder provides convenient ways to quickly reach the
-buffer/file/command/bookmark/tag you want. FuzzyFinder searches by the
+buffer/file/command/bookmark/tag you want. FuzzyFinder searches with the
 fuzzy/partial pattern to which it converted an entered pattern.
 
         Entered pattern  Fuzzy pattern   Partial pattern ~
@@ -104,7 +104,7 @@ These commands open 1-line buffer to enter search pattern and start insert
 mode.
 
 FuzzyFinder searchs for matching items with an entered pattern and shows them
-in a completion menu. For more details on a pattern matching, see
+in a completion menu. For more details on pattern matching, see
 |fuf-search-patterns|.
 
 If there are a lot of matching items, FuzzyFinder limits the number of
@@ -408,8 +408,8 @@ refining pattern.
 A refining pattern is used to narrow down the list of matching items by
 another pattern.
 
-With a primary pattern, FuzzyFinder does the selected one of a fuzzy matching
-and a partial matching. With a refining pattern, FuzzyFinder always does a
+With a primary pattern, FuzzyFinder does the selected one of fuzzy matching
+and partial matching. With a refining pattern, FuzzyFinder always does
 partial matching.
 
 If current mode targets file paths, a primary pattern can match 
@@ -424,7 +424,7 @@ If current mode targets file paths, the matching with a primary pattern is
 done only for the tail (last component) of each path.
 
                                              *fuf-sorting-of-completion-items*
-Sorting of Completion Items ~
+Sorting Of Completion Items ~
 
 FuzzyFinder sorts completion items with some rules:
 
@@ -525,8 +525,8 @@ See also: |fuf-vimrc-example|
 :FufBuffer[!] [{pattern}]
         Launchs Buffer mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -534,8 +534,8 @@ See also: |fuf-vimrc-example|
 :FufFile[!] [{pattern}]
         Launchs File mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -553,8 +553,8 @@ See also: |fuf-vimrc-example|
 :FufDir[!] [{pattern}]
         Launchs Directory mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -572,8 +572,8 @@ See also: |fuf-vimrc-example|
 :FufMruFile[!] [{pattern}]
         Launchs MRU-File mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -581,8 +581,8 @@ See also: |fuf-vimrc-example|
 :FufMruCmd[!] [{pattern}]
         Launchs MRU-Command mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -590,8 +590,8 @@ See also: |fuf-vimrc-example|
 :FufBookmark[!] [{pattern}]
         Launchs Bookmark mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -599,8 +599,8 @@ See also: |fuf-vimrc-example|
 :FufTag[!] [{pattern}]
         Launchs Tag mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -612,8 +612,8 @@ See also: |fuf-vimrc-example|
 :FufTaggedFile[!] [{pattern}]
         Launchs Tagged-File mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -621,8 +621,8 @@ See also: |fuf-vimrc-example|
 :FufJumpList[!] [{pattern}]
         Launchs Jump-List mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -630,8 +630,8 @@ See also: |fuf-vimrc-example|
 :FufChangeList[!] [{pattern}]
         Launchs Change-List mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
@@ -639,8 +639,8 @@ See also: |fuf-vimrc-example|
 :FufQuickfix[!] [{pattern}]
         Launchs Quickfix mode.
 
-        If a command was executed with a ! modifier, it does a partial
-        matching instead of a fuzzy matching.
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
 
