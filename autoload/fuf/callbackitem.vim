@@ -88,10 +88,10 @@ endfunction
 
 "
 function s:handler.makePatternSet(patternBase)
-  return (s:forPath
-        \ ? fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 0)
-        \ : fuf#makePatternSetForNonPath(a:patternBase, self.partialMatching))
-
+  let parser = (s:forPath
+        \       ? 's:parsePrimaryPatternForPath'
+        \       : 's:parsePrimaryPatternForNonPath')
+  return fuf#makePatternSet(a:patternBase, parser, self.partialMatching)
 endfunction
 
 "

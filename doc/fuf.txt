@@ -419,8 +419,10 @@ matching.
 When you enter a number as refining pattern, it also can match the index of
 each item.
 
-If current mode targets file paths, matching with a primary pattern is
-divided into head part and tail part and done individually.
+In a mode which targets a static set of file paths (such as Buffer or MRU-File
+mode, not File or Directory) and |g:fuf_splitPathMatching| is non-zero,
+matching with a primary pattern is divided into head part and tail part and
+done individually.
 >
           head   tail
         |------||-----|
@@ -776,6 +778,14 @@ For All Modes ~
 <
         If non-zero, FuzzyFinder ignores case in search patterns.
 
+                                                  *g:fuf_splitPathMatching*  >
+  let g:fuf_splitPathMatching = 1
+<
+        If non-zero, matching with a primary pattern is divided into head part
+        and tail part and done individually.
+
+        See also: |fuf-search-patterns|
+
                                                             *g:fuf_smartBs*  >
   let g:fuf_smartBs = 1
 <
@@ -1076,7 +1086,8 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.4: TODO
   - Added new feature which makes it possible to preview selected item.
-  - Changed matching rules and sorting rules.
+  - Changed matching rules and added g:fuf_splitPathMatching.
+  - Changed sorting rules.
   - Changed the default values of g:fuf_file_exclude and g:fuf_dir_exclude in
     order to ignore ".hg", ".git", and ".bzr" directories.
   - Changed the default value of g:fuf_mrufile_exclude in order to ignore

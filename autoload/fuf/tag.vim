@@ -96,7 +96,8 @@ endfunction
 
 "
 function s:handler.makePatternSet(patternBase)
-  return fuf#makePatternSetForNonPath(a:patternBase, self.partialMatching)
+  return fuf#makePatternSet(a:patternBase, 's:parsePrimaryPatternForNonPath',
+        \                   self.partialMatching)
 endfunction
 
 " 'cmd' is '/hoge' or line number
