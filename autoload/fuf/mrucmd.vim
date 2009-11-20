@@ -39,7 +39,7 @@ endfunction
 
 "
 function fuf#mrucmd#onCommandPre(cmd)
-  if getcmdtype() =~ '^[:/?]'
+  if getcmdtype() =~# '^[:/?]'
     call s:updateInfo(a:cmd)
   endif
 endfunction
@@ -87,14 +87,18 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForNonPath(a:patternBase, self.partialMatching)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   return []
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return self.items
 endfunction
 
 "

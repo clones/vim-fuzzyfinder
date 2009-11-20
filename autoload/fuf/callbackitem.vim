@@ -87,14 +87,21 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return (s:forPath
+        \ ? fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 0)
+        \ : fuf#makePatternSetForNonPath(a:patternBase, self.partialMatching))
+
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   return []
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ s:items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return s:items
 endfunction
 
 "

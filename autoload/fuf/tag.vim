@@ -65,7 +65,7 @@ endfunction
 "
 function s:getTagList(tagfile)
   let result = map(readfile(a:tagfile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
-  return filter(result, 'v:val =~ ''\S''')
+  return filter(result, 'v:val =~# ''\S''')
 endfunction
 
 " }}}1
@@ -94,6 +94,11 @@ function s:handler.targetsPath()
   return 0
 endfunction
 
+"
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForNonPath(a:patternBase, self.partialMatching)
+endfunction
+
 " 'cmd' is '/hoge' or line number
 function s:handler.makePreviewLines(word)
   " TODO show around the last cursor position
@@ -103,10 +108,8 @@ function s:handler.makePreviewLines(word)
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  let items = s:enumTags(self.tagFiles)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return s:enumTags(self.tagFiles)
 endfunction
 
 "

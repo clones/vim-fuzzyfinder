@@ -98,6 +98,11 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 1)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   if !filereadable(expand(a:word))
     return []
@@ -107,11 +112,9 @@ function s:handler.makePreviewLines(word)
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  let items = s:enumNonCurrentItems(
-        \ fuf#splitPath(a:patternSet.raw).head, self.bufNrPrev, self.cache)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return s:enumNonCurrentItems(
+        \ fuf#splitPath(a:patternPrimary).head, self.bufNrPrev, self.cache)
 endfunction
 
 "
