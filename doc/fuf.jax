@@ -382,7 +382,7 @@ API 関数:
 最初のパターンがプライマリパターンになり、残りのパターンが絞り込みパターンにな
 ります。
 >
-                   primary    refining  refining
+                  プライマリ  絞り込み  絞り込み
                  |----------| |-------| |----|
         >MruFile>bookmark.vim;autoload/;/home/
 <

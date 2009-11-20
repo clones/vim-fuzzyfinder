@@ -1084,8 +1084,8 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
-3.4: TODO
-  - Added new feature which makes it possible to preview selected item.
+3.4:
+  - [TODO] Added new feature which makes it possible to preview selected item.
   - Changed matching rules and added g:fuf_splitPathMatching.
   - Changed sorting rules.
   - Changed the default values of g:fuf_file_exclude and g:fuf_dir_exclude in
