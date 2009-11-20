@@ -1,0 +1,64 @@
+--- fuf.vim
++++ fuf.vim
+@@ -215,22 +215,22 @@
+         \          : '')
+   return {
+         \   'word'              : a:fname . dirSuffix,
+-        \   'wordForPrimaryHead': tolower(pathPair.head),
+-        \   'wordForPrimaryTail': tolower(pathPair.tail),
+-        \   'wordForBoundary'   : tolower(s:getWordBoundaries(pathPair.tail)),
+-        \   'wordForRefining'   : tolower(a:fname . dirSuffix),
+-        \   'wordForRank'       : tolower(pathPair.tail),
++        \   'wordForPrimaryHead': s:toLowerForIgnoringCase(pathPair.head),
++        \   'wordForPrimaryTail': s:toLowerForIgnoringCase(pathPair.tail),
++        \   'wordForBoundary'   : s:toLowerForIgnoringCase(s:getWordBoundaries(pathPair.tail)),
++        \   'wordForRefining'   : s:toLowerForIgnoringCase(a:fname . dirSuffix),
++        \   'wordForRank'       : s:toLowerForIgnoringCase(pathPair.tail),
+         \   'menu'              : a:menu,
+         \ }
+ endfunction
+ 
+ "
+ function fuf#makeNonPathItem(word, menu)
+-  let wordL = tolower(a:word)
++  let wordL = s:toLowerForIgnoringCase(a:word)
+   return {
+         \   'word'           : a:word,
+         \   'wordForPrimary' : wordL,
+-        \   'wordForBoundary': tolower(s:getWordBoundaries(a:word)),
++        \   'wordForBoundary': s:toLowerForIgnoringCase(s:getWordBoundaries(a:word)),
+         \   'wordForRefining': wordL,
+         \   'wordForRank'    : wordL,
+         \   'menu'           : a:menu,
+@@ -243,7 +243,8 @@
+         \                         ? 's:makePartialMatchingExpr'
+         \                         : 's:makeFuzzyMatchingExpr')
+   let [primary; refinings] =
+-        \ split(a:patternBase, g:fuf_patternSeparator, 1)
++        \ split(s:toLowerForIgnoringCase(a:patternBase),
++        \       g:fuf_patternSeparator, 1)
+   let primary = fuf#expandTailDotSequenceToParentDir(primary)
+   let primaryPair = fuf#splitPath(primary)
+   let primaryExprs =
+@@ -266,7 +267,8 @@
+         \                         ? 's:makePartialMatchingExpr'
+         \                         : 's:makeFuzzyMatchingExpr')
+   let [primary; refinings] =
+-        \ split(a:patternBase, g:fuf_patternSeparator, 1)
++        \ split(s:toLowerForIgnoringCase(a:patternBase),
++        \       g:fuf_patternSeparator, 1)
+   return s:constructPatternSet(
+         \   primary,
+         \   primary, 
+@@ -547,6 +549,11 @@
+ endfunction
+ 
+ "
++function s:toLowerForIgnoringCase(str)
++    return (g:fuf_ignoreCase ? tolower(a:str) : a:str)
++endfunction
++
++"
+ function s:setRanks(item, pattern, exprBoundary, stats)
+   "let word2 = substitute(a:eval_word, '\a\zs\l\+\|\zs\A', '', 'g')
+   let a:item.ranks = [
