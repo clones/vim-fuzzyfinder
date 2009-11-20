@@ -94,8 +94,11 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
-  return split(glob(fnamemodify(a:word, ':p') . '*'), "\n")
+function s:handler.makePreviewLines(word, count)
+  return fuf#makePreviewLinesAround(
+        \ split(glob(fnamemodify(a:word, ':p') . '*'), "\n"),
+        \ [], a:count, self.getPreviewHeight())
+  return 
 endfunction
 
 "

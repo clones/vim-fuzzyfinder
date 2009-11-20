@@ -83,7 +83,7 @@ endfunction
 
 "
 function s:handler.getPreviewHeight()
-  return 0
+  return g:fuf_previewHeight
 endfunction
 
 "
@@ -98,8 +98,8 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
-  return []
+function s:handler.makePreviewLines(word, count)
+  return fuf#makePreviewLinesForFile(a:word, count, self.getPreviewHeight())
 endfunction
 
 "

@@ -93,7 +93,7 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
+function s:handler.makePreviewLines(word, count)
   return []
 endfunction
 

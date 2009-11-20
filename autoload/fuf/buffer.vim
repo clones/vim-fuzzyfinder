@@ -130,13 +130,12 @@ function s:handler.makePatternSet(patternBase)
 endfunction
 
 "
-function s:handler.makePreviewLines(word)
+function s:handler.makePreviewLines(word, count)
   let item = s:findItem(self.items, a:word)
-  if !empty(item)
-    " TODO show around the last cursor position
-    return getbufline(item.bufNr, 1, 10)
+  if empty(item)
+    return []
   endif
-  return []
+  return fuf#makePreviewLinesForFile(item.bufNr, count, self.getPreviewHeight())
 endfunction
 
 "
