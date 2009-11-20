@@ -982,6 +982,8 @@ function s:handlerBase.onCr(openType, fCheckDir)
     call self.addStat(self.lastPattern, self.removePrompt(getline('.')))
   endif
   if a:fCheckDir && getline('.') =~# '[/\\]$'
+    " To clear i_<C-r> expression (fuf#getRunningHandler().onCr...)
+    echo ''
     return
   endif
   let s:reservedCommand = [self.removePrompt(getline('.')), a:openType]
