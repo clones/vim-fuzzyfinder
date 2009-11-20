@@ -124,6 +124,11 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 0)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   let item = s:findItem(self.items, a:word)
   if !empty(item)
@@ -134,9 +139,8 @@ function s:handler.makePreviewLines(word)
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ self.items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return self.items
 endfunction
 
 "

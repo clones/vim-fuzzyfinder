@@ -92,16 +92,19 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 1)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   return []
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  let items = copy(s:enumItems(fuf#splitPath(a:patternSet.raw).head))
-  call filter(items, 'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  let items = copy(s:enumItems(fuf#splitPath(a:patternPrimary).head))
+  return filter(items, 'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
 endfunction
 
 "

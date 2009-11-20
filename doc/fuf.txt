@@ -404,42 +404,61 @@ You can enter one primary pattern and zero or more refining patterns as search
 patterns. An entered pattern is separated by ";" (|g:fuf_patternSeparator|),
 and the first pattern is a primary pattern and the rest of patterns is a
 refining pattern.
-
+>
+                   primary    refining  refining
+                 |----------| |-------| |----|
+        >MruFile>bookmark.vim;autoload/;/home/
+<
 A refining pattern is used to narrow down the list of matching items by
 another pattern.
 
-With a primary pattern, FuzzyFinder does the selected one of fuzzy matching
-and partial matching. With a refining pattern, FuzzyFinder always does
-partial matching.
-
-If current mode targets file paths, a primary pattern can match 
-only the tail (last component) of each path.
-With a refining pattern in such case, it can match anywhere on each
-path.
+With a primary pattern, FuzzyFinder does fuzzy matching or partial matching,
+which you specified. With a refining pattern, FuzzyFinder always does partial
+matching.
 
 When you enter a number as refining pattern, it also can match the index of
 each item.
 
-If current mode targets file paths, the matching with a primary pattern is
-done only for the tail (last component) of each path.
+If current mode targets file paths, matching with a primary pattern is
+divided into head part and tail part and done individually.
+>
+          head   tail
+        |------||-----|
+        foo/bar/baz.vim
+
+        fuzzy matching example:
+        +----------------+---------+---------+---------+
+        | item \ pattern | foo/bar | foo/    | bar     |
+        +----------------+---------+---------+---------+
+        | foo/bar        |   match |   match |   match |
+        | foo/abc        | unmatch |   match | unmatch |
+        | abc/bar        | unmatch | unmatch |   match |
+        | foobar         | unmatch | unmatch |   match |
+        | foooo/barrrr   |   match |   match |   match |
+        | foooo/fooooo   | unmatch |   match | unmatch |
+        +----------------+---------+---------+---------+
+<
+refining pattern can match anywhere on each path in the above case.
 
                                              *fuf-sorting-of-completion-items*
 Sorting Of Completion Items ~
 
-FuzzyFinder sorts completion items with some rules:
+FuzzyFinder sorts completion items with some rules.
 
-        - If a pattern consists only of uppercase characters and matches an
-          item at only word boundaries of it, the item is placed upper. E.g.,
-          with a pattern "FB", items such as "fooBarBaz" and
-          "foo_bar_baz" is placed upper.
-        - An item, one part of which is matched with a whole pattern, is
-          placed upper. E.g., with the pattern "bc", the item "abc" is placed
-          upper than "bac". In such case, items, each having matching part at
-          the head of itself, are placed upper than others. E.g., with the
-          pattern "foo", the item "foobar" is placed upper than "foobarbaz".
-          And the shorter the length of the item after matching position puts
-          it higher. E.g., with the pattern "bar", the item "foobar" is placed
-          upper than "foobarbaz".
+An item, one part of which is matched with a whole pattern, is placed upper.
+E.g., with the pattern "bc", the item "abc" is placed upper than "bac".
+
+In the above case, items, each having matching part at the head of itself, are
+placed upper than others. E.g., with the pattern "foo", the item "foobar" is
+placed upper than "foobarbaz".
+
+And the shorter the length of the item after matching position puts it higher.
+E.g., with the pattern "bar", the item "foobar" is placed upper than
+"foobarbaz".
+
+If a pattern matches an item at only word boundaries of it, the item is placed
+upper. E.g., with a pattern "fb", items such as "fooBarBaz" and "foo_bar_baz"
+is placed upper.
 
 Plus, FuzzyFinder has a learning system. An item which has been completed in
 the past with current pattern is placed upper.
@@ -1057,6 +1076,7 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.4: TODO
   - Added new feature which makes it possible to preview selected item.
+  - Changed matching rules and sorting rules.
   - Changed the default values of g:fuf_file_exclude and g:fuf_dir_exclude in
     order to ignore ".hg", ".git", and ".bzr" directories.
   - Changed the default value of g:fuf_mrufile_exclude in order to ignore

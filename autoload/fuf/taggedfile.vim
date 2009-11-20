@@ -51,7 +51,7 @@ function s:getTaggedFileList(tagfile)
   call map(readfile(a:tagfile), 'fnamemodify(v:val, ":p")')
   cd -
   call map(readfile(a:tagfile), 'fnamemodify(v:val, ":~:.")')
-  return filter(result, 'v:val =~ ''[^/\\ ]$''')
+  return filter(result, 'v:val =~# ''[^/\\ ]$''')
 endfunction
 
 "
@@ -98,15 +98,19 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 0)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   " TODO show around the last cursor position
   return []
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ self.cache, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return self.items
 endfunction
 
 "
@@ -122,8 +126,8 @@ endfunction
 "
 function s:handler.onModeEnterPost()
   " NOTE: Don't do this in onModeEnterPre()
-  "       because it should return in a short time 
-  let self.cache =
+  "       because that should return in a short time.
+  let self.items =
         \ filter(copy(s:enumTaggedFiles(self.tagFiles)),
         \        'bufnr("^" . v:val.word . "$") != self.bufNrPrev')
 endfunction

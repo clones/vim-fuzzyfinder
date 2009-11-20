@@ -51,7 +51,7 @@ function s:enumItems(dir)
   let key = getcwd() . g:fuf_dir_exclude . "\n" . a:dir
   if !exists('s:cache[key]')
     let s:cache[key] = fuf#enumExpandedDirsEntries(a:dir, g:fuf_dir_exclude)
-    call filter(s:cache[key], 'v:val.word =~ ''[/\\]$''')
+    call filter(s:cache[key], 'v:val.word =~# ''[/\\]$''')
     if isdirectory(a:dir)
       call insert(s:cache[key], fuf#makePathItem(a:dir . '.', '', 0))
     endif
@@ -88,15 +88,18 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForPath(a:patternBase, self.partialMatching, 1)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   return split(glob(fnamemodify(a:word, ':p') . '*'), "\n")
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  let items = s:enumItems(fuf#splitPath(a:patternSet.raw).head)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return s:enumItems(fuf#splitPath(a:patternPrimary).head)
 endfunction
 
 "

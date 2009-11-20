@@ -79,19 +79,23 @@ function s:handler.targetsPath()
 endfunction
 
 "
+function s:handler.makePatternSet(patternBase)
+  return fuf#makePatternSetForNonPath(a:patternBase, self.partialMatching)
+endfunction
+
+"
 function s:handler.makePreviewLines(word)
   return []
 endfunction
 
 "
-function s:handler.onComplete(patternSet)
-  return fuf#filterMatchesAndMapToSetRanks(
-        \ s:items, a:patternSet, self.getFilteredStats(a:patternSet.raw))
+function s:handler.getCompleteItems(patternPrimary)
+  return s:items
 endfunction
 
 "
 function s:handler.onOpen(word, mode)
-  if a:word[0] =~ '[:/?]'
+  if a:word[0] =~# '[:/?]'
     call histadd(a:word[0], a:word[1:])
   endif
   call feedkeys(a:word . "\<CR>", 'n')

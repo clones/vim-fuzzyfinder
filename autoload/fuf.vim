@@ -102,17 +102,6 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
-function fuf#filterMatchesAndMapToSetRanks(items, patternSet, stats)
-  " NOTE: In order to know an excess, plus 1 to limit number
-  let result = fuf#filterWithLimit(
-        \ a:items, a:patternSet.filteringExpr, g:fuf_enumeratingLimit + 1)
-  let patternPartial = s:makePartialRegexpPattern(a:patternSet.rawPrimary)
-  let patternFuzzy   = s:makeFuzzyRegexpPattern(a:patternSet.rawPrimary)
-  let boundaryMatching = (a:patternSet.rawPrimary !~ '\U')
-  return map(result, 's:setRanks(v:val, patternPartial, patternFuzzy, boundaryMatching, a:stats)')
-endfunction
-
-"
 function fuf#getFileLines(fname)
   let lines = getbufline('^' . a:fname . '$', 1, '$')
   if !empty(lines)
@@ -130,7 +119,7 @@ function fuf#makePreviewLinesAround(lines, lnum, maxHeight)
   if empty(a:lines) || a:maxHeight <= 0
     return []
   endif
-  let beg = max([0, a:lnum - 1 - a:maxHeight / 2]) 
+  let beg = max([0, a:lnum - 1 - a:maxHeight / 2])
   let end = min([beg + a:maxHeight, len(a:lines)])
   let beg = max([0, end - a:maxHeight])
   return a:lines[beg : end - 1]
@@ -218,28 +207,72 @@ function fuf#compareRanks(i1, i2)
   return 0
 endfunction
 
-" returns { 'word', 'wordPrimary', 'boundaries', 'menu' }
+"
 function fuf#makePathItem(fname, menu, appendsDirSuffix)
-  let tail = fuf#splitPath(a:fname).tail
-  let dirSuffix = (a:appendsDirSuffix
-        \          ? (isdirectory(a:fname) ? s:PATH_SEPARATOR : '')
+  let pathPair = fuf#splitPath(a:fname)
+  let dirSuffix = (a:appendsDirSuffix && isdirectory(a:fname)
+        \          ? s:PATH_SEPARATOR
         \          : '')
   return {
-        \   'word'        : a:fname . dirSuffix,
-        \   'wordPrimary' : tail,
-        \   'boundaries'  : s:getWordBoundaries(tail),
-        \   'menu'        : a:menu,
+        \   'word'              : a:fname . dirSuffix,
+        \   'wordForPrimaryHead': tolower(pathPair.head),
+        \   'wordForPrimaryTail': tolower(pathPair.tail),
+        \   'wordForBoundary'   : tolower(s:getWordBoundaries(pathPair.tail)),
+        \   'wordForRefining'   : tolower(a:fname . dirSuffix),
+        \   'wordForRank'       : tolower(pathPair.tail),
+        \   'menu'              : a:menu,
         \ }
 endfunction
 
-" returns { 'word', 'wordPrimary', 'boundaries', 'menu' }
+"
 function fuf#makeNonPathItem(word, menu)
+  let wordL = tolower(a:word)
   return {
-        \   'word'        : a:word,
-        \   'wordPrimary' : a:word,
-        \   'boundaries'  : s:getWordBoundaries(a:word),
-        \   'menu'        : a:menu,
+        \   'word'           : a:word,
+        \   'wordForPrimary' : wordL,
+        \   'wordForBoundary': tolower(s:getWordBoundaries(a:word)),
+        \   'wordForRefining': wordL,
+        \   'wordForRank'    : wordL,
+        \   'menu'           : a:menu,
         \ }
+endfunction
+
+"
+function fuf#makePatternSetForPath(patternBase, partialMatching, tailOnly)
+  let MakeMatchingExpr = function(a:partialMatching
+        \                         ? 's:makePartialMatchingExpr'
+        \                         : 's:makeFuzzyMatchingExpr')
+  let [primary; refinings] =
+        \ split(a:patternBase, g:fuf_patternSeparator, 1)
+  let primary = fuf#expandTailDotSequenceToParentDir(primary)
+  let primaryPair = fuf#splitPath(primary)
+  let primaryExprs =
+        \ [MakeMatchingExpr('v:val.wordForPrimaryTail', primaryPair.tail)]
+  if !a:tailOnly
+    call insert(primaryExprs,
+          \ MakeMatchingExpr('v:val.wordForPrimaryHead', primaryPair.head))
+  endif
+  return s:constructPatternSet(
+        \   primary,
+        \   fuf#splitPath(primary).tail, 
+        \   primaryExprs,
+        \   map(refinings, 's:makeRefiningExpr(v:val)'),
+        \ )
+endfunction
+
+"
+function fuf#makePatternSetForNonPath(patternBase, partialMatching)
+  let MakeMatchingExpr = function(a:partialMatching
+        \                         ? 's:makePartialMatchingExpr'
+        \                         : 's:makeFuzzyMatchingExpr')
+  let [primary; refinings] =
+        \ split(a:patternBase, g:fuf_patternSeparator, 1)
+  return s:constructPatternSet(
+        \   primary,
+        \   primary, 
+        \   [MakeMatchingExpr('v:val.wordForPrimary', primary)],
+        \   map(refinings, 's:makeRefiningExpr(v:val)'),
+        \ )
 endfunction
 
 "
@@ -400,7 +433,7 @@ endfunction
 
 " 
 function fuf#onComplete(findstart, base)
-  return s:runningHandler.complete(a:findstart, a:base)
+  return s:runningHandler.onComplete(a:findstart, a:base)
 endfunction
 
 " }}}1
@@ -424,38 +457,34 @@ function s:convertWildcardToRegexp(expr)
   return '\V' . re
 endfunction
 
-" 'str' -> '\V\.\*s\.\*t\.\*r\.\*'
-function s:makeFuzzyRegexpPattern(pattern)
+" a:pattern: 'str' -> '\V\.\*s\.\*t\.\*r\.\*'
+function s:makeFuzzyMatchingExpr(target, pattern)
   let wi = ''
   for c in split(a:pattern, '\zs')
-    if wi =~ '[^*?]$' && c !~ '[*?]'
+    if wi =~# '[^*?]$' && c !~ '[*?]'
       let wi .= '*'
     endif
     let wi .= c
   endfor
-  return s:convertWildcardToRegexp(wi)
-        \ . s:makeAdditionalMigemoPattern(a:pattern)
+  return s:makePartialMatchingExpr(a:target, wi)
 endfunction
 
-" 'str' -> '\Vstr'
-" 'st*r' -> '\Vst\.\*r'
-function s:makePartialRegexpPattern(pattern)
-  return s:convertWildcardToRegexp(a:pattern)
-        \ . s:makeAdditionalMigemoPattern(a:pattern)
-endfunction
-
-" 
-function s:makeAdditionalMigemoPattern(pattern)
-  if !g:fuf_useMigemo || a:pattern =~ '[^\x01-\x7e]'
-    return ''
+" a:pattern: 'str' -> '\Vstr'
+"            'st*r' -> '\Vst\.\*r'
+function s:makePartialMatchingExpr(target, pattern)
+  let patternMigemo = s:makeAdditionalMigemoPattern(a:pattern)
+  if a:pattern !~ '[*?]' && empty(patternMigemo)
+    " NOTE: stridx is faster than regexp matching
+    return 'stridx(' . a:target . ', ' . string(a:pattern) . ') >= 0'
   endif
-  return '\|\m' . substitute(migemo(a:pattern), '\\_s\*', '.*', 'g')
+  return a:target . ' =~# ' .
+        \ string(s:convertWildcardToRegexp(a:pattern)) . patternMigemo
 endfunction
 
 " 
 function s:makeRefiningExpr(pattern)
-  let expr = 'v:val.word =~ ' . string(s:makePartialRegexpPattern(a:pattern))
-  if a:pattern =~ '\D'
+  let expr = s:makePartialMatchingExpr('v:val.wordForRefining', a:pattern)
+  if a:pattern =~# '\D'
     return expr
   else
     return '(' . expr . ' || v:val.index == ' . string(a:pattern) . ')'
@@ -463,23 +492,20 @@ function s:makeRefiningExpr(pattern)
 endfunction
 
 " 
-function s:makePatternSet(patternBase, forPath, partialMatching)
-  let patternSet = {}
-  let [patternSet.raw; refinings] =
-        \ split(a:patternBase, g:fuf_patternSeparator, 1)
-  if a:forPath
-    let patternSet.raw = fuf#expandTailDotSequenceToParentDir(patternSet.raw)
-    let patternSet.rawPrimary = fuf#splitPath(patternSet.raw).tail
-  else
-    let patternSet.rawPrimary = patternSet.raw
+function s:makeAdditionalMigemoPattern(pattern)
+  if !g:fuf_useMigemo || a:pattern =~# '[^\x01-\x7e]'
+    return ''
   endif
-  let rePrimary = (a:partialMatching
-        \          ? s:makePartialRegexpPattern(patternSet.rawPrimary)
-        \          : s:makeFuzzyRegexpPattern  (patternSet.rawPrimary))
-  let primaryExpr = 'v:val.wordPrimary =~ ' . string(rePrimary)
-  let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
-  let patternSet.filteringExpr = join([primaryExpr] + refiningExprs, ' && ')
-  return patternSet
+  return '\|\m' . substitute(migemo(a:pattern), '\\_s\*', '.*', 'g')
+endfunction
+
+" 
+function s:constructPatternSet(primary, primaryForRank, primaryExprs, refiningExprs)
+  return  {
+        \   'primary'       : a:primary,
+        \   'primaryForRank': a:primaryForRank,
+        \   'filteringExpr' : join(a:primaryExprs + a:refiningExprs, ' && '),
+        \ }
 endfunction
 
 " Snips a:str and add a:mask if the length of a:str is more than a:len
@@ -521,16 +547,13 @@ function s:getWordBoundaries(word)
 endfunction
 
 "
-function s:setRanks(item, patternPartial, patternFuzzy, boundaryMatching, stats)
+function s:setRanks(item, pattern, exprBoundary, stats)
   "let word2 = substitute(a:eval_word, '\a\zs\l\+\|\zs\A', '', 'g')
   let a:item.ranks = [
         \   s:evaluateLearningRank(a:item.word, a:stats),
-        \   (a:boundaryMatching
-        \    ? -s:scoreBoundaryMatching(a:item.boundaries, 
-        \                               a:patternPartial, a:patternFuzzy)
-        \    : 0.0),
-        \   -s:scoreSequentialMatching(a:item.wordPrimary,
-        \                              a:patternPartial),
+        \   -s:scoreSequentialMatching(a:item.wordForRank, a:pattern),
+        \   -s:scoreBoundaryMatching(a:item.wordForBoundary, 
+        \                            a:pattern, a:exprBoundary),
         \   a:item.index,
         \ ]
   return a:item
@@ -546,22 +569,29 @@ function s:evaluateLearningRank(word, stats)
   return len(a:stats)
 endfunction
 
+let g:s = ""
 " range of return value is [0.0, 1.0]
-function s:scoreSequentialMatching(word, patternPartial)
-  let posEnd = matchend(a:word, a:patternPartial)
-  if posEnd <= 0
+function s:scoreSequentialMatching(word, pattern)
+  if empty(a:pattern)
     return 0.0
   endif
-  let posBegin = match(a:word, a:patternPartial)
-  return (posBegin == 0 ? 0.5 : 0.0) + 0.5 / (len(a:word) - posEnd + 1)
+  let pos = stridx(a:word, a:pattern)
+  if pos < 0
+    return 0.0
+  endif
+  let lenRest = len(a:word) - len(a:pattern) - pos
+  return (pos == 0 ? 0.5 : 0.0) + 0.5 / (lenRest + 1)
 endfunction
 
 " range of return value is [0.0, 1.0]
-function s:scoreBoundaryMatching(word, patternPartial, patternFuzzy)
-  if a:word !~ a:patternFuzzy
+function s:scoreBoundaryMatching(wordForBoundary, pattern, exprBoundary)
+  if empty(a:pattern)
+    return 0.0
+  endif
+  if !eval(a:exprBoundary)
     return 0
   endif
-  return 0.5 + 0.5 * s:scoreSequentialMatching(a:word, a:patternPartial)
+  return 0.5 + 0.5 * s:scoreSequentialMatching(a:wordForBoundary, a:pattern)
 endfunction
 
 "
@@ -760,7 +790,6 @@ function s:deserializeInfoMap(lines)
     endif
     call add(infoMap[e[1]][e[2]], eval(e[3]))
   endfor
-  let g:lim = copy(infoMap)
   return infoMap
 endfunction
 
@@ -791,7 +820,7 @@ let s:handlerBase = {}
 " s:handler.targetsPath()
 "
 " "
-" s:handler.onComplete(patternSet)
+" s:handler.getCompleteItems(patternSet)
 " 
 " "
 " s:handler.onOpen(word, mode)
@@ -823,36 +852,47 @@ function s:handlerBase.addStat(pattern, word)
 endfunction
 
 "
-function s:handlerBase.complete(findstart, base)
+function s:handlerBase.getMatchingCompleteItems(patternBase)
+  let MakeMatchingExpr = function(self.partialMatching
+        \                         ? 's:makePartialMatchingExpr'
+        \                         : 's:makeFuzzyMatchingExpr')
+  let patternSet = self.makePatternSet(a:patternBase)
+  let exprBoundary = s:makeFuzzyMatchingExpr('a:wordForBoundary', patternSet.primaryForRank)
+  let stats = filter(
+        \ copy(self.info.stats), 'v:val.pattern ==# patternSet.primaryForRank')
+  let items = self.getCompleteItems(patternSet.primary)
+  " NOTE: In order to know an excess, plus 1 to limit number
+  let items = fuf#filterWithLimit(
+        \ items, patternSet.filteringExpr, g:fuf_enumeratingLimit + 1)
+  return map(items,
+        \ 's:setRanks(v:val, patternSet.primaryForRank, exprBoundary, stats)')
+endfunction
+
+"
+function s:handlerBase.onComplete(findstart, base)
   if a:findstart
     return 0
   elseif  !self.existsPrompt(a:base)
     return []
   endif
   call s:highlightPrompt(self.getPrompt())
-  let result = []
+  let items = []
   for patternBase in s:expandAbbrevMap(self.removePrompt(a:base), g:fuf_abbrevMap)
-    let patternSet = s:makePatternSet(patternBase, self.targetsPath(), self.partialMatching)
-    let result += self.onComplete(patternSet)
-    if len(result) > g:fuf_enumeratingLimit
-      let result = result[ : g:fuf_enumeratingLimit - 1]
+    let items += self.getMatchingCompleteItems(patternBase)
+    if len(items) > g:fuf_enumeratingLimit
+      let items = items[ : g:fuf_enumeratingLimit - 1]
       call s:highlightError()
       break
     endif
   endfor
-  if empty(result)
+  if empty(items)
     call s:highlightError()
   else
-    call sort(result, 'fuf#compareRanks')
+    call sort(items, 'fuf#compareRanks')
     call feedkeys("\<C-p>\<Down>", 'n')
-    let self.lastFirstWord = result[0].word
+    let self.lastFirstWord = items[0].word
   endif
-  return result
-endfunction
-
-"
-function s:handlerBase.getFilteredStats(pattern)
-  return filter(copy(self.info.stats), 'v:val.pattern ==# a:pattern')
+  return items
 endfunction
 
 "
@@ -920,7 +960,7 @@ function s:handlerBase.onCr(openType, fCheckDir)
   if !empty(self.lastPattern)
     call self.addStat(self.lastPattern, self.removePrompt(getline('.')))
   endif
-  if a:fCheckDir && getline('.') =~ '[/\\]$'
+  if a:fCheckDir && getline('.') =~# '[/\\]$'
     return
   endif
   let s:reservedCommand = [self.removePrompt(getline('.')), a:openType]
@@ -934,10 +974,10 @@ function s:handlerBase.onBs()
     let numBs = 0
   elseif !g:fuf_smartBs
     let numBs = 1
-  elseif pattern[-len(g:fuf_patternSeparator) : ] == g:fuf_patternSeparator
+  elseif pattern[-len(g:fuf_patternSeparator) : ] ==# g:fuf_patternSeparator
     let numBs = len(split(pattern, g:fuf_patternSeparator, 1)[-2])
           \   + len(g:fuf_patternSeparator)
-  elseif self.targetsPath() && pattern[-1 : ] =~ '[/\\]'
+  elseif self.targetsPath() && pattern[-1 : ] =~# '[/\\]'
     let numBs = len(matchstr(pattern, '[^/\\]*.$'))
   else
     let numBs = 1
@@ -970,7 +1010,7 @@ function s:handlerBase.onSwitchMode(shift)
   call sort(modes, 'fuf#compareRanks')
   let s:reservedMode = self.getModeName()
   for i in range(len(modes))
-    if modes[i].ranks[1] == self.getModeName()
+    if modes[i].ranks[1] ==# self.getModeName()
       let s:reservedMode = modes[(i + a:shift) % len(modes)].ranks[1]
       break
     endif
