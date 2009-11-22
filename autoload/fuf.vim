@@ -59,6 +59,11 @@ function fuf#filterWithLimit(items, expr, limit)
 endfunction
 
 "
+function fuf#countModifiedFiles(files, time)
+  return len(filter(copy(a:files), 'getftime(v:val) > a:time'))
+endfunction
+
+"
 function fuf#getCurrentTagFiles()
   return sort(filter(map(tagfiles(), 'fnamemodify(v:val, '':p'')'), 'filereadable(v:val)'))
 endfunction

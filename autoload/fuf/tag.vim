@@ -51,8 +51,7 @@ function s:enumTags(tagFiles)
     return []
   endif
   let key = join(a:tagFiles, "\n")
-  " cache not created or tags file updated? 
-  if !exists('s:cache[key]') || max(map(copy(a:tagFiles), 'getftime(v:val) >= s:cache[key].time'))
+  if !exists('s:cache[key]') || fuf#countModifiedFiles(a:tagFiles, s:cache[key].time)
     let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTagList(v:val)')))
     let items = map(items, 'fuf#makeNonPathItem(v:val, "")')
     call fuf#mapToSetSerialIndex(items, 1)
@@ -63,8 +62,8 @@ function s:enumTags(tagFiles)
 endfunction
 
 "
-function s:getTagList(tagfile)
-  let result = map(readfile(a:tagfile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
+function s:getTagList(tagFile)
+  let result = map(readfile(a:tagFile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
   return filter(result, 'v:val =~# ''\S''')
 endfunction
 

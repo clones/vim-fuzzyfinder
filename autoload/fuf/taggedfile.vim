@@ -60,8 +60,7 @@ function s:enumTaggedFiles(tagFiles)
     return []
   endif
   let key = join([getcwd()] + a:tagFiles, "\n")
-  " cache not created or tags file updated? 
-  if !exists('s:cache[key]') || max(map(copy(a:tagFiles), 'getftime(v:val) >= s:cache[key].time'))
+  if !exists('s:cache[key]') || fuf#countModifiedFiles(a:tagFiles, s:cache[key].time)
     let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTaggedFileList(v:val)')))
     call map(items, 'fuf#makePathItem(v:val, "", 0)')
     call fuf#mapToSetSerialIndex(items, 1)
