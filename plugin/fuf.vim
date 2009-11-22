@@ -81,9 +81,11 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_tag_prompt'     , '>Tag>')
   call s:defineOption('g:fuf_tag_switchOrder', 70)
+  call s:defineOption('g:fuf_tag_cache_dir'  , '~/.vim-fuf-cache/tag')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_taggedfile_prompt'     , '>Tagged-File>')
   call s:defineOption('g:fuf_taggedfile_switchOrder', 80)
+  call s:defineOption('g:fuf_taggedfile_cache_dir'  , '~/.vim-fuf-cache/taggedfile')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_jumplist_prompt'     , '>Jump-List>')
   call s:defineOption('g:fuf_jumplist_switchOrder', 90)

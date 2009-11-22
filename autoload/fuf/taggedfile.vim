@@ -55,17 +55,39 @@ function s:getTaggedFileList(tagfile)
 endfunction
 
 "
+function s:parseTagFiles(tagFiles)
+  if !empty(g:fuf_taggedfile_cache_dir)
+    if !isdirectory(expand(g:fuf_taggedfile_cache_dir))
+      call mkdir(expand(g:fuf_taggedfile_cache_dir), 'p')
+    endif
+    " NOTE: fnamemodify('a/b', ':p') returns 'a/b/' if the directory exists.
+    let cacheFile = fnamemodify(g:fuf_taggedfile_cache_dir, ':p')
+          \ . fuf#encodeForFilename(join(a:tagFiles, "\n"))
+    if filereadable(cacheFile) && fuf#countModifiedFiles(a:tagFiles, getftime(cacheFile)) == 0
+      return map(readfile(cacheFile), 'eval(v:val)')
+    endif
+  endif
+  let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTaggedFileList(v:val)')))
+  call map(items, 'fuf#makePathItem(v:val, "", 0)')
+  call fuf#mapToSetSerialIndex(items, 1)
+  call fuf#mapToSetAbbrWithSnippedWordAsPath(items)
+  if !empty(g:fuf_taggedfile_cache_dir)
+    call writefile(map(copy(items), 'string(v:val)'), cacheFile)
+  endif
+  return items
+endfunction
+
+"
 function s:enumTaggedFiles(tagFiles)
   if !len(a:tagFiles)
     return []
   endif
   let key = join([getcwd()] + a:tagFiles, "\n")
   if !exists('s:cache[key]') || fuf#countModifiedFiles(a:tagFiles, s:cache[key].time)
-    let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTaggedFileList(v:val)')))
-    call map(items, 'fuf#makePathItem(v:val, "", 0)')
-    call fuf#mapToSetSerialIndex(items, 1)
-    call fuf#mapToSetAbbrWithSnippedWordAsPath(items)
-    let s:cache[key] = { 'time'  : localtime(), 'items' : items }
+    let s:cache[key] = {
+          \   'time'  : localtime(),
+          \   'items' : s:parseTagFiles(a:tagFiles)
+          \ }
   endif
   return s:cache[key].items
 endfunction

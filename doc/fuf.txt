@@ -988,6 +988,12 @@ For Tag Mode ~
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
+                                                      *g:fuf_tag_cache_dir*  >
+  let g:fuf_tag_cache_dir = '~/.vim-fuf-cache/tag'
+<
+        Cache files are created in this directory. If empty, they are not
+        created.
+
                                              *fuf-options-for-taggedfile-mode*
 For Tagged-File Mode ~
 
@@ -1001,6 +1007,12 @@ For Tagged-File Mode ~
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
+
+                                               *g:fuf_taggedfile_cache_dir*  >
+  let g:fuf_taggedfile_cache_dir = '~/.vim-fuf-cache/taggedfile'
+<
+        Cache files are created in this directory. If empty, they are not
+        created.
 
                                                *fuf-options-for-jumplist-mode*
 For Jump-List Mode ~
@@ -1092,6 +1104,10 @@ SPECIAL THANKS                                                    *fuf-thanks*
 
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
+
+3.5:
+  - Changed Tag mode and Tagged-File mode to cache parsed data into
+    ~/.vim-fuf-cache/ .
 
 3.4:
   - Added new feature which makes it possible to preview selected completion
