@@ -107,6 +107,34 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
+function fuf#encodeForFilename(str)
+  let str = a:str
+  let str = substitute(str, '_'  , '__' , 'g')
+  let str = substitute(str, '\s' , '_0_', 'g')
+  let str = substitute(str, '\V*', '_1_', 'g')
+  let str = substitute(str, '\V?', '_2_', 'g')
+  let str = substitute(str, '\V[', '_3_', 'g')
+  let str = substitute(str, '\V]', '_4_', 'g')
+  let str = substitute(str, '\V{', '_5_', 'g')
+  let str = substitute(str, '\V`', '_6_', 'g')
+  let str = substitute(str, '\V$', '_7_', 'g')
+  let str = substitute(str, '\V%', '_8_', 'g')
+  let str = substitute(str, '\V#', '_9_', 'g')
+  let str = substitute(str, "\V'", '_a_', 'g')
+  let str = substitute(str, '\V"', '_b_', 'g')
+  let str = substitute(str, '\V|', '_c_', 'g')
+  let str = substitute(str, '\V!', '_d_', 'g')
+  let str = substitute(str, '\V<', '_e_', 'g')
+  let str = substitute(str, '\V>', '_f_', 'g')
+  let str = substitute(str, '\V-', '_-_', 'g')
+  let str = substitute(str, '\V+', '_+_', 'g')
+  let str = substitute(str, '\V/', '-'  , 'g')
+  let str = substitute(str, '\V\', '-'  , 'g')
+  let str = substitute(str, '\n' , '+'  , 'g')
+  return '+' . str
+endfunction
+
+"
 function fuf#getFileLines(file)
   let bufnr = (type(a:file) ==# type(0) ? a:file : bufnr('^' . a:file . '$'))
   let lines = getbufline(bufnr, 1, '$')
