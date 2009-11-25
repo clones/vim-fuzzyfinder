@@ -46,9 +46,9 @@ endfunction
 let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
-function s:getTagList(tagFile)
-  let result = map(readfile(a:tagFile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
-  return filter(result, 'v:val =~# ''\S''')
+function s:getTagNames(tagFile)
+  let names = map(readfile(a:tagFile), 'matchstr(v:val, ''^[^!\t][^\t]*'')')
+  return filter(names, 'v:val =~# ''\S''')
 endfunction
 
 "
@@ -64,7 +64,7 @@ function s:parseTagFiles(tagFiles)
       return map(readfile(cacheFile), 'eval(v:val)')
     endif
   endif
-  let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTagList(v:val)')))
+  let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTagNames(v:val)')))
   let items = map(items, 'fuf#makeNonPathItem(v:val, "")')
   call fuf#mapToSetSerialIndex(items, 1)
   let items = map(items, 'fuf#setAbbrWithFormattedWord(v:val)')
