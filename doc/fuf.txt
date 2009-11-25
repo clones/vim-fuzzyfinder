@@ -874,7 +874,7 @@ For File Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                                        *g:fuf_file_exclude*  >
-  let g:fuf_file_exclude = '\v\~$|\.(o|exe|bak|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
+  let g:fuf_file_exclude = '\v\~$|\.(o|exe|dll|bak|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -1107,6 +1107,8 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.6: [TODO]
   - Fixed a bug that repeating preview key produced no effect.
+  - Fixed a bug that repeating preview key produced no effect.
+  - Changed the default values of g:fuf_file_exclude for ignoring "*.dll".
 
 3.5:
   - Changed Tag mode and Tagged-File mode to cache parsed data into
