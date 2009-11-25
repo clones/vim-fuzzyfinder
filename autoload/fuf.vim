@@ -13,6 +13,12 @@ let g:loaded_autoload_fuf = 1
 "=============================================================================
 " GLOBAL FUNCTIONS {{{1
 
+
+
+function fuf#getPathSeparator()
+  return (!&shellslash && (has('win32') || has('win64')) ? '\' : '/')
+endfunction
+
 " Removes duplicates
 " this function doesn't change list of argument.
 function fuf#unique(items)
@@ -103,36 +109,21 @@ endfunction
 " "foo/.../bar/...hoge" -> "foo/.../bar/../../hoge"
 function fuf#expandTailDotSequenceToParentDir(pattern)
   return substitute(a:pattern, '^\(.*[/\\]\)\?\zs\.\(\.\+\)\ze[^/\\]*$',
-        \           '\=repeat(".." . s:PATH_SEPARATOR, len(submatch(2)))', '')
+        \           '\=repeat(".." . fuf#getPathSeparator(), len(submatch(2)))', '')
 endfunction
 
 "
-function fuf#encodeForFilename(str)
-  let str = a:str
-  let str = substitute(str, '_'  , '__' , 'g')
-  let str = substitute(str, '\s' , '_0_', 'g')
-  let str = substitute(str, '\V*', '_1_', 'g')
-  let str = substitute(str, '\V?', '_2_', 'g')
-  let str = substitute(str, '\V[', '_3_', 'g')
-  let str = substitute(str, '\V]', '_4_', 'g')
-  let str = substitute(str, '\V{', '_5_', 'g')
-  let str = substitute(str, '\V`', '_6_', 'g')
-  let str = substitute(str, '\V$', '_7_', 'g')
-  let str = substitute(str, '\V%', '_8_', 'g')
-  let str = substitute(str, '\V#', '_9_', 'g')
-  let str = substitute(str, "\V'", '_a_', 'g')
-  let str = substitute(str, '\V"', '_b_', 'g')
-  let str = substitute(str, '\V|', '_c_', 'g')
-  let str = substitute(str, '\V!', '_d_', 'g')
-  let str = substitute(str, '\V<', '_e_', 'g')
-  let str = substitute(str, '\V>', '_f_', 'g')
-  let str = substitute(str, '\V:', '_g_', 'g')
-  let str = substitute(str, '\V-', '_-_', 'g')
-  let str = substitute(str, '\V+', '_+_', 'g')
-  let str = substitute(str, '\V/', '-'  , 'g')
-  let str = substitute(str, '\V\', '-'  , 'g')
-  let str = substitute(str, '\n' , '+'  , 'g')
-  return '+' . str
+function fuf#hash128(str)
+  let a = 0x00000800 " shift 11 bit 
+  let b = 0x001fffff " extract 11 bit
+  let nHash = 4
+  let hashes = repeat([0], nHash)
+  for i in range(len(a:str))
+    let iHash = i % nHash
+    let hashes[iHash] = hashes[iHash] * a + hashes[iHash] / b
+    let hashes[iHash] += char2nr(a:str[i])
+  endfor
+  return join(map(hashes, 'printf("%08x", v:val)'), '')
 endfunction
 
 "
@@ -242,6 +233,16 @@ function fuf#openTag(tag, mode)
 endfunction
 
 "
+function fuf#openHelp(tag, mode)
+  execute {
+        \   s:OPEN_TYPE_CURRENT : 'help '         ,
+        \   s:OPEN_TYPE_SPLIT   : 'help '         ,
+        \   s:OPEN_TYPE_VSPLIT  : 'vertical help ',
+        \   s:OPEN_TYPE_TAB     : 'tab help '   ,
+        \ }[a:mode] . a:tag
+endfunction
+
+"
 function fuf#prejump(mode)
   execute {
         \   s:OPEN_TYPE_CURRENT : ''         ,
@@ -269,7 +270,7 @@ endfunction
 function fuf#makePathItem(fname, menu, appendsDirSuffix)
   let pathPair = fuf#splitPath(a:fname)
   let dirSuffix = (a:appendsDirSuffix && isdirectory(a:fname)
-        \          ? s:PATH_SEPARATOR
+        \          ? fuf#getPathSeparator()
         \          : '')
   return {
         \   'word'              : a:fname . dirSuffix,
@@ -524,7 +525,6 @@ endfunction
 " LOCAL FUNCTIONS/VARIABLES {{{1
 
 let s:INFO_FILE_VERSION_LINE = "VERSION\t300"
-let s:PATH_SEPARATOR = (!&shellslash && (has('win32') || has('win64')) ? '\' : '/')
 let s:ABBR_SNIP_MASK = '...'
 let s:OPEN_TYPE_CURRENT = 1
 let s:OPEN_TYPE_SPLIT   = 2

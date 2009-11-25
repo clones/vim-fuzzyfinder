@@ -49,6 +49,10 @@ FuzzyFinder が検索できる対象は次の通りです:
         - ブックマーク
         - タグ
         - タグファイルに含まれるファイル
+        - ジャンプリスト
+        - チェンジリスト
+        - quickfix
+        - ヘルプ
 
 FuzzyFinder は ファイルを検索したりアイテムを選択するシステムを利用するための
 API も提供します。
@@ -92,6 +96,7 @@ ZIPファイルをランタイムディレクトリに展開します。
         |:FufJumpList|   - Jump-List モード (|fuf-jumplist-mode|)
         |:FufChangeList| - Change-List モード (|fuf-changelist-mode|)
         |:FufQuickfix|   - Quickfix モード (|fuf-quickfix-mode|)
+        |:FufHelp|       - Help モード (|fuf-quickfix-mode|)
 
 これらのコマンドを押しやすいキーにマッピングすることを推奨します。
 
@@ -210,11 +215,17 @@ Change-List モード ~
 このモードはカレントバッファの|changelist|から選択した位置へジャンプするインタ
 ーフェースを提供します。
 
-                                                         *fuf-quickfix-mode*
+                                                           *fuf-quickfix-mode*
 Quickfix モード ~
 
 このモードは|quickfix|リストから選択した位置へジャンプするインターフェースを提
 供します。
+
+                                                               *fuf-help-mode*
+Help モード ~
+
+このモードはヘルプタグを選択してそのヘルプページへジャンプするインターフェース
+を提供します。
 
                                                           *fuf-givenfile-mode*
 Given-File モード ~
@@ -643,6 +654,15 @@ See also: |fuf-vimrc-example|
 
         FuzzyFinder 起動後に {pattern} が挿入されます。
 
+                                                                    *:FufHelp*
+:FufHelp[!] [{pattern}]
+        Help モードを起動します。
+
+        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
+        うになります。
+
+        FuzzyFinder 起動後に {pattern} が挿入されます。
+
                                                                 *:FufEditInfo*
 :FufEditInfo
         情報ファイルを編集するためのバッファを開きます。詳しくは
@@ -936,6 +956,12 @@ Tag モード用 ~
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
 
+                                                      *g:fuf_tag_cache_dir*  >
+  let g:fuf_tag_cache_dir = '~/.vim-fuf-cache/tag'
+<
+        このディレクトリ内にキャッシュファイルが作成されます。空文字列なら作成
+        されません。
+
                                              *fuf-options-for-taggedfile-mode*
 Tagged-File モード用 ~
 
@@ -949,6 +975,12 @@ Tagged-File モード用 ~
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
+
+                                               *g:fuf_taggedfile_cache_dir*  >
+  let g:fuf_taggedfile_cache_dir = '~/.vim-fuf-cache/taggedfile'
+<
+        このディレクトリ内にキャッシュファイルが作成されます。空文字列なら作成
+        されません。
 
                                                *fuf-options-for-jumplist-mode*
 Jump-List モード用 ~
@@ -992,6 +1024,26 @@ Quickfix モード用 ~
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
 
+                                                   *fuf-options-for-help-mode*
+Help モード用 ~
+
+                                                        *g:fuf_help_prompt*  >
+  let g:fuf_help_prompt = '>Help>'
+<
+        プロンプト文字列。
+
+                                                   *g:fuf_help_switchOrder*  >
+  let g:fuf_help_switchOrder = 130
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
+                                                     *g:fuf_help_cache_dir*  >
+  let g:fuf_help_cache_dir = '~/.vim-fuf-cache/help'
+<
+        このディレクトリ内にキャッシュファイルが作成されます。空文字列なら作成
+        されません。
+
 
 ==============================================================================
 vimrc の例                                                 *fuf-vimrc-example*
@@ -1021,6 +1073,7 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
   nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
   nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
+  nnoremap <silent> <C-f><C-h> :FufHelp<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
   nnoremap <silent> <C-f><C-e> :FufEditInfo<CR>
