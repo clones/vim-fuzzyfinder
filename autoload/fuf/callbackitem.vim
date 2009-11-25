@@ -100,7 +100,7 @@ endfunction
 "
 function s:handler.makePreviewLines(word, count)
   if s:forPath
-    return fuf#makePreviewLinesForFile(a:word, count, self.getPreviewHeight())
+    return fuf#makePreviewLinesForFile(a:word, a:count, self.getPreviewHeight())
   endif
   return []
 endfunction

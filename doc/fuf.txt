@@ -1105,6 +1105,9 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
+3.6: [TODO]
+  - Fixed a bug that repeating preview key produced no effect.
+
 3.5:
   - Changed Tag mode and Tagged-File mode to cache parsed data into
     ~/.vim-fuf-cache/ .
