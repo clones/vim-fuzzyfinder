@@ -53,6 +53,7 @@ FuzzyFinder can search:
         - jump list
         - change list
         - quickfix
+        - help
 
 FuzzyFinder also provides APIs to use its system of searching files or
 selecting items.
@@ -97,6 +98,7 @@ You can launch FuzzyFinder by following commands:
         |:FufJumpList|   - Jump-List mode (|fuf-jumplist-mode|)
         |:FufChangeList| - Change-List mode (|fuf-changelist-mode|)
         |:FufQuickfix|   - Quickfix mode (|fuf-quickfix-mode|)
+        |:FufHelp|       - Help mode (|fuf-help-mode|)
 
 It is recommended to map these commands.
 
@@ -226,6 +228,12 @@ Quickfix mode ~
 
 This mode provides an interface to select one from the |quickfix| list and
 jump to the position.
+
+                                                               *fuf-help-mode*
+Help mode ~
+
+This mode provides an interface to select a help tag and jump to the help
+page.
 
                                                           *fuf-givenfile-mode*
 Given-File mode ~
@@ -670,6 +678,15 @@ See also: |fuf-vimrc-example|
 
         {pattern} will be inserted after launching FuzzyFinder.
 
+                                                                    *:FufHelp*
+:FufHelp[!] [{pattern}]
+        Launchs Help mode.
+
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
+
+        {pattern} will be inserted after launching FuzzyFinder.
+
                                                                 *:FufEditInfo*
 :FufEditInfo
         Opens a buffer for editing your information file. See
@@ -1056,6 +1073,26 @@ For Quickfix Mode ~
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
+                                                   *fuf-options-for-help-mode*
+For Help Mode ~
+
+                                                        *g:fuf_help_prompt*  >
+  let g:fuf_help_prompt = '>Help>'
+<
+        Prompt string.
+
+                                                   *g:fuf_help_switchOrder*  >
+  let g:fuf_help_switchOrder = 130
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
+
+                                                     *g:fuf_help_cache_dir*  >
+  let g:fuf_help_cache_dir = '~/.vim-fuf-cache/help'
+<
+        Cache files are created in this directory. If empty, they are not
+        created.
+
 
 ==============================================================================
 VIMRC EXAMPLE                                              *fuf-vimrc-example*
@@ -1085,6 +1122,7 @@ VIMRC EXAMPLE                                              *fuf-vimrc-example*
   nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
   nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
   nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
+  nnoremap <silent> <C-f><C-h> :FufHelp<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
   nnoremap <silent> <C-f><C-e> :FufEditInfo<CR>
@@ -1106,7 +1144,7 @@ SPECIAL THANKS                                                    *fuf-thanks*
 CHANGELOG                                                      *fuf-changelog*
 
 3.6: [TODO]
-  - Fixed a bug that repeating preview key produced no effect.
+  - Added Help mode.
   - Fixed a bug that repeating preview key produced no effect.
   - Changed the default values of g:fuf_file_exclude for ignoring "*.dll".
 

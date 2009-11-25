@@ -23,7 +23,7 @@ function s:initialize()
   call s:defineOption('g:fuf_modes'  , [
         \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
         \   'bookmark', 'tag', 'taggedfile',
-        \   'jumplist', 'changelist', 'quickfix',
+        \   'jumplist', 'changelist', 'quickfix', 'help',
         \   'givenfile', 'givendir', 'givencmd',
         \   'callbackfile', 'callbackitem',
         \ ])
@@ -95,6 +95,10 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_quickfix_prompt'     , '>Quickfix>')
   call s:defineOption('g:fuf_quickfix_switchOrder', 110)
+  "---------------------------------------------------------------------------
+  call s:defineOption('g:fuf_help_prompt'     , '>Help>')
+  call s:defineOption('g:fuf_help_switchOrder', 130)
+  call s:defineOption('g:fuf_help_cache_dir'  , '~/.vim-fuf-cache/help')
   "---------------------------------------------------------------------------
   call filter(g:fuf_modes, 'count(g:fuf_modesDisable, v:val) == 0')
   for m in g:fuf_modes
