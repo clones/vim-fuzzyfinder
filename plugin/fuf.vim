@@ -58,7 +58,7 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_file_prompt'     , '>File>')
   call s:defineOption('g:fuf_file_switchOrder', 20)
-  call s:defineOption('g:fuf_file_exclude'    , '\v\~$|\.(o|exe|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
+  call s:defineOption('g:fuf_file_exclude'    , '\v\~$|\.(o|exe|dll|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_dir_prompt'     , '>Dir>')
   call s:defineOption('g:fuf_dir_switchOrder', 30)
