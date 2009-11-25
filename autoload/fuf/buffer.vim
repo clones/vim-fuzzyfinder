@@ -135,7 +135,7 @@ function s:handler.makePreviewLines(word, count)
   if empty(item)
     return []
   endif
-  return fuf#makePreviewLinesForFile(item.bufNr, count, self.getPreviewHeight())
+  return fuf#makePreviewLinesForFile(item.bufNr, a:count, self.getPreviewHeight())
 endfunction
 
 "

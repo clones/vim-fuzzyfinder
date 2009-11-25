@@ -126,7 +126,7 @@ endfunction
 
 "
 function s:handler.makePreviewLines(word, count)
-  return fuf#makePreviewLinesForFile(a:word, count, self.getPreviewHeight())
+  return fuf#makePreviewLinesForFile(a:word, a:count, self.getPreviewHeight())
 endfunction
 
 "
