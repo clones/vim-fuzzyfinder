@@ -62,7 +62,7 @@ function s:parseTagFiles(tagFiles)
     endif
     " NOTE: fnamemodify('a/b', ':p') returns 'a/b/' if the directory exists.
     let cacheFile = fnamemodify(g:fuf_taggedfile_cache_dir, ':p')
-          \ . fuf#hash128(join(a:tagFiles, "\n"))
+          \ . fuf#hash224(join(a:tagFiles, "\n"))
     if filereadable(cacheFile) && fuf#countModifiedFiles(a:tagFiles, getftime(cacheFile)) == 0
       return map(readfile(cacheFile), 'eval(v:val)')
     endif

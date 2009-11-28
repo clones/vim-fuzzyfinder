@@ -113,10 +113,10 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
-function fuf#hash128(str)
+function fuf#hash224(str)
   let a = 0x00000800 " shift 11 bit 
   let b = 0x001fffff " extract 11 bit
-  let nHash = 4
+  let nHash = 7
   let hashes = repeat([0], nHash)
   for i in range(len(a:str))
     let iHash = i % nHash
