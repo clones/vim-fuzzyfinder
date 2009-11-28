@@ -807,6 +807,13 @@ See also: |fuf-vimrc-example|
 <
         長い補完アイテムは、この長さに収まるよう省略して表示します。
 
+                                                      *g:fuf_previewHeight*  >
+  let g:fuf_previewHeight = 5
+<
+        プレビューをサポートするモードを起動したとき、'cmdheight'がこの値に設
+        定されます。選択されている補完アイテムの情報がコマンドライン領域に表示
+        されます。
+
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0
 <
