@@ -51,6 +51,7 @@ FuzzyFinder が検索できる対象は次の通りです:
         - タグファイルに含まれるファイル
         - ジャンプリスト
         - チェンジリスト
+        - バッファの行
         - quickfix
         - ヘルプ
 
@@ -96,7 +97,8 @@ ZIPファイルをランタイムディレクトリに展開します。
         |:FufJumpList|   - Jump-List モード (|fuf-jumplist-mode|)
         |:FufChangeList| - Change-List モード (|fuf-changelist-mode|)
         |:FufQuickfix|   - Quickfix モード (|fuf-quickfix-mode|)
-        |:FufHelp|       - Help モード (|fuf-quickfix-mode|)
+        |:FufLine|       - Line モード (|fuf-line-mode|)
+        |:FufHelp|       - Help モード (|fuf-help-mode|)
 
 これらのコマンドを押しやすいキーにマッピングすることを推奨します。
 
@@ -223,6 +225,11 @@ Quickfix モード ~
 
 このモードは|quickfix|リストから選択した位置へジャンプするインターフェースを提
 供します。
+
+                                                               *fuf-line-mode*
+Line モード ~
+
+TODO
 
                                                                *fuf-help-mode*
 Help モード ~
@@ -657,6 +664,10 @@ See also: |fuf-vimrc-example|
 
         FuzzyFinder 起動後に {pattern} が挿入されます。
 
+                                                                    *:FufLine*
+:FufLine [{pattern}]
+        TODO
+
                                                                     *:FufHelp*
 :FufHelp[!] [{pattern}]
         Help モードを起動します。
@@ -1045,6 +1056,20 @@ Quickfix モード用 ~
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
 
+                                             *fuf-options-for-line-mode*
+Line モード用 ~
+
+                                                        *g:fuf_line_prompt*  >
+  let g:fuf_line_prompt = '>Line[]>'
+<
+        プロンプト文字列。"[]" はインジケータに置換されます。
+
+                                                   *g:fuf_line_switchOrder*  >
+  let g:fuf_line_switchOrder = 120
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
                                                    *fuf-options-for-help-mode*
 Help モード用 ~
 
@@ -1094,6 +1119,7 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
   nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
   nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
+  nnoremap <silent> <C-f><C-l> :FufLine<CR>
   nnoremap <silent> <C-f><C-h> :FufHelp<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
