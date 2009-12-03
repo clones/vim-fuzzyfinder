@@ -184,7 +184,7 @@ This mode is set to disable in |g:fuf_modesDisable| by default because mapping
 Bookmark mode ~
 
 This mode provides an interface to select one of the bookmarks you have added
-beforehand and jump to the line of the bookmark.
+beforehand and jump there.
 
 You can add a cursor line to bookmarks by |:FufAddBookmark| command.
 Execute that command and you will be prompted to enter a bookmark name.
@@ -220,24 +220,25 @@ in current tagfiles and open it.
 Jump-List mode ~
 
 This mode provides an interface to select one from the |jumplist| of the
-current window and jump to the position.
+current window and jump there.
 
                                                          *fuf-changelist-mode*
 Change-List mode ~
 
 This mode provides an interface to select one from the |changelist| of the
-current buffer and jump to the position.
+current buffer and jump there.
 
                                                            *fuf-quickfix-mode*
 Quickfix mode ~
 
 This mode provides an interface to select one from the |quickfix| list and
-jump to the position.
+jump there.
 
                                                                *fuf-line-mode*
 Line mode ~
 
-TODO
+This mode provides an interface to select a line from current buffer and jump
+there.
 
                                                                *fuf-help-mode*
 Help mode ~
@@ -690,7 +691,12 @@ See also: |fuf-vimrc-example|
 
                                                                     *:FufLine*
 :FufLine[!] [{pattern}]
-        TODO
+        Launchs Line mode.
+
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
+
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                     *:FufHelp*
 :FufHelp[!] [{pattern}]

@@ -42,7 +42,7 @@ function fuf#givencmd#launch(initialPattern, partialMatching, prompt, items)
   let s:items = copy(a:items)
   call map(s:items, 'fuf#makeNonPathItem(v:val, "")')
   call fuf#mapToSetSerialIndex(s:items, 1)
-  call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')
   call fuf#launch(s:MODE_NAME, a:initialPattern, a:partialMatching)
 endfunction
 

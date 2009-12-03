@@ -155,7 +155,7 @@ function s:handler.onModeEnterPost()
   call filter(self.items, '!empty(v:val)')
   call reverse(self.items)
   call fuf#mapToSetSerialIndex(self.items, 1)
-  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')
 endfunction
 
 "

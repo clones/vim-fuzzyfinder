@@ -78,7 +78,13 @@ endfunction
 
 "
 function s:handler.makePreviewLines(word, count)
-  "TODO
+  let items = filter(copy(self.items), 'v:val.word ==# a:word')
+  if empty(items)
+    return []
+  endif
+  let lines = fuf#getFileLines(self.bufNrPrev)
+  return fuf#makePreviewLinesAround(
+        \ lines, [items[0].index - 1], a:count, self.getPreviewHeight())
 endfunction
 
 "
@@ -88,7 +94,14 @@ endfunction
 
 "
 function s:handler.onOpen(word, mode)
-  "TODO
+  call fuf#prejump(a:mode)
+  call filter(self.items, 'v:val.word ==# a:word')
+  if empty(self.items)
+    return
+    execute 'cc ' . self.items[0].index
+  endif
+  call cursor(self.items[0].index, 0)
+  normal! zvzz
 endfunction
 
 "
@@ -101,13 +114,12 @@ function s:handler.onModeEnterPost()
   let self.items = getbufline(self.bufNrPrev, 1, '$')
   let lnumFormat = '%' . len(string(len(self.items) + 1)) . 'd|'
   for i in range(len(self.items))
-    let self.items[i] = substitute(self.items[i], "\t", tab, 'g')
-    let self.items[i] = printf(lnumFormat, i + 1) . self.items[i]
+    let self.items[i] = printf(lnumFormat, i + 1)
+          \ . substitute(self.items[i], "\t", tab, 'g')
   endfor
   call map(self.items, 'fuf#makeNonPathItem(v:val, "")')
   call fuf#mapToSetSerialIndex(self.items, 1)
-  "TODO do not append index to abbr
-  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val, 0)')
 endfunction
 
 "

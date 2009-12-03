@@ -199,7 +199,7 @@ function s:handler.onModeEnterPost()
   let self.items = copy(self.info.data)
   call map(self.items, 'fuf#makeNonPathItem(v:val.word, strftime(g:fuf_timeFormat, v:val.time))')
   call fuf#mapToSetSerialIndex(self.items, 1)
-  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')
 endfunction
 
 "
