@@ -170,7 +170,7 @@ function s:handler.makePreviewLines(word, count)
   endif
   let lines = fuf#getFileLines(items[0].path)
   let index = s:getMatchingIndex(lines, items[0].pattern)
-  return fuf#makePreviewLinesAround(
+  return [items[0].path . ':'] + fuf#makePreviewLinesAround(
         \ lines, (index < 0 ? [] : [index]), a:count, self.getPreviewHeight() - 1)
 endfunction
 
