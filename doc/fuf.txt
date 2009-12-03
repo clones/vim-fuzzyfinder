@@ -1145,8 +1145,10 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.6: [TODO]
   - Added Help mode.
-  - Fixed a bug that repeating preview key produced no effect.
   - Changed the default values of g:fuf_file_exclude for ignoring "*.dll".
+  - Fixed a bug that repeating preview key produced no effect.
+  - Fixed a bug that File mode and Directory mode didn't list items in a
+    directory whose name includes uppercase characters.
 
 3.5:
   - Changed Tag mode and Tagged-File mode to cache parsed data into
