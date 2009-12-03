@@ -52,6 +52,7 @@ FuzzyFinder can search:
         - files which are included in current tagfiles
         - jump list
         - change list
+        - buffer lines
         - quickfix
         - help
 
@@ -98,6 +99,7 @@ You can launch FuzzyFinder by following commands:
         |:FufJumpList|   - Jump-List mode (|fuf-jumplist-mode|)
         |:FufChangeList| - Change-List mode (|fuf-changelist-mode|)
         |:FufQuickfix|   - Quickfix mode (|fuf-quickfix-mode|)
+        |:FufLine|       - Line mode (|fuf-line-mode|)
         |:FufHelp|       - Help mode (|fuf-help-mode|)
 
 It is recommended to map these commands.
@@ -231,6 +233,11 @@ Quickfix mode ~
 
 This mode provides an interface to select one from the |quickfix| list and
 jump to the position.
+
+                                                               *fuf-line-mode*
+Line mode ~
+
+TODO
 
                                                                *fuf-help-mode*
 Help mode ~
@@ -681,6 +688,10 @@ See also: |fuf-vimrc-example|
 
         {pattern} will be inserted after launching FuzzyFinder.
 
+                                                                    *:FufLine*
+:FufLine[!] [{pattern}]
+        TODO
+
                                                                     *:FufHelp*
 :FufHelp[!] [{pattern}]
         Launchs Help mode.
@@ -1081,6 +1092,20 @@ For Quickfix Mode ~
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
+                                                   *fuf-options-for-line-mode*
+For Line Mode ~
+
+                                                        *g:fuf_line_prompt*  >
+  let g:fuf_line_prompt = '>Line[]>'
+<
+        Prompt string. "[]" will be substituted with indicators.
+
+                                                   *g:fuf_line_switchOrder*  >
+  let g:fuf_line_switchOrder = 120
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
+
                                                    *fuf-options-for-help-mode*
 For Help Mode ~
 
@@ -1130,6 +1155,7 @@ VIMRC EXAMPLE                                              *fuf-vimrc-example*
   nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
   nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
   nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
+  nnoremap <silent> <C-f><C-l> :FufLine<CR>
   nnoremap <silent> <C-f><C-h> :FufHelp<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
@@ -1151,7 +1177,8 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
-3.6: [TODO]
+3.6:
+  - Added Line mode.
   - Added Help mode.
   - Added key mapping to switch between fuzzy matching and partial matching.
   - Changed the default values of g:fuf_file_exclude for ignoring "*.dll".

@@ -23,7 +23,7 @@ function s:initialize()
   call s:defineOption('g:fuf_modes'  , [
         \   'buffer', 'file', 'dir', 'mrufile', 'mrucmd',
         \   'bookmark', 'tag', 'taggedfile',
-        \   'jumplist', 'changelist', 'quickfix', 'help',
+        \   'jumplist', 'changelist', 'quickfix', 'line', 'help',
         \   'givenfile', 'givendir', 'givencmd',
         \   'callbackfile', 'callbackitem',
         \ ])
@@ -96,6 +96,9 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_quickfix_prompt'     , '>Quickfix[]>')
   call s:defineOption('g:fuf_quickfix_switchOrder', 110)
+  "---------------------------------------------------------------------------
+  call s:defineOption('g:fuf_line_prompt'     , '>Line[]>')
+  call s:defineOption('g:fuf_line_switchOrder', 120)
   "---------------------------------------------------------------------------
   call s:defineOption('g:fuf_help_prompt'     , '>Help[]>')
   call s:defineOption('g:fuf_help_switchOrder', 130)
