@@ -125,6 +125,9 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 
 キャンセルして直前のウィンドウに戻るには、インサートモードを抜けてください。
 
+<C-\><C-\> (|g:fuf_keySwitchMatching|) で、検索方法をあいまいマッチングまたは
+部分一致マッチングに交互に切り替えることができます。
+
 <C-t> (|g:fuf_keyNextMode|) と <C-y> (|g:fuf_keyPrevMode|) で、インサートモー
 ドを抜けることなくカレントモードを切り替えることが出来ます。
 
@@ -733,9 +736,14 @@ See also: |fuf-vimrc-example|
         履歴から前の入力パターンを呼び出すキー。
 
                                                      *g:fuf_keyNextPattern*  >
-  let g:fuf_keyNextPattern = '<C-^>'
+  let g:fuf_keyNextPattern = '<C-_>'
 <
         履歴から次の入力パターンを呼び出すキー。
+
+                                                  *g:fuf_keySwitchMatching*  >
+  let g:fuf_keySwitchMatching = '<C-\><C-\>'
+<
+        あいまいマッチングと部分一致マッチングを切り替えるキー。
 
                                                            *g:fuf_infoFile*  >
   let g:fuf_infoFile = '~/.vim-fuf'
@@ -823,9 +831,9 @@ See also: |fuf-vimrc-example|
 Buffer モード用 ~
 
                                                       *g:fuf_buffer_prompt*  >
-  let g:fuf_buffer_prompt = '>Buffer>'
+  let g:fuf_buffer_prompt = '>Buffer[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                  *g:fuf_buffer_switchOrder*  >
   let g:fuf_buffer_switchOrder = 10
@@ -842,9 +850,9 @@ Buffer モード用 ~
 File モード用 ~
 
                                                         *g:fuf_file_prompt*  >
-  let g:fuf_file_prompt = '>File>'
+  let g:fuf_file_prompt = '>File[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                    *g:fuf_file_switchOrder*  >
   let g:fuf_file_switchOrder = 20
@@ -861,9 +869,9 @@ File モード用 ~
 Directory モード用 ~
 
                                                          *g:fuf_dir_prompt*  >
-  let g:fuf_dir_prompt = '>Dir>'
+  let g:fuf_dir_prompt = '>Dir[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                     *g:fuf_dir_switchOrder*  >
   let g:fuf_dir_switchOrder = 30
@@ -880,9 +888,9 @@ Directory モード用 ~
 Mru-File モード用 ~
 
                                                      *g:fuf_mrufile_prompt*  >
-  let g:fuf_mrufile_prompt = '>Mru-File>'
+  let g:fuf_mrufile_prompt = '>Mru-File[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                 *g:fuf_mrufile_switchOrder*  >
   let g:fuf_mrufile_switchOrder = 40
@@ -904,9 +912,9 @@ Mru-File モード用 ~
 Mru-Cmd モード用 ~
 
                                                       *g:fuf_mrucmd_prompt*  >
-  let g:fuf_mrucmd_prompt = '>Mru-Cmd>'
+  let g:fuf_mrucmd_prompt = '>Mru-Cmd[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                  *g:fuf_mrucmd_switchOrder*  >
   let g:fuf_mrucmd_switchOrder = 50
@@ -928,9 +936,9 @@ Mru-Cmd モード用 ~
 Bookmark モード用 ~
 
                                                     *g:fuf_bookmark_prompt*  >
-  let g:fuf_bookmark_prompt = '>Bookmark>'
+  let g:fuf_bookmark_prompt = '>Bookmark[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                *g:fuf_bookmark_switchOrder*  >
   let g:fuf_bookmark_switchOrder = 60
@@ -953,9 +961,9 @@ Bookmark モード用 ~
 Tag モード用 ~
 
                                                          *g:fuf_tag_prompt*  >
-  let g:fuf_tag_prompt = '>Tag>'
+  let g:fuf_tag_prompt = '>Tag[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                     *g:fuf_tag_switchOrder*  >
   let g:fuf_tag_switchOrder = 70
@@ -973,9 +981,9 @@ Tag モード用 ~
 Tagged-File モード用 ~
 
                                                   *g:fuf_taggedfile_prompt*  >
-  let g:fuf_taggedfile_prompt = '>Tagged-File>'
+  let g:fuf_taggedfile_prompt = '>Tagged-File[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                              *g:fuf_taggedfile_switchOrder*  >
   let g:fuf_taggedfile_switchOrder = 80
@@ -993,9 +1001,9 @@ Tagged-File モード用 ~
 Jump-List モード用 ~
 
                                                     *g:fuf_jumplist_prompt*  >
-  let g:fuf_jumplist_prompt = '>Jump-List>'
+  let g:fuf_jumplist_prompt = '>Jump-List[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                *g:fuf_jumplist_switchOrder*  >
   let g:fuf_jumplist_switchOrder = 90
@@ -1007,9 +1015,9 @@ Jump-List モード用 ~
 Change-List モード用 ~
 
                                                   *g:fuf_changelist_prompt*  >
-  let g:fuf_changelist_prompt = '>Change-List>'
+  let g:fuf_changelist_prompt = '>Change-List[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                              *g:fuf_changelist_switchOrder*  >
   let g:fuf_changelist_switchOrder = 100
@@ -1021,9 +1029,9 @@ Change-List モード用 ~
 Quickfix モード用 ~
 
                                                   *g:fuf_quickfix_prompt*  >
-  let g:fuf_quickfix_prompt = '>Quickfix>'
+  let g:fuf_quickfix_prompt = '>Quickfix[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                              *g:fuf_quickfix_switchOrder*  >
   let g:fuf_quickfix_switchOrder = 110
@@ -1035,9 +1043,9 @@ Quickfix モード用 ~
 Help モード用 ~
 
                                                         *g:fuf_help_prompt*  >
-  let g:fuf_help_prompt = '>Help>'
+  let g:fuf_help_prompt = '>Help[]>'
 <
-        プロンプト文字列。
+        プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                    *g:fuf_help_switchOrder*  >
   let g:fuf_help_switchOrder = 130

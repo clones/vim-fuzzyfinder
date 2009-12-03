@@ -91,7 +91,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_changelist_prompt
+  return fuf#formatPrompt(g:fuf_changelist_prompt, self.partialMatching)
 endfunction
 
 "

@@ -73,7 +73,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_mrucmd_prompt
+  return fuf#formatPrompt(g:fuf_mrucmd_prompt, self.partialMatching)
 endfunction
 
 "
