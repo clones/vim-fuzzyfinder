@@ -812,7 +812,7 @@ See also: |fuf-vimrc-example|
 <
         プレビューをサポートするモードを起動したとき、'cmdheight'がこの値に設
         定されます。選択されている補完アイテムの情報がコマンドライン領域に表示
-        されます。
+        されます。0 ならプレビュー機能は無効になります。
 
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0

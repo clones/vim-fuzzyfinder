@@ -850,7 +850,7 @@ For All Modes ~
 <
         'cmdheight' is set to this when a mode supporting preview is launched.
         Information of selected completion item will be shown on command-line
-        area.
+        area. If zero, preview feature is disabled.
 
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0
