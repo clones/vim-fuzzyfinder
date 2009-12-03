@@ -110,7 +110,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_buffer_prompt
+  return fuf#formatPrompt(g:fuf_buffer_prompt, self.partialMatching)
 endfunction
 
 "

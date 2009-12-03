@@ -101,7 +101,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_jumplist_prompt
+  return fuf#formatPrompt(g:fuf_jumplist_prompt, self.partialMatching)
 endfunction
 
 "

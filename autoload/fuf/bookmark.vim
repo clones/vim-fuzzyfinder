@@ -137,7 +137,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_bookmark_prompt
+  return fuf#formatPrompt(g:fuf_bookmark_prompt, self.partialMatching)
 endfunction
 
 "

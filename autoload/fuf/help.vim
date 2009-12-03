@@ -143,7 +143,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_tag_prompt
+  return fuf#formatPrompt(g:fuf_tag_prompt, self.partialMatching)
 endfunction
 
 "

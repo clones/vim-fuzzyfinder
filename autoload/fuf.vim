@@ -127,6 +127,12 @@ function fuf#hash224(str)
 endfunction
 
 "
+function fuf#formatPrompt(prompt, partialMatching)
+  let indicator = (a:partialMatching ? '!' : '')
+  return substitute(a:prompt, '[]', indicator, 'g')
+endfunction
+
+"
 function fuf#getFileLines(file)
   let bufnr = (type(a:file) ==# type(0) ? a:file : bufnr('^' . a:file . '$'))
   let lines = getbufline(bufnr, 1, '$')
@@ -425,25 +431,24 @@ function fuf#launch(modeName, initialPattern, partialMatching)
           \ 'cmdheight', s:runningHandler.getPreviewHeight() + 1)
   endif
   call s:activateFufBuffer()
-  " local autocommands
   augroup FufLocal
     autocmd!
     autocmd CursorMovedI <buffer>        call s:runningHandler.onCursorMovedI()
     autocmd InsertLeave  <buffer> nested call s:runningHandler.onInsertLeave()
   augroup END
-  " local mapping
   for [key, func] in [
-        \   [ g:fuf_keyOpen       , 'onCr(' . s:OPEN_TYPE_CURRENT . ', 0)' ],
-        \   [ g:fuf_keyOpenSplit  , 'onCr(' . s:OPEN_TYPE_SPLIT   . ', 0)' ],
-        \   [ g:fuf_keyOpenVsplit , 'onCr(' . s:OPEN_TYPE_VSPLIT  . ', 0)' ],
-        \   [ g:fuf_keyOpenTabpage, 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
-        \   [ '<BS>'              , 'onBs()'                               ],
-        \   [ '<C-h>'             , 'onBs()'                               ],
-        \   [ g:fuf_keyPreview    , 'onPreviewBase()'                      ],
-        \   [ g:fuf_keyNextMode   , 'onSwitchMode(+1)'                     ],
-        \   [ g:fuf_keyPrevMode   , 'onSwitchMode(-1)'                     ],
-        \   [ g:fuf_keyPrevPattern, 'onRecallPattern(+1)'                  ],
-        \   [ g:fuf_keyNextPattern, 'onRecallPattern(-1)'                  ],
+        \   [ g:fuf_keyOpen          , 'onCr(' . s:OPEN_TYPE_CURRENT . ', 0)' ],
+        \   [ g:fuf_keyOpenSplit     , 'onCr(' . s:OPEN_TYPE_SPLIT   . ', 0)' ],
+        \   [ g:fuf_keyOpenVsplit    , 'onCr(' . s:OPEN_TYPE_VSPLIT  . ', 0)' ],
+        \   [ g:fuf_keyOpenTabpage   , 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
+        \   [ '<BS>'                 , 'onBs()'                               ],
+        \   [ '<C-h>'                , 'onBs()'                               ],
+        \   [ g:fuf_keyPreview       , 'onPreviewBase()'                      ],
+        \   [ g:fuf_keyNextMode      , 'onSwitchMode(+1)'                     ],
+        \   [ g:fuf_keyPrevMode      , 'onSwitchMode(-1)'                     ],
+        \   [ g:fuf_keySwitchMatching, 'onSwitchMatching()'                   ],
+        \   [ g:fuf_keyPrevPattern   , 'onRecallPattern(+1)'                  ],
+        \   [ g:fuf_keyNextPattern   , 'onRecallPattern(-1)'                  ],
         \ ]
     call fuf#defineKeyMappingInHandler(key, func)
   endfor
@@ -1102,6 +1107,15 @@ function s:handlerBase.onSwitchMode(shift)
     endif
   endfor
   call feedkeys("\<Esc>", 'n') " stopinsert doesn't work.
+endfunction
+
+"
+function s:handlerBase.onSwitchMatching()
+  let self.partialMatching = !self.partialMatching
+  let self.lastCol = -1
+  call setline('.', self.restorePrompt(self.lastPattern))
+  call feedkeys("\<End>", 'n')
+  "call self.onCursorMovedI()
 endfunction
 
 "

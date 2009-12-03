@@ -105,7 +105,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_taggedfile_prompt
+  return fuf#formatPrompt(g:fuf_taggedfile_prompt, self.partialMatching)
 endfunction
 
 "

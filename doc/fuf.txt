@@ -127,6 +127,9 @@ You can open a selected item in various ways:
 
 To cancel and return to previous window, just leave Insert mode.
 
+With <C-\><C-\> (|g:fuf_keySwitchMatching|), You can switch search method
+between fuzzy matching and partial matching.
+
 With <C-t> (|g:fuf_keyNextMode|) and <C-y> (|g:fuf_keyPrevMode|), You can
 switch current mode without leaving Insert mode .
 
@@ -247,7 +250,7 @@ API function:
 <
         initialPattern  - String which is inserted after launching
                           FuzzyFinder.
-        partialMatching - If non-zero, enable a partial matching instead of a
+        partialMatching - If non-zero, enable partial matching instead of
                           fuzzy matching.
         prompt          - Prompt string
         items           - List of items.
@@ -271,7 +274,7 @@ API function:
 <
         initialPattern  - String which is inserted after launching
                           FuzzyFinder.
-        partialMatching - If non-zero, enable a partial matching instead of a
+        partialMatching - If non-zero, enable partial matching instead of
                           fuzzy matching.
         prompt          - Prompt string
         items           - List of items.
@@ -298,7 +301,7 @@ API function:
 <
         initialPattern  - String which is inserted after launching
                           FuzzyFinder.
-        partialMatching - If non-zero, enable a partial matching instead of a
+        partialMatching - If non-zero, enable partial matching instead of
                           fuzzy matching.
         prompt          - Prompt string
         items           - List of items.
@@ -332,7 +335,7 @@ API function:
 <
         initialPattern  - String which is inserted after launching
                           FuzzyFinder.
-        partialMatching - If non-zero, enable a partial matching instead of a
+        partialMatching - If non-zero, enable partial matching instead of
                           fuzzy matching.
         prompt          - Prompt string.
         exclude         - Regexp pattern for items which you want to exclude
@@ -376,7 +379,7 @@ API function:
 <
         initialPattern  - String which is inserted after launching
                           FuzzyFinder.
-        partialMatching - If non-zero, enable a partial matching instead of a
+        partialMatching - If non-zero, enable partial matching instead of
                           fuzzy matching.
         prompt          - Prompt string
         listener        - |Dictionary| which has 'onComplete' and 'onAbort'.
@@ -774,6 +777,11 @@ For All Modes ~
 <
         Key mapped to recall next entered patten from history.
 
+                                                  *g:fuf_keySwitchMatching*  >
+  let g:fuf_keySwitchMatching = '<C-\><C-\>'
+<
+        Key mapped to switch between fuzzy matching and partial matching.
+
                                                            *g:fuf_infoFile*  >
   let g:fuf_infoFile = '~/.vim-fuf'
 <
@@ -861,9 +869,9 @@ For All Modes ~
 For Buffer Mode ~
 
                                                       *g:fuf_buffer_prompt*  >
-  let g:fuf_buffer_prompt = '>Buffer>'
+  let g:fuf_buffer_prompt = '>Buffer[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                  *g:fuf_buffer_switchOrder*  >
   let g:fuf_buffer_switchOrder = 10
@@ -880,9 +888,9 @@ For Buffer Mode ~
 For File Mode ~
 
                                                         *g:fuf_file_prompt*  >
-  let g:fuf_file_prompt = '>File>'
+  let g:fuf_file_prompt = '>File[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                    *g:fuf_file_switchOrder*  >
   let g:fuf_file_switchOrder = 20
@@ -900,9 +908,9 @@ For File Mode ~
 For Directory Mode ~
 
                                                          *g:fuf_dir_prompt*  >
-  let g:fuf_dir_prompt = '>Dir>'
+  let g:fuf_dir_prompt = '>Dir[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                     *g:fuf_dir_switchOrder*  >
   let g:fuf_dir_switchOrder = 30
@@ -920,9 +928,9 @@ For Directory Mode ~
 For Mru-File Mode ~
 
                                                      *g:fuf_mrufile_prompt*  >
-  let g:fuf_mrufile_prompt = '>Mru-File>'
+  let g:fuf_mrufile_prompt = '>Mru-File[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                 *g:fuf_mrufile_switchOrder*  >
   let g:fuf_mrufile_switchOrder = 40
@@ -945,9 +953,9 @@ For Mru-File Mode ~
 For Mru-Cmd Mode ~
 
                                                       *g:fuf_mrucmd_prompt*  >
-  let g:fuf_mrucmd_prompt = '>Mru-Cmd>'
+  let g:fuf_mrucmd_prompt = '>Mru-Cmd[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                  *g:fuf_mrucmd_switchOrder*  >
   let g:fuf_mrucmd_switchOrder = 50
@@ -970,9 +978,9 @@ For Mru-Cmd Mode ~
 For Bookmark Mode ~
 
                                                     *g:fuf_bookmark_prompt*  >
-  let g:fuf_bookmark_prompt = '>Bookmark>'
+  let g:fuf_bookmark_prompt = '>Bookmark[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                *g:fuf_bookmark_switchOrder*  >
   let g:fuf_bookmark_switchOrder = 60
@@ -995,9 +1003,9 @@ For Bookmark Mode ~
 For Tag Mode ~
 
                                                          *g:fuf_tag_prompt*  >
-  let g:fuf_tag_prompt = '>Tag>'
+  let g:fuf_tag_prompt = '>Tag[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                     *g:fuf_tag_switchOrder*  >
   let g:fuf_tag_switchOrder = 70
@@ -1015,9 +1023,9 @@ For Tag Mode ~
 For Tagged-File Mode ~
 
                                                   *g:fuf_taggedfile_prompt*  >
-  let g:fuf_taggedfile_prompt = '>Tagged-File>'
+  let g:fuf_taggedfile_prompt = '>Tagged-File[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                              *g:fuf_taggedfile_switchOrder*  >
   let g:fuf_taggedfile_switchOrder = 80
@@ -1035,9 +1043,9 @@ For Tagged-File Mode ~
 For Jump-List Mode ~
 
                                                     *g:fuf_jumplist_prompt*  >
-  let g:fuf_jumplist_prompt = '>Jump-List>'
+  let g:fuf_jumplist_prompt = '>Jump-List[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                *g:fuf_jumplist_switchOrder*  >
   let g:fuf_jumplist_switchOrder = 90
@@ -1049,9 +1057,9 @@ For Jump-List Mode ~
 For Change-List Mode ~
 
                                                   *g:fuf_changelist_prompt*  >
-  let g:fuf_changelist_prompt = '>Change-List>'
+  let g:fuf_changelist_prompt = '>Change-List[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                              *g:fuf_changelist_switchOrder*  >
   let g:fuf_changelist_switchOrder = 100
@@ -1063,9 +1071,9 @@ For Change-List Mode ~
 For Quickfix Mode ~
 
                                                   *g:fuf_quickfix_prompt*  >
-  let g:fuf_quickfix_prompt = '>Quickfix>'
+  let g:fuf_quickfix_prompt = '>Quickfix[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                              *g:fuf_quickfix_switchOrder*  >
   let g:fuf_quickfix_switchOrder = 110
@@ -1077,9 +1085,9 @@ For Quickfix Mode ~
 For Help Mode ~
 
                                                         *g:fuf_help_prompt*  >
-  let g:fuf_help_prompt = '>Help>'
+  let g:fuf_help_prompt = '>Help[]>'
 <
-        Prompt string.
+        Prompt string. "[]" will be substituted with indicators.
 
                                                    *g:fuf_help_switchOrder*  >
   let g:fuf_help_switchOrder = 130
@@ -1145,6 +1153,7 @@ CHANGELOG                                                      *fuf-changelog*
 
 3.6: [TODO]
   - Added Help mode.
+  - Added key mapping to switch between fuzzy matching and partial matching.
   - Changed the default values of g:fuf_file_exclude for ignoring "*.dll".
   - Fixed a bug that repeating preview key produced no effect.
   - Fixed a bug that File mode and Directory mode didn't list items in a

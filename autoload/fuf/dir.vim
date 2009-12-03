@@ -74,7 +74,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_dir_prompt
+  return fuf#formatPrompt(g:fuf_dir_prompt, self.partialMatching)
 endfunction
 
 "

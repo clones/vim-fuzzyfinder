@@ -100,7 +100,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return g:fuf_mrufile_prompt
+  return fuf#formatPrompt(g:fuf_mrufile_prompt, self.partialMatching)
 endfunction
 
 "
