@@ -46,6 +46,9 @@ endfunction
 
 let s:MODE_NAME = expand('<sfile>:t:r')
 
+"TODO delete
+let g:a = {}
+
 "
 function s:enumItems(dir)
   let key = getcwd() . g:fuf_file_exclude . "\n" . a:dir
@@ -53,6 +56,7 @@ function s:enumItems(dir)
     let s:cache[key] = fuf#enumExpandedDirsEntries(a:dir, g:fuf_file_exclude)
     call fuf#mapToSetSerialIndex(s:cache[key], 1)
     call fuf#mapToSetAbbrWithSnippedWordAsPath(s:cache[key])
+    let g:a[a:dir . '/'] = len(s:cache[key])
   endif
   return s:cache[key]
 endfunction
@@ -99,7 +103,7 @@ endfunction
 
 "
 function s:handler.makePatternSet(patternBase)
-  return fuf#makePatternSet(a:patternBase, 's:parsePrimaryPatternForPathTail',
+  return fuf#makePatternSet(a:patternBase, 's:interpretPrimaryPatternForPathTail',
         \                   self.partialMatching)
 endfunction
 

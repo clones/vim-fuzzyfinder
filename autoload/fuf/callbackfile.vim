@@ -93,7 +93,7 @@ endfunction
 
 "
 function s:handler.makePatternSet(patternBase)
-  return fuf#makePatternSet(a:patternBase, 's:parsePrimaryPatternForPathTail',
+  return fuf#makePatternSet(a:patternBase, 's:interpretPrimaryPatternForPathTail',
         \                   self.partialMatching)
 endfunction
 

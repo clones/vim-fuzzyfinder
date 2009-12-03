@@ -92,8 +92,8 @@ endfunction
 "
 function s:handler.makePatternSet(patternBase)
   let parser = (s:forPath
-        \       ? 's:parsePrimaryPatternForPath'
-        \       : 's:parsePrimaryPatternForNonPath')
+        \       ? 's:interpretPrimaryPatternForPath'
+        \       : 's:interpretPrimaryPatternForNonPath')
   return fuf#makePatternSet(a:patternBase, parser, self.partialMatching)
 endfunction
 

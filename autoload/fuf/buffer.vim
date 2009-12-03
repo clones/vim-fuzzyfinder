@@ -125,7 +125,7 @@ endfunction
 
 "
 function s:handler.makePatternSet(patternBase)
-  return fuf#makePatternSet(a:patternBase, 's:parsePrimaryPatternForPath',
+  return fuf#makePatternSet(a:patternBase, 's:interpretPrimaryPatternForPath',
         \                   self.partialMatching)
 endfunction
 

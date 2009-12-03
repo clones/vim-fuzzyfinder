@@ -297,64 +297,60 @@ function fuf#makeNonPathItem(word, menu)
 endfunction
 
 "
-function s:parsePrimaryPatternForPathTail(pattern)
+function s:interpretPrimaryPatternForPathTail(pattern)
   let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
-  let pair = fuf#splitPath(pattern)
-  return [
-        \   pattern,
-        \   pair.tail,
-        \   [
-        \     ['v:val.wordForPrimaryTail', pair.tail],
-        \   ],
-        \ ]
+  let pairL = fuf#splitPath(s:toLowerForIgnoringCase(pattern))
+  return {
+        \   'primary'       : pattern,
+        \   'primaryForRank': pairL.tail,
+        \   'matchingPairs' : [['v:val.wordForPrimaryTail', pairL.tail],],
+        \ }
 endfunction
 
 "
-function s:parsePrimaryPatternForPath(pattern)
+function s:interpretPrimaryPatternForPath(pattern)
   let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
-  let pair = fuf#splitPath(pattern)
+  let patternL = s:toLowerForIgnoringCase(pattern)
+  let pairL = fuf#splitPath(patternL)
   if g:fuf_splitPathMatching
     let matches = [
-        \     ['v:val.wordForPrimaryHead', pair.head],
-        \     ['v:val.wordForPrimaryTail', pair.tail],
+        \     ['v:val.wordForPrimaryHead', pairL.head],
+        \     ['v:val.wordForPrimaryTail', pairL.tail],
         \   ]
   else
     let matches = [
-          \     ['v:val.wordForPrimaryHead . v:val.wordForPrimaryTail', pattern],
+          \     ['v:val.wordForPrimaryHead . v:val.wordForPrimaryTail', patternL],
           \   ]
   endif
-  return [
-        \   pattern,
-        \   pair.tail,
-        \   matches,
-        \ ]
+  return {
+        \   'primary'       : pattern,
+        \   'primaryForRank': pairL.tail,
+        \   'matchingPairs' : matches,
+        \ }
 endfunction
 
 "
-function s:parsePrimaryPatternForNonPath(pattern)
-  return [
-        \   a:pattern,
-        \   a:pattern,
-        \   [
-        \     ['v:val.wordForPrimary', a:pattern],
-        \   ],
-        \ ]
+function s:interpretPrimaryPatternForNonPath(pattern)
+  let patternL = s:toLowerForIgnoringCase(a:pattern)
+  return {
+        \   'primary'       : a:pattern,
+        \   'primaryForRank': patternL,
+        \   'matchingPairs' : [['v:val.wordForPrimary', patternL],],
+        \ }
 endfunction
 
 "
-function fuf#makePatternSet(patternBase, parser, partialMatching)
+function fuf#makePatternSet(patternBase, interpreter, partialMatching)
   let MakeMatchingExpr = function(a:partialMatching
         \                         ? 's:makePartialMatchingExpr'
         \                         : 's:makeFuzzyMatchingExpr')
-  let [primary; refinings] =
-        \ split(s:toLowerForIgnoringCase(a:patternBase),
-        \       g:fuf_patternSeparator, 1)
-  let [primary, primaryForRank, matchingPairs] = call(a:parser, [primary])
-  let primaryExprs  = map(matchingPairs, 'MakeMatchingExpr(v:val[0], v:val[1])')
+  let [primary; refinings] = split(a:patternBase, g:fuf_patternSeparator, 1)
+  let elements = call(a:interpreter, [primary])
+  let primaryExprs  = map(elements.matchingPairs, 'MakeMatchingExpr(v:val[0], v:val[1])')
   let refiningExprs = map(refinings, 's:makeRefiningExpr(v:val)')
   return  {
-        \   'primary'       : primary,
-        \   'primaryForRank': primaryForRank,
+        \   'primary'       : elements.primary,
+        \   'primaryForRank': elements.primaryForRank,
         \   'filteringExpr' : join(primaryExprs + refiningExprs, ' && '),
         \ }
 endfunction
