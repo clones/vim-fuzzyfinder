@@ -229,7 +229,8 @@ Quickfix モード ~
                                                                *fuf-line-mode*
 Line モード ~
 
-TODO
+このモードはカレントバッファの行を選択してジャンプするインターフェースを提供し
+ます。
 
                                                                *fuf-help-mode*
 Help モード ~
@@ -666,7 +667,12 @@ See also: |fuf-vimrc-example|
 
                                                                     *:FufLine*
 :FufLine [{pattern}]
-        TODO
+        Line モードを起動します。
+
+        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
+        うになります。
+
+        FuzzyFinder 起動後に {pattern} が挿入されます。
 
                                                                     *:FufHelp*
 :FufHelp[!] [{pattern}]

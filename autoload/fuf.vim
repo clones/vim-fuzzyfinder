@@ -387,10 +387,13 @@ function fuf#mapToSetAbbrWithSnippedWordAsPath(items)
 endfunction
 
 "
-function fuf#setAbbrWithFormattedWord(item)
+function fuf#setAbbrWithFormattedWord(item, abbrIndex)
   let lenMenu = (exists('a:item.menu') ? len(a:item.menu) + 2 : 0)
   let abbrPrefix = (exists('a:item.abbrPrefix') ? a:item.abbrPrefix : '')
-  let a:item.abbr = printf('%4d: ', a:item.index) . abbrPrefix . a:item.word
+  let a:item.abbr = abbrPrefix . a:item.word
+  if a:abbrIndex
+    let a:item.abbr = printf('%4d: ', a:item.index) . a:item.abbr
+  endif
   let a:item.abbr = s:snipTail(a:item.abbr, g:fuf_maxMenuWidth - lenMenu, s:ABBR_SNIP_MASK)
   return a:item
 endfunction

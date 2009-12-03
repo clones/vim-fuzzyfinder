@@ -67,7 +67,7 @@ function s:parseTagFiles(tagFiles)
   let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getTagNames(v:val)')))
   let items = map(items, 'fuf#makeNonPathItem(v:val, "")')
   call fuf#mapToSetSerialIndex(items, 1)
-  let items = map(items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  let items = map(items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')
   if !empty(g:fuf_tag_cache_dir)
     call writefile(map(copy(items), 'string(v:val)'), cacheFile)
   endif

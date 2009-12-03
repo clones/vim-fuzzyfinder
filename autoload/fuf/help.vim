@@ -95,7 +95,7 @@ function s:parseHelpTagFiles(tagFiles)
   let items = fuf#unique(fuf#concat(map(copy(a:tagFiles), 's:getHelpTagEntries(v:val)')))
   let items = map(items, 'extend(v:val, fuf#makeNonPathItem(v:val.word, ""))')
   call fuf#mapToSetSerialIndex(items, 1)
-  let items = map(items, 'fuf#setAbbrWithFormattedWord(v:val)')
+  let items = map(items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')
   if !empty(g:fuf_help_cache_dir)
     call writefile(map(copy(items), 'string(v:val)'), cacheFile)
   endif

@@ -49,7 +49,7 @@ function fuf#callbackitem#launch(initialPattern, partialMatching, prompt, listen
   else
     call map(s:items, 'fuf#makeNonPathItem(v:val, "")')
     call fuf#mapToSetSerialIndex(s:items, 1)
-    call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val)')
+    call map(s:items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')
   endif
   call fuf#launch(s:MODE_NAME, a:initialPattern, a:partialMatching)
 endfunction
