@@ -1183,18 +1183,16 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
-3.6:
+3.5:
   - Added Line mode.
   - Added Help mode.
   - Added key mapping to switch between fuzzy matching and partial matching.
   - Changed the default values of g:fuf_file_exclude for ignoring "*.dll".
+  - Changed Tag mode and Tagged-File mode to cache parsed data to files in
+    "~/.vim-fuf-cache/".
   - Fixed a bug that repeating preview key produced no effect.
   - Fixed a bug that File mode and Directory mode didn't list items in a
-    directory whose name includes uppercase characters.
-
-3.5:
-  - Changed Tag mode and Tagged-File mode to cache parsed data into
-    ~/.vim-fuf-cache/ .
+    directory whose name includes uppercase characters. (Thanks, ryo7000)
 
 3.4:
   - Added new feature which makes it possible to preview selected completion
