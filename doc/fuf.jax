@@ -720,6 +720,12 @@ See also: |fuf-vimrc-example|
 <
         補完を確定し、バッファ/ファイルを別タブページ開くキー。
 
+                                                         *g:fuf_keyPreview*  >
+  let g:fuf_keyPreview = '<C-@>'
+<
+        選択されている補完アイテムの情報をコマンドライン領域に表示するキー。プ
+        レビューをサポートするモードでのみ作用します。
+
                                                         *g:fuf_keyNextMode*  >
   let g:fuf_keyNextMode = '<C-t>'
 <
