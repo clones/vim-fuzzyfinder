@@ -1092,6 +1092,7 @@ function s:handlerBase.onPreviewBase()
   let lines = self.makePreviewLines(word, self.lastPreviewInfo.count)
   let lines = lines[: self.getPreviewHeight() - 1]
   call map(lines, 'substitute(v:val, "\t", repeat(" ", &tabstop), "g")')
+  call map(lines, 'strtrans(v:val)')
   call map(lines, 's:snipTail(v:val, &columns - 1, s:ABBR_SNIP_MASK)')
   echo join(lines, "\n")
 endfunction
