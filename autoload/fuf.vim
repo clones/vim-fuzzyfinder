@@ -303,49 +303,6 @@ function fuf#makeNonPathItem(word, menu)
 endfunction
 
 "
-function s:interpretPrimaryPatternForPathTail(pattern)
-  let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
-  let pairL = fuf#splitPath(s:toLowerForIgnoringCase(pattern))
-  return {
-        \   'primary'       : pattern,
-        \   'primaryForRank': pairL.tail,
-        \   'matchingPairs' : [['v:val.wordForPrimaryTail', pairL.tail],],
-        \ }
-endfunction
-
-"
-function s:interpretPrimaryPatternForPath(pattern)
-  let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
-  let patternL = s:toLowerForIgnoringCase(pattern)
-  let pairL = fuf#splitPath(patternL)
-  if g:fuf_splitPathMatching
-    let matches = [
-        \     ['v:val.wordForPrimaryHead', pairL.head],
-        \     ['v:val.wordForPrimaryTail', pairL.tail],
-        \   ]
-  else
-    let matches = [
-          \     ['v:val.wordForPrimaryHead . v:val.wordForPrimaryTail', patternL],
-          \   ]
-  endif
-  return {
-        \   'primary'       : pattern,
-        \   'primaryForRank': pairL.tail,
-        \   'matchingPairs' : matches,
-        \ }
-endfunction
-
-"
-function s:interpretPrimaryPatternForNonPath(pattern)
-  let patternL = s:toLowerForIgnoringCase(a:pattern)
-  return {
-        \   'primary'       : a:pattern,
-        \   'primaryForRank': patternL,
-        \   'matchingPairs' : [['v:val.wordForPrimary', patternL],],
-        \ }
-endfunction
-
-"
 function fuf#makePatternSet(patternBase, interpreter, partialMatching)
   let MakeMatchingExpr = function(a:partialMatching
         \                         ? 's:makePartialMatchingExpr'
@@ -412,6 +369,15 @@ function fuf#defineKeyMappingInHandler(key, func)
           \ a:key, a:func)
 endfunction
 
+" 
+function fuf#setOneTimeVariable(name, value)
+  if !exists('s:originalVariables[a:name]')
+    let s:originalVariables[a:name] = eval(a:name)
+  endif
+  let s:oneTimeVariables[a:name] = a:value
+  execute 'let ' . a:name . ' = a:value'
+endfunction
+
 "
 function fuf#launch(modeName, initialPattern, partialMatching)
   if exists('s:runningHandler')
@@ -427,11 +393,11 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
   call s:runningHandler.onModeEnterPre()
-  call s:setTemporaryGlobalOption('completeopt', 'menuone')
-  call s:setTemporaryGlobalOption('ignorecase', 0)
+  call fuf#setOneTimeVariable('&completeopt', 'menuone')
+  call fuf#setOneTimeVariable('&ignorecase', 0)
   if s:runningHandler.getPreviewHeight() > 0
-    call s:setTemporaryGlobalOption(
-          \ 'cmdheight', s:runningHandler.getPreviewHeight() + 1)
+    call fuf#setOneTimeVariable(
+          \ '&cmdheight', s:runningHandler.getPreviewHeight() + 1)
   endif
   call s:activateFufBuffer()
   augroup FufLocal
@@ -584,6 +550,49 @@ function s:makeAdditionalMigemoPattern(pattern)
     return ''
   endif
   return '\|\m' . substitute(migemo(a:pattern), '\\_s\*', '.*', 'g')
+endfunction
+
+"
+function s:interpretPrimaryPatternForPathTail(pattern)
+  let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
+  let pairL = fuf#splitPath(s:toLowerForIgnoringCase(pattern))
+  return {
+        \   'primary'       : pattern,
+        \   'primaryForRank': pairL.tail,
+        \   'matchingPairs' : [['v:val.wordForPrimaryTail', pairL.tail],],
+        \ }
+endfunction
+
+"
+function s:interpretPrimaryPatternForPath(pattern)
+  let pattern = fuf#expandTailDotSequenceToParentDir(a:pattern)
+  let patternL = s:toLowerForIgnoringCase(pattern)
+  let pairL = fuf#splitPath(patternL)
+  if g:fuf_splitPathMatching
+    let matches = [
+        \     ['v:val.wordForPrimaryHead', pairL.head],
+        \     ['v:val.wordForPrimaryTail', pairL.tail],
+        \   ]
+  else
+    let matches = [
+          \     ['v:val.wordForPrimaryHead . v:val.wordForPrimaryTail', patternL],
+          \   ]
+  endif
+  return {
+        \   'primary'       : pattern,
+        \   'primaryForRank': pairL.tail,
+        \   'matchingPairs' : matches,
+        \ }
+endfunction
+
+"
+function s:interpretPrimaryPatternForNonPath(pattern)
+  let patternL = s:toLowerForIgnoringCase(a:pattern)
+  return {
+        \   'primary'       : a:pattern,
+        \   'primaryForRank': patternL,
+        \   'matchingPairs' : [['v:val.wordForPrimary', patternL],],
+        \ }
 endfunction
 
 " Snips a:str and add a:mask if the length of a:str is more than a:len
@@ -820,20 +829,28 @@ function s:deactivateFufBuffer()
   execute s:bufNrFuf . 'bdelete'
 endfunction
 
-let s:originalGlobalOptions = {}
+"
+let s:originalVariables = {}
+let s:oneTimeVariables = {}
+let s:oneTimeVariablesRestored = 0
 
 " 
-function s:setTemporaryGlobalOption(name, value)
-  call extend(s:originalGlobalOptions, { a:name : eval('&' . a:name) }, 'keep')
-  execute printf('let &%s = a:value', a:name)
+function s:swapOneTimeVariables()
+  let variables = (s:oneTimeVariablesRestored
+        \          ? s:oneTimeVariables : s:originalVariables)
+  for [name, value] in items(variables)
+    execute 'let ' . name . ' = value'
+  endfor
+  let s:oneTimeVariablesRestored = !s:oneTimeVariablesRestored
 endfunction
 
-"
-function s:restoreTemporaryGlobalOptions()
-  for [name, value] in items(s:originalGlobalOptions)
-    execute printf('let &%s = value', name)
-  endfor
-  let s:originalGlobalOptions = {}
+" 
+function s:endOneTimeVariables()
+  if !s:oneTimeVariablesRestored
+    call s:swapOneTimeVariables()
+  endif
+  let s:originalVariables = {}
+  let s:oneTimeVariables = {}
 endfunction
 
 "
@@ -1017,8 +1034,7 @@ endfunction
 "
 function s:handlerBase.onInsertLeave()
   unlet s:runningHandler
-  let lastPattern = self.removePrompt(getline('.'))
-  call s:restoreTemporaryGlobalOptions()
+  call s:swapOneTimeVariables()
   call s:deactivateFufBuffer()
   call fuf#saveInfoFile(self.getModeName(), self.info)
   let fOpen = exists('s:reservedCommand')
@@ -1027,9 +1043,11 @@ function s:handlerBase.onInsertLeave()
     unlet s:reservedCommand
   endif
   call self.onModeLeavePost(fOpen)
-  if exists('s:reservedMode')
-    call fuf#launch(s:reservedMode, lastPattern, self.partialMatching)
-    unlet s:reservedMode
+  if exists('self.reservedMode')
+    call s:swapOneTimeVariables()
+    call fuf#launch(self.reservedMode, self.lastPattern, self.partialMatching)
+  else
+    call s:endOneTimeVariables()
   endif
 endfunction
 
@@ -1103,10 +1121,10 @@ function s:handlerBase.onSwitchMode(shift)
   call map(modes, '{ "ranks": [ fuf#{v:val}#getSwitchOrder(), v:val ] }')
   call filter(modes, 'v:val.ranks[0] >= 0')
   call sort(modes, 'fuf#compareRanks')
-  let s:reservedMode = self.getModeName()
+  let self.reservedMode = self.getModeName()
   for i in range(len(modes))
     if modes[i].ranks[1] ==# self.getModeName()
-      let s:reservedMode = modes[(i + a:shift) % len(modes)].ranks[1]
+      let self.reservedMode = modes[(i + a:shift) % len(modes)].ranks[1]
       break
     endif
   endfor

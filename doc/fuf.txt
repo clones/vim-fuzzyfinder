@@ -421,6 +421,16 @@ Example of use:
 ==============================================================================
 DETAILED TOPICS                                          *fuf-detailed-topics*
 
+                              *fuf-one-time-option* *fuf#setOneTimeVariable()*
+One-Time Options/Variables ~
+
+TODO
+
+E.g.:
+>
+        :call fuf#setOneTimeVariable('g:fuf_ignoreCase', 0) | FufFile
+<
+
                                                          *fuf-search-patterns*
 Search Patterns ~
 
@@ -1182,6 +1192,9 @@ SPECIAL THANKS                                                    *fuf-thanks*
 
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
+
+3.6: [TODO]
+  - Added new feature which allows to set one-time options/variables.
 
 3.5:
   - Added Line mode.

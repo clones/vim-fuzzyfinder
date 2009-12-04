@@ -401,6 +401,11 @@ API 関数:
 ==============================================================================
 詳細なトピック                                           *fuf-detailed-topics*
 
+                              *fuf-one-time-option* *fuf#setOneTimeVariable()*
+一回限りのオプション/変数 ~
+
+TODO
+
                                                          *fuf-search-patterns*
 検索パターン ~
 
