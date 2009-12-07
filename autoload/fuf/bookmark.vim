@@ -175,7 +175,7 @@ endfunction
 
 "
 function s:handler.onOpen(word, mode)
-  if a:mode == s:OPEN_TYPE_DELETE
+  if a:mode ==# s:OPEN_TYPE_DELETE
     call filter(self.info.data, 'v:val.word !=# a:word')
     call fuf#saveInfoFile(self.getModeName(), self.info)
     let self.reservedMode = self.getModeName()
