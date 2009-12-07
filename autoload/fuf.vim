@@ -85,7 +85,7 @@ endfunction
 "
 function fuf#updateMruList(mrulist, newItem, maxItem, exclude)
   let result = copy(a:mrulist)
-  let result = filter(result,'v:val.word != a:newItem.word')
+  let result = filter(result,'v:val.word !=# a:newItem.word')
   let result = insert(result, a:newItem)
   let result = filter(result, 'v:val.word !~ a:exclude')
   return result[0 : a:maxItem - 1]
@@ -197,11 +197,11 @@ endfunction
 
 "
 function fuf#openBuffer(bufNr, mode, reuse)
-  if a:reuse && ((a:mode == s:OPEN_TYPE_SPLIT &&
+  if a:reuse && ((a:mode ==# s:OPEN_TYPE_SPLIT &&
         \         s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)) ||
-        \        (a:mode == s:OPEN_TYPE_VSPLIT &&
+        \        (a:mode ==# s:OPEN_TYPE_VSPLIT &&
         \         s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)) ||
-        \        (a:mode == s:OPEN_TYPE_TAB &&
+        \        (a:mode ==# s:OPEN_TYPE_TAB &&
         \         s:moveToWindowOfBufferInOtherTabPage(a:bufNr)))
     return
   endif
@@ -375,7 +375,9 @@ function fuf#setOneTimeVariable(name, value)
     let s:originalVariables[a:name] = eval(a:name)
   endif
   let s:oneTimeVariables[a:name] = a:value
-  execute 'let ' . a:name . ' = a:value'
+  if !s:oneTimeVariablesSwapped
+    execute 'let ' . a:name . ' = a:value'
+  endif
 endfunction
 
 "
@@ -661,7 +663,6 @@ function s:evaluateLearningRank(word, stats)
   return len(a:stats)
 endfunction
 
-let g:s = ""
 " range of return value is [0.0, 1.0]
 function s:scoreSequentialMatching(word, pattern)
   if empty(a:pattern)
@@ -832,23 +833,24 @@ endfunction
 "
 let s:originalVariables = {}
 let s:oneTimeVariables = {}
-let s:oneTimeVariablesRestored = 0
+let s:oneTimeVariablesSwapped = 0
 
 " 
 function s:swapOneTimeVariables()
-  let variables = (s:oneTimeVariablesRestored
+  let variables = (s:oneTimeVariablesSwapped
         \          ? s:oneTimeVariables : s:originalVariables)
   for [name, value] in items(variables)
     execute 'let ' . name . ' = value'
   endfor
-  let s:oneTimeVariablesRestored = !s:oneTimeVariablesRestored
+  let s:oneTimeVariablesSwapped = !s:oneTimeVariablesSwapped
 endfunction
 
 " 
 function s:endOneTimeVariables()
-  if !s:oneTimeVariablesRestored
+  if !s:oneTimeVariablesSwapped
     call s:swapOneTimeVariables()
   endif
+  let s:oneTimeVariablesSwapped = 0
   let s:originalVariables = {}
   let s:oneTimeVariables = {}
 endfunction
