@@ -401,10 +401,18 @@ API 関数:
 ==============================================================================
 詳細なトピック                                           *fuf-detailed-topics*
 
-                              *fuf-one-time-option* *fuf#setOneTimeVariable()*
-一回限りのオプション/変数 ~
+                     *fuf-setting-one-time-option* *fuf#setOneTimeVariables()*
+一回限りのオプションの設定 ~
 
-TODO
+次回の FuzzyFinder 用に一回限りのオプションを設定したいとき、
+|fuf#setOneTimeVariables()|関数が役に立ちます。この関数は次のようにして使いま
+す:
+>
+        fuf#setOneTimeVariables(['g:fuf_ignoreCase', 0], ['&lines', 50])
+<
+この関数は 0 個以上の引数を取り、各々は変数名と値のペアです。
+指定されたオプションは次回 FuzzyFinder が起動したときに実際に設定され、
+終了するときに復元されます。
 
                                                          *fuf-search-patterns*
 検索パターン ~

@@ -370,14 +370,10 @@ function fuf#defineKeyMappingInHandler(key, func)
 endfunction
 
 " 
-function fuf#setOneTimeVariable(name, value)
-  if !exists('s:originalVariables[a:name]')
-    let s:originalVariables[a:name] = eval(a:name)
-  endif
-  let s:oneTimeVariables[a:name] = a:value
-  if !s:oneTimeVariablesSwapped
-    execute 'let ' . a:name . ' = a:value'
-  endif
+function fuf#setOneTimeVariables(...)
+  for [name, value] in a:000
+    call s:setOneTimeVariable(name, value)
+  endfor
 endfunction
 
 "
@@ -395,10 +391,10 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
   call s:runningHandler.onModeEnterPre()
-  call fuf#setOneTimeVariable('&completeopt', 'menuone')
-  call fuf#setOneTimeVariable('&ignorecase', 0)
+  call s:setOneTimeVariable('&completeopt', 'menuone')
+  call s:setOneTimeVariable('&ignorecase', 0)
   if s:runningHandler.getPreviewHeight() > 0
-    call fuf#setOneTimeVariable(
+    call s:setOneTimeVariable(
           \ '&cmdheight', s:runningHandler.getPreviewHeight() + 1)
   endif
   call s:activateFufBuffer()
@@ -834,6 +830,17 @@ endfunction
 let s:originalVariables = {}
 let s:oneTimeVariables = {}
 let s:oneTimeVariablesSwapped = 0
+
+" 
+function s:setOneTimeVariable(name, value)
+  if !exists('s:originalVariables[a:name]')
+    let s:originalVariables[a:name] = eval(a:name)
+  endif
+  let s:oneTimeVariables[a:name] = a:value
+  if !s:oneTimeVariablesSwapped
+    execute 'let ' . a:name . ' = a:value'
+  endif
+endfunction
 
 " 
 function s:swapOneTimeVariables()
