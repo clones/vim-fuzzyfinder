@@ -993,6 +993,9 @@ function s:handlerBase.onComplete(findstart, base)
   else
     call sort(items, 'fuf#compareRanks')
     call feedkeys("\<C-p>\<Down>", 'n')
+    if g:fuf_autoPreview
+      call feedkeys("\<C-@>", 'm')
+    endif
     let self.lastFirstWord = items[0].word
   endif
   return items
