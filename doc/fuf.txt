@@ -421,15 +421,18 @@ Example of use:
 ==============================================================================
 DETAILED TOPICS                                          *fuf-detailed-topics*
 
-                              *fuf-one-time-option* *fuf#setOneTimeVariable()*
-One-Time Options/Variables ~
+                     *fuf-setting-one-time-option* *fuf#setOneTimeVariables()*
+Setting One-Time Options ~
 
-TODO
-
-E.g.:
+If you want to set one-time options only for the next FuzzyFinder,
+|fuf#setOneTimeVariables()| function will be of help. This function is used as
+follows:
 >
-        :call fuf#setOneTimeVariable('g:fuf_ignoreCase', 0) | FufFile
+        fuf#setOneTimeVariables(['g:fuf_ignoreCase', 0], ['&lines', 50])
 <
+This function takes 0 or more arguments and each of them is a pair of a
+variable name and its value. Specified options will be set practically next
+time FuzzyFinder is launched, and restored when FuzzyFinder is closed.
 
                                                          *fuf-search-patterns*
 Search Patterns ~
@@ -1194,7 +1197,8 @@ SPECIAL THANKS                                                    *fuf-thanks*
 CHANGELOG                                                      *fuf-changelog*
 
 3.6: [TODO]
-  - Added new feature which allows to set one-time options/variables.
+  - Added new feature which allows to set one-time options/variables with
+    fuf#setOneTimeVariables() function.
 
 3.5:
   - Added Line mode.
