@@ -372,7 +372,10 @@ endfunction
 " 
 function fuf#setOneTimeVariables(...)
   for [name, value] in a:000
-    call s:setOneTimeVariable(name, value)
+    if !exists('s:originalVariables[name]')
+      let s:originalVariables[name] = eval(name)
+    endif
+    let s:oneTimeVariables[name] = value
   endfor
 endfunction
 
@@ -391,12 +394,14 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
   call s:runningHandler.onModeEnterPre()
-  call s:setOneTimeVariable('&completeopt', 'menuone')
-  call s:setOneTimeVariable('&ignorecase', 0)
+  call fuf#setOneTimeVariables(
+        \ ['&completeopt', 'menuone'],
+        \ ['&ignorecase', 0],)
   if s:runningHandler.getPreviewHeight() > 0
-    call s:setOneTimeVariable(
-          \ '&cmdheight', s:runningHandler.getPreviewHeight() + 1)
+    call fuf#setOneTimeVariables(
+          \ ['&cmdheight', s:runningHandler.getPreviewHeight() + 1])
   endif
+  call s:swapOneTimeVariables()
   call s:activateFufBuffer()
   augroup FufLocal
     autocmd!
@@ -829,35 +834,24 @@ endfunction
 "
 let s:originalVariables = {}
 let s:oneTimeVariables = {}
-let s:oneTimeVariablesSwapped = 0
-
-" 
-function s:setOneTimeVariable(name, value)
-  if !exists('s:originalVariables[a:name]')
-    let s:originalVariables[a:name] = eval(a:name)
-  endif
-  let s:oneTimeVariables[a:name] = a:value
-  if !s:oneTimeVariablesSwapped
-    execute 'let ' . a:name . ' = a:value'
-  endif
-endfunction
+let s:oneTimeVariablesSet = 0
 
 " 
 function s:swapOneTimeVariables()
-  let variables = (s:oneTimeVariablesSwapped
-        \          ? s:oneTimeVariables : s:originalVariables)
+  let variables = (s:oneTimeVariablesSet
+        \          ? s:originalVariables : s:oneTimeVariables)
   for [name, value] in items(variables)
     execute 'let ' . name . ' = value'
   endfor
-  let s:oneTimeVariablesSwapped = !s:oneTimeVariablesSwapped
+  let s:oneTimeVariablesSet = !s:oneTimeVariablesSet
 endfunction
 
 " 
 function s:endOneTimeVariables()
-  if !s:oneTimeVariablesSwapped
+  if s:oneTimeVariablesSet
     call s:swapOneTimeVariables()
   endif
-  let s:oneTimeVariablesSwapped = 0
+  let s:oneTimeVariablesSet = 0
   let s:originalVariables = {}
   let s:oneTimeVariables = {}
 endfunction
