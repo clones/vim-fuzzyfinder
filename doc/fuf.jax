@@ -858,6 +858,11 @@ See also: |fuf-vimrc-example|
         定されます。選択されている補完アイテムの情報がコマンドライン領域に表示
         されます。0 ならプレビュー機能は無効になります。
 
+                                                        *g:fuf_autoPreview*  >
+  let g:fuf_autoPreview = 1
+<
+        TODO
+
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0
 <
