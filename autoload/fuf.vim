@@ -415,7 +415,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \   [ g:fuf_keyOpenTabpage   , 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
         \   [ '<BS>'                 , 'onBs()'                               ],
         \   [ '<C-h>'                , 'onBs()'                               ],
-        \   [ g:fuf_keyPreview       , 'onPreviewBase()'                      ],
+        \   [ g:fuf_keyPreview       , 'onPreviewBase(1)'                     ],
         \   [ g:fuf_keyNextMode      , 'onSwitchMode(+1)'                     ],
         \   [ g:fuf_keyPrevMode      , 'onSwitchMode(-1)'                     ],
         \   [ g:fuf_keySwitchMatching, 'onSwitchMatching()'                   ],
@@ -971,6 +971,7 @@ function s:handlerBase.getMatchingCompleteItems(patternBase)
         \ 's:setRanks(v:val, patternSet.primaryForRank, exprBoundary, stats)')
 endfunction
 
+          "\ 'inoremap <buffer> <silent> %s <C-r>=fuf#getRunningHandler().%s ? "" : ""<CR>',
 "
 function s:handlerBase.onComplete(findstart, base)
   if a:findstart
@@ -992,9 +993,10 @@ function s:handlerBase.onComplete(findstart, base)
     call s:highlightError()
   else
     call sort(items, 'fuf#compareRanks')
-    call feedkeys("\<C-p>\<Down>", 'n')
     if g:fuf_autoPreview
-      call feedkeys("\<C-@>", 'm')
+      call feedkeys("\<C-p>\<Down>\<C-r>=fuf#getRunningHandler().onPreviewBase(0) ? '' : ''\<CR>", 'n')
+    else
+      call feedkeys("\<C-p>\<Down>", 'n')
     endif
     let self.lastFirstWord = items[0].word
   endif
@@ -1095,7 +1097,7 @@ function s:handlerBase.onBs()
 endfunction
 
 "
-function s:handlerBase.onPreviewBase()
+function s:handlerBase.onPreviewBase(repeatable)
   if self.getPreviewHeight() <= 0
     return
   elseif !pumvisible()
@@ -1108,7 +1110,7 @@ function s:handlerBase.onPreviewBase()
     let word = self.lastFirstWord
   endif
   redraw
-  if exists('self.lastPreviewInfo') && self.lastPreviewInfo.word ==# word
+  if a:repeatable && exists('self.lastPreviewInfo') && self.lastPreviewInfo.word ==# word
     let self.lastPreviewInfo.count += 1
   else
     let self.lastPreviewInfo = {'word': word, 'count': 0}
