@@ -59,7 +59,7 @@ endfunction
 function s:makeItem(nr)
   let fname = (empty(bufname(a:nr))
         \      ? '[No Name]'
-        \      : fnamemodify(bufname(a:nr), ':~:.'))
+        \      : fnamemodify(bufname(a:nr), ':p:~:.'))
   let time = (exists('s:bufTimes[a:nr]') ? s:bufTimes[a:nr] : 0)
   let item = fuf#makePathItem(fname, strftime(g:fuf_timeFormat, time), 0)
   let item.index = a:nr

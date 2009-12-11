@@ -145,8 +145,8 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
-  " NOTE: Comparing filenames is faster than bufnr()
-  let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':~')
+  " NOTE: Comparing filenames is faster than bufnr('^' . fname . '$')
+  let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':p:~:.')
   " NOTE: Don't do this in onModeEnterPre()
   "       because that should return in a short time.
   let self.items = copy(s:enumTaggedFiles(self.tagFiles))

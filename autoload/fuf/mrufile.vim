@@ -79,7 +79,7 @@ function s:formatItemUsingCache(item)
   if !exists('s:cache[a:item.word]')
     if filereadable(a:item.word)
       let s:cache[a:item.word] = fuf#makePathItem(
-            \ fnamemodify(a:item.word, ':~'), strftime(g:fuf_timeFormat, a:item.time), 0)
+            \ fnamemodify(a:item.word, ':p:~'), strftime(g:fuf_timeFormat, a:item.time), 0)
     else
       let s:cache[a:item.word] = {}
     endif
@@ -140,8 +140,8 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
-  " NOTE: Comparing filenames is faster than bufnr()
-  let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':~')
+  " NOTE: Comparing filenames is faster than bufnr('^' . fname . '$')
+  let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':p:~')
   let self.items = copy(self.info.data)
   call map(self.items, 's:formatItemUsingCache(v:val)')
   call filter(self.items, '!empty(v:val) && v:val.word !=# bufNamePrev')
