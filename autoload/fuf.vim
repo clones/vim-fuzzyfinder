@@ -631,6 +631,7 @@ function s:activateFufBuffer()
   " lcd ... : countermeasure against auto-cd script
   lcd `=cwd`
   setlocal buftype=nofile
+  setlocal nobuflisted
   setlocal nocursorline   " for highlighting
   setlocal nocursorcolumn " for highlighting
   setlocal omnifunc=fuf#onComplete
