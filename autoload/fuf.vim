@@ -124,11 +124,11 @@ endfunction
 "
 function fuf#openBuffer(bufNr, mode, reuse)
   if a:reuse && ((a:mode ==# s:OPEN_TYPE_SPLIT &&
-        \         s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)) ||
+        \         l9#moveToBufferWindowInCurrentTabpage(a:bufNr)) ||
         \        (a:mode ==# s:OPEN_TYPE_VSPLIT &&
-        \         s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)) ||
+        \         l9#moveToBufferWindowInCurrentTabpage(a:bufNr)) ||
         \        (a:mode ==# s:OPEN_TYPE_TAB &&
-        \         s:moveToWindowOfBufferInOtherTabPage(a:bufNr)))
+        \         l9#moveToBufferWindowInOtherTabpage(a:bufNr)))
     return
   endif
   execute printf({
@@ -393,19 +393,9 @@ endfunction
 
 "
 function fuf#editInfoFile()
-  new
-  silent file `='[fuf-info]'`
-  let s:bufNrInfo = bufnr('%')
-  setlocal filetype=vim
-  setlocal bufhidden=delete
-  setlocal buftype=acwrite
-  setlocal noswapfile
-  augroup FufInfo
-    autocmd!
-    autocmd BufWriteCmd <buffer> call s:onBufWriteCmdInfoFile()
-  augroup END
-  execute '0read ' . expand(g:fuf_infoFile)
-  setlocal nomodified
+  let lines = readfile(expand(g:fuf_infoFile))
+  call l9#tempbuffer#open('[fuf-info]', 'vim', lines, 0, 0, 0, 1,
+        \                 s:infoBufferListener)
 endfunction
 
 " 
@@ -584,34 +574,6 @@ function s:highlightError()
   syntax match Error  /^.*$/
 endfunction
 
-" returns 0 if the buffer is not found.
-function s:moveToWindowOfBufferInCurrentTabPage(bufNr)
-  if count(tabpagebuflist(), a:bufNr) == 0
-    return 0
-  endif
-  execute bufwinnr(a:bufNr) . 'wincmd w'
-  return 1
-endfunction
-
-" returns 0 if the buffer is not found.
-function s:moveToOtherTabPageOpeningBuffer(bufNr)
-  for tabNr in range(1, tabpagenr('$'))
-    if tabNr != tabpagenr() && count(tabpagebuflist(tabNr), a:bufNr) > 0
-      execute 'tabnext ' . tabNr
-      return 1
-    endif
-  endfor
-  return 0
-endfunction
-
-" returns 0 if the buffer is not found.
-function s:moveToWindowOfBufferInOtherTabPage(bufNr)
-  if !s:moveToOtherTabPageOpeningBuffer(a:bufNr)
-    return 0
-  endif
-  return s:moveToWindowOfBufferInCurrentTabPage(a:bufNr)
-endfunction
-
 "
 function s:expandAbbrevMap(pattern, abbrevMap)
   let result = [a:pattern]
@@ -656,34 +618,8 @@ function s:setAbbrWithFileAbbrData(item, snippedHeads)
   return a:item
 endfunction
 
-let s:bufNrFuf = -1
-
 "
-function s:openFufBuffer()
-  if !bufexists(s:bufNrFuf)
-    topleft 1new
-    silent file `='[fuf]'`
-    let s:bufNrFuf = bufnr('%')
-  elseif bufwinnr(s:bufNrFuf) == -1
-    topleft 1split
-    execute 'silent ' . s:bufNrFuf . 'buffer'
-    delete _
-  elseif bufwinnr(s:bufNrFuf) != bufwinnr('%')
-    execute bufwinnr(s:bufNrFuf) . 'wincmd w'
-  endif
-endfunction
-
-function s:setLocalOptionsForFufBuffer()
-  setlocal filetype=fuf
-  setlocal bufhidden=delete
-  setlocal buftype=nofile
-  setlocal noswapfile
-  setlocal nobuflisted
-  setlocal modifiable
-  setlocal nocursorline   " for highlighting
-  setlocal nocursorcolumn " for highlighting
-  setlocal omnifunc=fuf#onComplete
-endfunction
+let s:FUF_BUF_NAME = '[fuf]'
 
 "
 function s:activateFufBuffer()
@@ -691,10 +627,13 @@ function s:activateFufBuffer()
   "         if 'autochdir' was set on.
   lcd .
   let cwd = getcwd()
-  call s:openFufBuffer()
+  call l9#tempbuffer#open(s:FUF_BUF_NAME, 'fuf', [], 1, 0, 1, 1, {})
   " lcd ... : countermeasure against auto-cd script
   lcd `=cwd`
-  call s:setLocalOptionsForFufBuffer()
+  setlocal buftype=nofile
+  setlocal nocursorline   " for highlighting
+  setlocal nocursorcolumn " for highlighting
+  setlocal omnifunc=fuf#onComplete
   redraw " for 'lazyredraw'
   if exists(':AcpLock')
     AcpLock
@@ -710,9 +649,7 @@ function s:deactivateFufBuffer()
   elseif exists(':AutoComplPopUnlock')
     AutoComplPopUnlock
   endif
-  " must close after returning to previous window
-  wincmd p
-  execute s:bufNrFuf . 'bdelete'
+  call l9#tempbuffer#close(s:FUF_BUF_NAME)
 endfunction
 
 "
@@ -751,14 +688,6 @@ function s:deserializeInfoMap(lines)
     call add(infoMap[e[1]][e[2]], eval(e[3]))
   endfor
   return infoMap
-endfunction
-
-"
-function s:onBufWriteCmdInfoFile()
-  call fuf#saveInfoFile('', s:deserializeInfoMap(getline(1, '$')))
-  setlocal nomodified
-  execute printf('%dbdelete! ', s:bufNrInfo)
-  echo "Information file updated"
 endfunction
 
 " }}}1
@@ -1021,6 +950,21 @@ function s:handlerBase.onRecallPattern(shift)
     call feedkeys("\<End>", 'n')
   endif
 endfunction
+
+" }}}1
+"=============================================================================
+" s:infoBufferListener {{{1
+
+"
+let s:infoBufferListener = {}
+
+"
+function s:infoBufferListener.onWrite(lines)
+  call fuf#saveInfoFile('', s:deserializeInfoMap(a:lines))
+  echo "Information file updated"
+  return 1
+endfunction
+
 
 " }}}1
 "=============================================================================
