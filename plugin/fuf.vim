@@ -62,6 +62,7 @@ function s:initialize()
   call l9#defineVariableDefault('g:fuf_buffer_prompt'     , '>Buffer[]>')
   call l9#defineVariableDefault('g:fuf_buffer_switchOrder', 10)
   call l9#defineVariableDefault('g:fuf_buffer_mruOrder'   , 1)
+  call l9#defineVariableDefault('g:fuf_buffer_keyDelete'  , '<C-]>')
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_file_prompt'     , '>File[]>')
   call l9#defineVariableDefault('g:fuf_file_switchOrder', 20)

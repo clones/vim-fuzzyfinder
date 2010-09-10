@@ -154,6 +154,9 @@ Buffer mode ~
 This mode provides an interface to select a buffer from a list of existing
 buffers and open it.
 
+Press <C-]> (|g:fuf_buffer_keyDelete|) in Buffer mode and selected
+buffer will be deleted.
+
                                                                *fuf-file-mode*
 File mode ~
 
@@ -923,6 +926,11 @@ For Buffer Mode ~
 <
         If non-zero, completion items is sorted in order of recently used.
 
+                                                   *g:fuf_buffer_keyDelete*  >
+  let g:fuf_buffer_keyDelete = '<C-]>'
+<
+        Key mapped to delete selected buffer.
+
                                                    *fuf-options-for-file-mode*
 For File Mode ~
 
@@ -1205,7 +1213,9 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
-3.6: [TODO]
+4.0: [TODO]
+  - Added new feature which deletes selected buffer with FuzzyFinder and
+    g:fuf_buffer_keyDelete option.
   - Added new feature which allows to set one-time options/variables with
     fuf#setOneTimeVariables() function.
 

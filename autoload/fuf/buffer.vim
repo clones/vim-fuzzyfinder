@@ -47,6 +47,7 @@ endfunction
 " LOCAL FUNCTIONS/VARIABLES {{{1
 
 let s:MODE_NAME = expand('<sfile>:t:r')
+let s:OPEN_TYPE_DELETE = -1
 
 let s:bufTimes = {}
 
@@ -147,7 +148,12 @@ endfunction
 function s:handler.onOpen(word, mode)
   " not use bufnr(a:word) in order to handle unnamed buffer
   let item = s:findItem(self.items, a:word)
-  if !empty(item)
+  if empty(item)
+    " do nothing
+  elseif a:mode ==# s:OPEN_TYPE_DELETE
+    execute item.bufNr . 'bdelete'
+    let self.reservedMode = self.getModeName()
+  else
     call fuf#openBuffer(item.bufNr, a:mode, g:fuf_reuseWindow)
   endif
 endfunction
@@ -158,6 +164,8 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
+  call fuf#defineKeyMappingInHandler(g:fuf_buffer_keyDelete,
+        \                            'onCr(' . s:OPEN_TYPE_DELETE . ', 0)')
   let self.items = range(1, bufnr('$'))
   call filter(self.items, 'buflisted(v:val) && v:val != self.bufNrPrev')
   call map(self.items, 's:makeItem(v:val)')
