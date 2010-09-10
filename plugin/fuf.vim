@@ -5,15 +5,15 @@
 "=============================================================================
 " LOAD GUARD {{{1
 
-let s:VERSION_VIM = 702
-let s:VERSION_L9 = 00.0100
+let s:REQUIRED_VERSION_VIM = 702
+let s:REQUIRED_VERSION_L9 = 1.0
 if exists('g:loaded_fuf')
   finish
-elseif v:version < s:VERSION_VIM
-  echoerr 'FuzzyFinder requires Vim version ' . s:VERSION_VIM
+elseif v:version < s:REQUIRED_VERSION_VIM
+  echoerr 'FuzzyFinder requires Vim version ' . string(s:REQUIRED_VERSION_VIM)
   finish
-elseif !exists('*l9#isCompatible') || !l9#isCompatible(s:VERSION_L9)
-  echoerr 'FuzzyFinder requires l9 library version ' . s:VERSION_L9
+elseif !exists('*l9#isCompatible') || !l9#isCompatible(s:REQUIRED_VERSION_L9)
+  echoerr 'FuzzyFinder requires L9 library version ' . string(s:REQUIRED_VERSION_L9)
   finish
 endif
 let g:loaded_fuf = 1
