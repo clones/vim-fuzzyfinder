@@ -151,6 +151,9 @@ Buffer モード ~
 
 このモードはバッファを選択して開くインターフェースを提供します。
 
+Buffer モード中に <C-]> (|g:fuf_buffer_keyDelete|) を押すと選択したバッファを
+削除することができます。
+
                                                                *fuf-file-mode*
 File モード ~
 
@@ -890,6 +893,11 @@ Buffer モード用 ~
   let g:fuf_buffer_mruOrder = 1
 <
         真なら、最後に使った時間順に補完アイテムをソートします。
+
+                                                   *g:fuf_buffer_keyDelete*  >
+  let g:fuf_buffer_keyDelete = '<C-]>'
+<
+        選択したバッファを削除するキー。
 
                                                    *fuf-options-for-file-mode*
 File モード用 ~
