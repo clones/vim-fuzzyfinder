@@ -5,18 +5,9 @@
 "=============================================================================
 " LOAD GUARD {{{1
 
-let s:REQUIRED_VERSION_VIM = 702
-let s:REQUIRED_VERSION_L9 = 1.0
-if exists('g:loaded_fuf')
-  finish
-elseif v:version < s:REQUIRED_VERSION_VIM
-  echoerr 'FuzzyFinder requires Vim version ' . string(s:REQUIRED_VERSION_VIM)
-  finish
-elseif !exists('*l9#isCompatible') || !l9#isCompatible(s:REQUIRED_VERSION_L9)
-  echoerr 'FuzzyFinder requires L9 library version ' . string(s:REQUIRED_VERSION_L9)
+if !l9#guardScriptLoading(expand('<sfile>:p'), 702, 100)
   finish
 endif
-let g:loaded_fuf = 1
 
 " }}}1
 "=============================================================================

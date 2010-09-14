@@ -4,10 +4,9 @@
 "=============================================================================
 " LOAD GUARD {{{1
 
-if exists('g:loaded_autoload_fuf_givencmd') || v:version < 702
+if !l9#guardScriptLoading(expand('<sfile>:p'), 702, 100)
   finish
 endif
-let g:loaded_autoload_fuf_givencmd = 1
 
 " }}}1
 "=============================================================================
