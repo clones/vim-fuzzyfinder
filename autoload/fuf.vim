@@ -1,5 +1,5 @@
 "=============================================================================
-" Copyright (c) 2007-2009 Takeshi NISHIDA
+" Copyright (c) 2007-2010 Takeshi NISHIDA
 "
 "=============================================================================
 " LOAD GUARD {{{1
@@ -631,7 +631,6 @@ function s:activateFufBuffer()
   " lcd ... : countermeasure against auto-cd script
   lcd `=cwd`
   setlocal buftype=nofile
-  setlocal nobuflisted
   setlocal nocursorline   " for highlighting
   setlocal nocursorcolumn " for highlighting
   setlocal omnifunc=fuf#onComplete
