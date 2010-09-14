@@ -1,5 +1,5 @@
 "=============================================================================
-" Copyright (c) 2007-2009 Takeshi NISHIDA
+" Copyright (c) 2007-2010 Takeshi NISHIDA
 "
 " GetLatestVimScripts: 1984 1 :AutoInstall: FuzzyFinder
 "=============================================================================

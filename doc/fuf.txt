@@ -1,6 +1,6 @@
 *fuf.txt*       buffer/file/command/tag/etc explorer with fuzzy matching.
 
-        Copyright (c) 2007-2009 Takeshi NISHIDA
+        Copyright (c) 2007-2010 Takeshi NISHIDA
 
 FuzzyFinder                                                *fuzzyfinder* *fuf*
 
