@@ -36,7 +36,9 @@ function fuf#updateMruList(mrulist, newItem, maxItem, exclude)
   let result = copy(a:mrulist)
   let result = filter(result,'v:val.word !=# a:newItem.word')
   let result = insert(result, a:newItem)
-  let result = filter(result, 'v:val.word !~ a:exclude')
+  if len(a:exclude)
+    let result = filter(result, 'v:val.word !~ a:exclude')
+  endif
   return result[0 : a:maxItem - 1]
 endfunction
 
@@ -756,7 +758,6 @@ function s:handlerBase.getMatchingCompleteItems(patternBase)
         \ 's:setRanks(v:val, patternSet.primaryForRank, exprBoundary, stats)')
 endfunction
 
-          "\ 'inoremap <buffer> <silent> %s <C-r>=fuf#getRunningHandler().%s ? "" : ""<CR>',
 "
 function s:handlerBase.onComplete(findstart, base)
   if a:findstart

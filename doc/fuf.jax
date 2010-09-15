@@ -45,6 +45,7 @@ FuzzyFinder が検索できる対象は次の通りです:
         - ファイル
         - ディレクトリ
         - 最近使ったファイル
+        - 最近使ったファイルの近くのファイル
         - 最近使ったコマンドライン
         - ブックマーク
         - タグ
@@ -90,19 +91,20 @@ ZIPファイルをランタイムディレクトリに展開します。
 次のコマンドで FuzzyFinder を起動します:
 
          コマンド                  モード ~
-        |:FufBuffer|     - Buffer モード (|fuf-buffer-mode|)
-        |:FufFile|       - File モード (|fuf-file-mode|)
-        |:FufDir|        - Directory モード (|fuf-dir-mode|)
-        |:FufMruFile|    - MRU-File モード (|fuf-mrufile-mode|)
-        |:FufMruCmd|     - MRU-Command モード (|fuf-mrucmd-mode|)
-        |:FufBookmark|   - Bookmark モード (|fuf-bookmark-mode|)
-        |:FufTag|        - Tag モード (|fuf-tag-mode|)
-        |:FufTaggedFile| - Tagged-File モード (|fuf-taggedfile-mode|)
-        |:FufJumpList|   - Jump-List モード (|fuf-jumplist-mode|)
-        |:FufChangeList| - Change-List モード (|fuf-changelist-mode|)
-        |:FufQuickfix|   - Quickfix モード (|fuf-quickfix-mode|)
-        |:FufLine|       - Line モード (|fuf-line-mode|)
-        |:FufHelp|       - Help モード (|fuf-help-mode|)
+        |:FufBuffer|       - Buffer モード (|fuf-buffer-mode|)
+        |:FufFile|         - File モード (|fuf-file-mode|)
+        |:FufDir|          - Directory モード (|fuf-dir-mode|)
+        |:FufMruFile|      - MRU-File モード (|fuf-mrufile-mode|)
+        |:FufAroundMruFile|- Around-MRU-File モード (|fuf-aroundmrufile-mode|)
+        |:FufMruCmd|       - MRU-Command モード (|fuf-mrucmd-mode|)
+        |:FufBookmark|     - Bookmark モード (|fuf-bookmark-mode|)
+        |:FufTag|          - Tag モード (|fuf-tag-mode|)
+        |:FufTaggedFile|   - Tagged-File モード (|fuf-taggedfile-mode|)
+        |:FufJumpList|     - Jump-List モード (|fuf-jumplist-mode|)
+        |:FufChangeList|   - Change-List モード (|fuf-changelist-mode|)
+        |:FufQuickfix|     - Quickfix モード (|fuf-quickfix-mode|)
+        |:FufLine|         - Line モード (|fuf-line-mode|)
+        |:FufHelp|         - Help モード (|fuf-help-mode|)
 
 これらのコマンドを押しやすいキーにマッピングすることを推奨します。
 
@@ -169,6 +171,15 @@ Directory モード ~
 MRU-File モード ~
 
 このモードは最近使ったファイルを選択して開くインターフェースを提供します。
+
+|BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
+で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
+
+                                                      *fuf-aroundmrufile-mode*
+Around-MRU-File モード ~
+
+このモードは最近使ったファイルの付近にあるファイルを選択して開くインターフェー
+スを提供します。ディレクトリを選択した場合、そこからFile モードを開始します。
 
 |BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
 で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
@@ -618,6 +629,15 @@ See also: |fuf-vimrc-example|
 
         FuzzyFinder 起動後に {pattern} が挿入されます。
 
+                                                           *:FufAroundMruFile*
+:FufAroundMruFile [{pattern}]
+        Around-MRU-File モードを起動します。
+
+        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
+        うになります。
+
+        FuzzyFinder 起動後に {pattern} が挿入されます。
+
                                                                   *:FufMruCmd*
 :FufMruCmd [{pattern}]
         MRU-Command モードを起動します。
@@ -731,7 +751,7 @@ See also: |fuf-vimrc-example|
 全モード用 ~
 
                                                        *g:fuf_modesDisable*  >
-  let g:fuf_modesDisable = [ 'mrufile', 'mrucmd', ]
+  let g:fuf_modesDisable = [ 'mrufile', 'aroundmrufile', 'mrucmd', ]
 <
         無効にするモード名のリスト。これに含まれるモードは初期化されず、イベン
         トの処理も行われません。
@@ -866,7 +886,7 @@ See also: |fuf-vimrc-example|
         されます。0 ならプレビュー機能は無効になります。
 
                                                         *g:fuf_autoPreview*  >
-  let g:fuf_autoPreview = 1
+  let g:fuf_autoPreview = 0
 <
         TODO
 
@@ -938,10 +958,10 @@ Directory モード用 ~
         補完リストから除外したいアイテムの正規表現パターン。
 
                                                 *fuf-options-for-mrufile-mode*
-Mru-File モード用 ~
+MRU-File モード用 ~
 
                                                      *g:fuf_mrufile_prompt*  >
-  let g:fuf_mrufile_prompt = '>Mru-File[]>'
+  let g:fuf_mrufile_prompt = '>MRU-File[]>'
 <
         プロンプト文字列。"[]" はインジケータに置換されます。
 
@@ -961,16 +981,40 @@ Mru-File モード用 ~
 <
         保持するMRUアイテムの上限値。
 
+                                          *fuf-options-for-aroundmrufile-mode*
+Around-MRU-File モード用 ~
+
+                                               *g:fuf_aroundmrufile_prompt*  >
+  let g:fuf_aroundmrufile_prompt = '>MRU-File[]>'
+<
+        プロンプト文字列。"[]" はインジケータに置換されます。
+
+                                          *g:fuf_aroundmrufile_switchOrder*  >
+  let g:fuf_aroundmrufile_switchOrder = 50
+<
+        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
+        には切り替えません。
+
+                                              *g:fuf_aroundmrufile_exclude*  >
+  let g:fuf_aroundmrufile_exclude = '\v\~$|\.(o|exe|dll|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)'
+<
+        補完リストから除外したいアイテムの正規表現パターン。
+
+                                              *g:fuf_aroundmrufile_maxDir*  >
+  let g:fuf_aroundmrufile_maxDir = 100
+<
+        保持するMRUアイテムの親ディレクトリの上限値。
+
                                                  *fuf-options-for-mrucmd-mode*
-Mru-Cmd モード用 ~
+MRU-Cmd モード用 ~
 
                                                       *g:fuf_mrucmd_prompt*  >
-  let g:fuf_mrucmd_prompt = '>Mru-Cmd[]>'
+  let g:fuf_mrucmd_prompt = '>MRU-Cmd[]>'
 <
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                  *g:fuf_mrucmd_switchOrder*  >
-  let g:fuf_mrucmd_switchOrder = 50
+  let g:fuf_mrucmd_switchOrder = 60
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -994,7 +1038,7 @@ Bookmark モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                *g:fuf_bookmark_switchOrder*  >
-  let g:fuf_bookmark_switchOrder = 60
+  let g:fuf_bookmark_switchOrder = 70
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1019,7 +1063,7 @@ Tag モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                     *g:fuf_tag_switchOrder*  >
-  let g:fuf_tag_switchOrder = 70
+  let g:fuf_tag_switchOrder = 80
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1039,7 +1083,7 @@ Tagged-File モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                              *g:fuf_taggedfile_switchOrder*  >
-  let g:fuf_taggedfile_switchOrder = 80
+  let g:fuf_taggedfile_switchOrder = 90
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1059,7 +1103,7 @@ Jump-List モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                *g:fuf_jumplist_switchOrder*  >
-  let g:fuf_jumplist_switchOrder = 90
+  let g:fuf_jumplist_switchOrder = 100
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1073,7 +1117,7 @@ Change-List モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                              *g:fuf_changelist_switchOrder*  >
-  let g:fuf_changelist_switchOrder = 100
+  let g:fuf_changelist_switchOrder = 110
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1087,7 +1131,7 @@ Quickfix モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                              *g:fuf_quickfix_switchOrder*  >
-  let g:fuf_quickfix_switchOrder = 110
+  let g:fuf_quickfix_switchOrder = 120
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1101,7 +1145,7 @@ Line モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                    *g:fuf_line_switchOrder*  >
-  let g:fuf_line_switchOrder = 120
+  let g:fuf_line_switchOrder = 130
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1115,7 +1159,7 @@ Help モード用 ~
         プロンプト文字列。"[]" はインジケータに置換されます。
 
                                                    *g:fuf_help_switchOrder*  >
-  let g:fuf_help_switchOrder = 130
+  let g:fuf_help_switchOrder = 140
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
@@ -1136,8 +1180,8 @@ vimrc の例                                                 *fuf-vimrc-example*
         \   '^vr:' : map(filter(split(&runtimepath, ','), 'v:val !~ "after$"'), 'v:val . ''/**/'''),
         \   '^m0:' : [ '/mnt/d/0/', '/mnt/j/0/' ],
         \ }
-  let g:fuf_mrufile_maxItem = 300
-  let g:fuf_mrucmd_maxItem = 400
+  let g:fuf_mrufile_maxItem = 500
+  let g:fuf_mrucmd_maxItem = 500
   nnoremap <silent> <C-n>      :FufBuffer<CR>
   nnoremap <silent> <C-p>      :FufFileWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f><C-p> :FufFileWithFullCwd<CR>
@@ -1146,7 +1190,8 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-f>d     :FufDirWithFullCwd<CR>
   nnoremap <silent> <C-f>D     :FufDir<CR>
   nnoremap <silent> <C-j>      :FufMruFile<CR>
-  nnoremap <silent> <C-k>      :FufMruCmd<CR>
+  nnoremap <silent> <C-k>      :FufAroundMruFile<CR>
+  nnoremap <silent> <C-f><C-k> :FufMruCmd<CR>
   nnoremap <silent> <C-b>      :FufBookmark<CR>
   nnoremap <silent> <C-f><C-t> :FufTag<CR>
   nnoremap <silent> <C-f>t     :FufTag!<CR>
