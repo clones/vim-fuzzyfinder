@@ -127,10 +127,6 @@ function s:initialize()
 endfunction
 
 "
-function s:initMisc()
-endfunction
-
-"
 function s:renewCachesOfAllModes()
   for m in g:fuf_modes 
     call fuf#{m}#renewCache()
