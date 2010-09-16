@@ -630,6 +630,7 @@ function s:activateFufBuffer()
   lcd .
   let cwd = getcwd()
   call l9#tempbuffer#open(s:FUF_BUF_NAME, 'fuf', [], 1, 0, 1, 1, {})
+  resize 1 " for issue #21 
   " lcd ... : countermeasure against auto-cd script
   lcd `=cwd`
   setlocal buftype=nofile
