@@ -318,6 +318,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler.partialMatching = a:partialMatching
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
+  let s:runningHandler.windowRestoringCommand = winrestcmd()
   call s:runningHandler.onModeEnterPre()
   call fuf#setOneTimeVariables(
         \ ['&completeopt', 'menuone'],
@@ -831,6 +832,7 @@ function s:handlerBase.onInsertLeave()
   call l9#tempvariables#swap(s:TEMP_VARIABLES_GROUP)
   call s:deactivateFufBuffer()
   call fuf#saveInfoFile(self.getModeName(), self.info)
+  execute self.windowRestoringCommand
   let fOpen = exists('s:reservedCommand')
   if fOpen
     call self.onOpen(s:reservedCommand[0], s:reservedCommand[1])

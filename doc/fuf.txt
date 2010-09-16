@@ -1270,6 +1270,7 @@ CHANGELOG                                                      *fuf-changelog*
     g:fuf_buffer_keyDelete option.
   - Added new feature which allows to set one-time options/variables with
     fuf#setOneTimeVariables() function.
+  - Fixed a bug that FuzzyFinder caused reseting window layout.
 
 3.5:
   - Added Line mode.
