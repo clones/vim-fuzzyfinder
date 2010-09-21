@@ -34,7 +34,8 @@ function s:initialize()
   call l9#defineVariableDefault('g:fuf_keyPrevPattern'   , '<C-s>')
   call l9#defineVariableDefault('g:fuf_keyNextPattern'   , '<C-_>')
   call l9#defineVariableDefault('g:fuf_keySwitchMatching', '<C-\><C-\>')
-  call l9#defineVariableDefault('g:fuf_infoFile'         , '~/.vim-fuf')
+  call l9#defineVariableDefault('g:fuf_infoFile'         , '~/.vim-fuf') " TODO
+  call l9#defineVariableDefault('g:fuf_dataDir'          , '~/.vim-fuf-data')
   call l9#defineVariableDefault('g:fuf_abbrevMap'        , {})
   call l9#defineVariableDefault('g:fuf_patternSeparator' , ';')
   call l9#defineVariableDefault('g:fuf_promptHighlight'  , 'Question')
@@ -85,11 +86,11 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_tag_prompt'     , '>Tag[]>')
   call l9#defineVariableDefault('g:fuf_tag_switchOrder', 80)
-  call l9#defineVariableDefault('g:fuf_tag_cache_dir'  , '~/.vim-fuf-cache/tag')
+  call l9#defineVariableDefault('g:fuf_tag_cache_dir'  , '~/.vim-fuf-cache/tag') " TODO
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_taggedfile_prompt'     , '>Tagged-File[]>')
   call l9#defineVariableDefault('g:fuf_taggedfile_switchOrder', 90)
-  call l9#defineVariableDefault('g:fuf_taggedfile_cache_dir'  , '~/.vim-fuf-cache/taggedfile')
+  call l9#defineVariableDefault('g:fuf_taggedfile_cache_dir'  , '~/.vim-fuf-cache/taggedfile') " TODO
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_jumplist_prompt'     , '>Jump-List[]>')
   call l9#defineVariableDefault('g:fuf_jumplist_switchOrder', 100)
@@ -105,7 +106,7 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_help_prompt'     , '>Help[]>')
   call l9#defineVariableDefault('g:fuf_help_switchOrder', 140)
-  call l9#defineVariableDefault('g:fuf_help_cache_dir'  , '~/.vim-fuf-cache/help')
+  call l9#defineVariableDefault('g:fuf_help_cache_dir'  , '~/.vim-fuf-cache/help') " TODO
   "---------------------------------------------------------------------------
   call filter(g:fuf_modes, 'count(g:fuf_modesDisable, v:val) == 0')
   for m in g:fuf_modes

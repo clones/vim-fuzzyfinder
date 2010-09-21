@@ -53,11 +53,11 @@ function s:updateInfo()
   if !empty(&buftype) || !filereadable(expand('%'))
     return
   endif
-  let info = fuf#loadInfoFile(s:MODE_NAME)
-  let info.data = fuf#updateMruList(
-        \ info.data, { 'word' : expand('%:p:h') },
+  let items = fuf#loadItems(s:MODE_NAME)
+  let items = fuf#updateMruList(
+        \ items, { 'word' : expand('%:p:h') },
         \ g:fuf_aroundmrufile_maxDir, g:fuf_aroundmrufile_exclude)
-  call fuf#saveInfoFile(s:MODE_NAME, info)
+  call fuf#saveItems(s:MODE_NAME, items)
 endfunction
 
 "
@@ -135,7 +135,7 @@ endfunction
 function s:handler.onModeEnterPost()
   " NOTE: Comparing filenames is faster than bufnr('^' . fname . '$')
   let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':p:~')
-  let self.items = copy(self.info.data)
+  let self.items = fuf#loadItems(s:MODE_NAME)
   call map(self.items, 's:listFilesUsingCache(v:val.word)')
   let self.items = l9#concat(self.items)
   call filter(self.items, '!empty(v:val) && v:val.word !=# bufNamePrev')
