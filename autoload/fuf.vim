@@ -76,11 +76,7 @@ function fuf#getFileLines(file)
   if !empty(lines)
     return lines
   endif
-  try
-    return readfile(expand(a:file))
-  catch /.*/ 
-  endtry
-  return []
+  return l9#readFile(a:file)
 endfunction
 
 "
@@ -290,10 +286,10 @@ endfunction
 
 "
 function fuf#defineKeyMappingInHandler(key, func)
-    " hacks to be able to use feedkeys().
-    execute printf(
-          \ 'inoremap <buffer> <silent> %s <C-r>=fuf#getRunningHandler().%s ? "" : ""<CR>',
-          \ a:key, a:func)
+  " hacks to be able to use feedkeys().
+  execute printf(
+        \ 'inoremap <buffer> <silent> %s <C-r>=fuf#getRunningHandler().%s ? "" : ""<CR>',
+        \ a:key, a:func)
 endfunction
 
 "
@@ -314,7 +310,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
     return
   endif
   let s:runningHandler = fuf#{a:modeName}#createHandler(copy(s:handlerBase))
-  let s:runningHandler.info = fuf#loadInfoFile(s:runningHandler.getModeName())
+  let s:runningHandler.stats = fuf#loadStats(s:runningHandler.getModeName())
   let s:runningHandler.partialMatching = a:partialMatching
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
@@ -360,44 +356,52 @@ function fuf#launch(modeName, initialPattern, partialMatching)
 endfunction
 
 "
-function fuf#loadInfoFile(modeName)
-  try
-    let lines = readfile(expand(g:fuf_infoFile))
-    " compatibility check
-    if count(lines, s:INFO_FILE_VERSION_LINE) == 0
-      call s:warnOldInfoFile()
-      let g:fuf_infoFile = ''
-      throw 1
-    endif
-  catch /.*/ 
-    let lines = []
-  endtry
-  let s:lastInfoMap = s:deserializeInfoMap(lines)
-  if !exists('s:lastInfoMap[a:modeName]')
-    let s:lastInfoMap[a:modeName] = {}
+function fuf#loadDataLines(pathSuffixes)
+  if !s:dataFileAvailable
+    return []
   endif
-  return extend(s:lastInfoMap[a:modeName], { 'data': [], 'stats': [] }, 'keep')
+  return l9#readFile(l9#concatPaths([g:fuf_dataDir] + a:pathSuffixes))
 endfunction
 
-" if a:modeName is empty, a:info is treated as a map of information
-function fuf#saveInfoFile(modeName, info)
-  if empty(a:modeName)
-    let s:lastInfoMap = a:info
-  else
-    let s:lastInfoMap[a:modeName] = a:info
+" 
+function fuf#saveDataLines(pathSuffixes, lines)
+  if !s:dataFileAvailable
+    return
   endif
-  let lines = [ s:INFO_FILE_VERSION_LINE ] + s:serializeInfoMap(s:lastInfoMap)
-  try
-    call writefile(lines, expand(g:fuf_infoFile))
-  catch /.*/ 
-  endtry
+  call l9#writeFile(a:lines, l9#concatPaths([g:fuf_dataDir] + a:pathSuffixes))
+endfunction
+
+"
+function fuf#loadItems(modeName)
+  let lines = fuf#loadDataLines([a:modeName, 'items'])
+  return map(lines, 'eval(v:val)')
+endfunction
+
+" 
+function fuf#saveItems(modeName, items)
+  let lines = map(copy(a:items), 'string(v:val)')
+  call fuf#saveDataLines([a:modeName, 'items'], lines)
+endfunction
+
+"
+function fuf#loadStats(modeName)
+  let lines = fuf#loadDataLines([a:modeName, 'stats'])
+  return map(lines, 'eval(v:val)')
+endfunction
+
+" 
+function fuf#saveStats(modeName, stats)
+  let lines = map(copy(a:stats), 'string(v:val)')
+  call fuf#saveDataLines([a:modeName, 'stats'], lines)
 endfunction
 
 "
 function fuf#editInfoFile()
-  let lines = readfile(expand(g:fuf_infoFile))
-  call l9#tempbuffer#open('[fuf-info]', 'vim', lines, 0, 0, 0, 1,
-        \                 s:infoBufferListener)
+  "TODO
+  throw 'TODO'
+  "let lines = l9#readFile(g:fuf_infoFile)
+  "call l9#tempbuffer#open('[fuf-info]', 'vim', lines, 0, 0, 0, 1,
+  "      \                 s:infoBufferListener)
 endfunction
 
 " 
@@ -414,7 +418,6 @@ endfunction
 "=============================================================================
 " LOCAL FUNCTIONS/VARIABLES {{{1
 
-let s:INFO_FILE_VERSION_LINE = "VERSION\t300"
 let s:TEMP_VARIABLES_GROUP = "FuzzyFinder"
 let s:ABBR_SNIP_MASK = '...'
 let s:OPEN_TYPE_CURRENT = 1
@@ -482,9 +485,9 @@ function s:interpretPrimaryPatternForPath(pattern)
   let pairL = fuf#splitPath(patternL)
   if g:fuf_splitPathMatching
     let matches = [
-        \     ['v:val.wordForPrimaryHead', pairL.head],
-        \     ['v:val.wordForPrimaryTail', pairL.tail],
-        \   ]
+          \     ['v:val.wordForPrimaryHead', pairL.head],
+          \     ['v:val.wordForPrimaryTail', pairL.tail],
+          \   ]
   else
     let matches = [
           \     ['v:val.wordForPrimaryHead . v:val.wordForPrimaryTail', patternL],
@@ -514,7 +517,7 @@ endfunction
 
 "
 function s:toLowerForIgnoringCase(str)
-    return (g:fuf_ignoreCase ? tolower(a:str) : a:str)
+  return (g:fuf_ignoreCase ? tolower(a:str) : a:str)
 endfunction
 
 "
@@ -655,44 +658,6 @@ function s:deactivateFufBuffer()
   call l9#tempbuffer#close(s:FUF_BUF_NAME)
 endfunction
 
-"
-function s:warnOldInfoFile()
-  call fuf#echoWarning(printf(
-        \ "=================================================================\n" .
-        \ "  Sorry, but your information file for FuzzyFinder is no longer  \n" .
-        \ "  compatible with this version of FuzzyFinder. Please remove     \n" .
-        \ "  %-63s\n" .
-        \ "=================================================================\n" ,
-        \ '"' . expand(g:fuf_infoFile) . '".'))
-  call l9#inputHl('Question', 'Press Enter')
-endfunction
-
-"
-function s:serializeInfoMap(infoMap)
-  let lines = []
-  for [m, info] in items(a:infoMap)
-    for [key, value] in items(info)
-      let lines += map(copy(value), 'm . "\t" . key . "\t" . string(v:val)')
-    endfor
-  endfor
-  return lines
-endfunction
-
-"
-function s:deserializeInfoMap(lines)
-  let infoMap = {}
-  for e in filter(map(a:lines, 'matchlist(v:val, ''^\v(\S+)\s+(\S+)\s+(.+)$'')'), '!empty(v:val)')
-    if !exists('infoMap[e[1]]')
-      let infoMap[e[1]] = {}
-    endif
-    if !exists('infoMap[e[1]][e[2]]')
-      let infoMap[e[1]][e[2]] = []
-    endif
-    call add(infoMap[e[1]][e[2]], eval(e[3]))
-  endfor
-  return infoMap
-endfunction
-
 " }}}1
 "=============================================================================
 " s:handlerBase {{{1
@@ -738,9 +703,9 @@ endfunction
 "
 function s:handlerBase.addStat(pattern, word)
   let stat = { 'pattern' : a:pattern, 'word' : a:word }
-  call filter(self.info.stats, 'v:val !=# stat')
-  call insert(self.info.stats, stat)
-  let self.info.stats = self.info.stats[0 : g:fuf_learningLimit - 1]
+  call filter(self.stats, 'v:val !=# stat')
+  call insert(self.stats, stat)
+  let self.stats = self.stats[0 : g:fuf_learningLimit - 1]
 endfunction
 
 "
@@ -751,7 +716,7 @@ function s:handlerBase.getMatchingCompleteItems(patternBase)
   let patternSet = self.makePatternSet(a:patternBase)
   let exprBoundary = s:makeFuzzyMatchingExpr('a:wordForBoundary', patternSet.primaryForRank)
   let stats = filter(
-        \ copy(self.info.stats), 'v:val.pattern ==# patternSet.primaryForRank')
+        \ copy(self.stats), 'v:val.pattern ==# patternSet.primaryForRank')
   let items = self.getCompleteItems(patternSet.primary)
   " NOTE: In order to know an excess, plus 1 to limit number
   let items = l9#filterWithLimit(
@@ -832,7 +797,7 @@ function s:handlerBase.onInsertLeave()
   unlet s:runningHandler
   call l9#tempvariables#swap(s:TEMP_VARIABLES_GROUP)
   call s:deactivateFufBuffer()
-  call fuf#saveInfoFile(self.getModeName(), self.info)
+  call fuf#saveStats(self.getModeName(), self.stats)
   execute self.windowRestoringCommand
   let fOpen = exists('s:reservedCommand')
   if fOpen
@@ -939,7 +904,7 @@ endfunction
 
 "
 function s:handlerBase.onRecallPattern(shift)
-  let patterns = map(copy(self.info.stats), 'v:val.pattern')
+  let patterns = map(copy(self.stats), 'v:val.pattern')
   if !exists('self.indexRecall')
     let self.indexRecall = -1
   endif
@@ -963,9 +928,11 @@ let s:infoBufferListener = {}
 
 "
 function s:infoBufferListener.onWrite(lines)
-  call fuf#saveInfoFile('', s:deserializeInfoMap(a:lines))
-  echo "Information file updated"
-  return 1
+  "TODO
+  throw 'TODO'
+  "call fuf#saveInfoFile('', s:deserializeInfoMap(a:lines))
+  "echo "Information file updated"
+  "return 1
 endfunction
 
 
@@ -979,6 +946,37 @@ augroup FufGlobal
 augroup END
 
 let s:bufferCursorPosMap = {}
+
+"
+let s:DATA_FILE_VERSION = 400
+
+"
+function s:checkDataFileCompatibility()
+  if empty(g:fuf_dataDir)
+    let s:dataFileAvailable = 0
+    return
+  endif
+  let versionPath = l9#concatPaths([g:fuf_dataDir, 'VERSION'])
+  let lines = l9#readFile(versionPath)
+  if empty(lines)
+    call l9#writeFile([s:DATA_FILE_VERSION], versionPath)
+    let s:dataFileAvailable = 1
+  elseif str2nr(lines[0]) == s:DATA_FILE_VERSION
+    let s:dataFileAvailable = 1
+  else
+    call fuf#echoWarning(printf(
+          \ "==============================================================\n" .
+          \ "  Existing data files for FuzzyFinder is no longer            \n" .
+          \ "  compatible with this version of FuzzyFinder. Please remove  \n" .
+          \ "  %-60s\n" .
+          \ "==============================================================\n" ,
+          \ string(g:fuf_dataDir)))
+    call l9#inputHl('Question', 'Press Enter')
+    let s:dataFileAvailable = 0
+  endif
+endfunction
+
+call s:checkDataFileCompatibility()
 
 " }}}1
 "=============================================================================

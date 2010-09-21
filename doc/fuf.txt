@@ -1270,6 +1270,9 @@ CHANGELOG                                                      *fuf-changelog*
     g:fuf_buffer_keyDelete option.
   - Added new feature which allows to set one-time options/variables with
     fuf#setOneTimeVariables() function.
+  - Added g:fuf_dataDir option and removed g:fuf_infoFile,
+    g:g:fuf_tag_cache_dir, g:fuf_taggedfile_cache_dir, and
+    g:fuf_help_cache_dir options.
   - Fixed a bug that FuzzyFinder caused reseting window layout.
 
 3.5:
