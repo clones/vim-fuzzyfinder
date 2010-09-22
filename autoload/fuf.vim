@@ -494,7 +494,11 @@ endfunction
 
 " 
 function s:makeRefiningExpr(pattern)
-  let expr = s:makePartialMatchingExpr('v:val.wordForRefining', a:pattern)
+  if g:fuf_fuzzyRefining
+    let expr = s:makeFuzzyMatchingExpr('v:val.wordForRefining', a:pattern)
+  else
+    let expr = s:makePartialMatchingExpr('v:val.wordForRefining', a:pattern)
+  endif
   if a:pattern =~# '\D'
     return expr
   else

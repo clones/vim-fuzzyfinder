@@ -470,8 +470,8 @@ A refining pattern is used to narrow down the list of matching items by
 another pattern.
 
 With a primary pattern, FuzzyFinder does fuzzy matching or partial matching,
-which you specified. With a refining pattern, FuzzyFinder always does partial
-matching.
+which you specified. With a refining pattern, FuzzyFinder does partial
+matching by default. (|g:fuf_fuzzyRefining|)
 
 When you enter a number as refining pattern, it also can match the index of
 each item.
@@ -883,6 +883,14 @@ For All Modes ~
 
         See also: |fuf-search-patterns|
 
+                                                      *g:fuf_fuzzyRefining*  >
+  let g:fuf_fuzzyRefining = 0
+<
+        If non-zero, fuzzy matching is done with refining pattern instead of
+        partial matching.
+
+        See also: |fuf-search-patterns|
+
                                                             *g:fuf_smartBs*  >
   let g:fuf_smartBs = 1
 <
@@ -1261,6 +1269,7 @@ CHANGELOG                                                      *fuf-changelog*
     g:g:fuf_tag_cache_dir, g:fuf_taggedfile_cache_dir, and
     g:fuf_help_cache_dir options.
   - Added :FufEditDataFile command and removed :FufEditInfo command.
+  - Added g:fuf_fuzzyRefining option.
   - Fixed a bug that FuzzyFinder caused reseting window layout.
   - Improved speed of changing buffers.
   - Improved the way to add modes.
