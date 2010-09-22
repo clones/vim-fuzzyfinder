@@ -52,11 +52,11 @@ let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
 function s:updateInfo(cmd)
-  let items = fuf#loadItems(s:MODE_NAME)
+  let items = fuf#loadDataFile(s:MODE_NAME, 'items')
   let items = fuf#updateMruList(
         \ items, { 'word' : a:cmd, 'time' : localtime() },
         \ g:fuf_mrucmd_maxItem, g:fuf_mrucmd_exclude)
-  call fuf#saveItems(s:MODE_NAME, items)
+  call fuf#saveDataFile(s:MODE_NAME, 'items', items)
 endfunction
 
 " }}}1
@@ -114,7 +114,7 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
-  let self.items = fuf#loadItems(s:MODE_NAME)
+  let self.items = fuf#loadDataFile(s:MODE_NAME, 'items')
   call map(self.items, 'fuf#makeNonPathItem(v:val.word, strftime(g:fuf_timeFormat, v:val.time))')
   call fuf#mapToSetSerialIndex(self.items, 1)
   call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')

@@ -279,6 +279,39 @@ function fuf#setAbbrWithFormattedWord(item, abbrIndex)
 endfunction
 
 "
+function s:onCommandPre()
+  for m in filter(copy(fuf#getModeNames()), 'fuf#{v:val}#requiresOnCommandPre()')
+      call fuf#{m}#onCommandPre(getcmdtype() . getcmdline())
+  endfor
+  " lets last entry become the newest in the history
+  call histadd(getcmdtype(), getcmdline())
+  " this is not mapped again (:help recursive_mapping)
+  return "\<CR>"
+endfunction
+
+"
+let s:modeNames = []
+
+"
+function fuf#addMode(modeName)
+  if count(g:fuf_modesDisable, a:modeName) > 0
+    return
+  endif
+  call add(s:modeNames, a:modeName)
+  call fuf#{a:modeName}#renewCache()
+  call fuf#{a:modeName}#onInit()
+  if fuf#{a:modeName}#requiresOnCommandPre()
+    " cnoremap has a problem, which doesn't expand cabbrev.
+    cmap <silent> <expr> <CR> <SID>onCommandPre()
+  endif
+endfunction
+
+"
+function fuf#getModeNames()
+  return s:modeNames
+endfunction
+
+"
 function fuf#defineLaunchCommand(CmdName, modeName, prefixInitialPattern)
   execute printf('command! -bang -narg=? %s call fuf#launch(%s, %s . <q-args>, len(<q-bang>))',
         \        a:CmdName, string(a:modeName), a:prefixInitialPattern)
@@ -305,12 +338,12 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   if exists('s:runningHandler')
     call fuf#echoWarning('FuzzyFinder is running.')
   endif
-  if count(g:fuf_modes, a:modeName) == 0
+  if count(fuf#getModeNames(), a:modeName) == 0
     echoerr 'This mode is not available: ' . a:modeName
     return
   endif
   let s:runningHandler = fuf#{a:modeName}#createHandler(copy(s:handlerBase))
-  let s:runningHandler.stats = fuf#loadStats(s:runningHandler.getModeName())
+  let s:runningHandler.stats = fuf#loadDataFile(s:runningHandler.getModeName(), 'stats')
   let s:runningHandler.partialMatching = a:partialMatching
   let s:runningHandler.bufNrPrev = bufnr('%')
   let s:runningHandler.lastCol = -1
@@ -356,52 +389,62 @@ function fuf#launch(modeName, initialPattern, partialMatching)
 endfunction
 
 "
-function fuf#loadDataLines(pathSuffixes)
+function fuf#loadDataFile(modeName, dataName)
   if !s:dataFileAvailable
     return []
   endif
-  return l9#readFile(l9#concatPaths([g:fuf_dataDir] + a:pathSuffixes))
+  let lines = l9#readFile(l9#concatPaths([g:fuf_dataDir, a:modeName, a:dataName]))
+  return map(lines, 'eval(v:val)')
 endfunction
 
 " 
-function fuf#saveDataLines(pathSuffixes, lines)
+function fuf#saveDataFile(modeName, dataName, items)
   if !s:dataFileAvailable
-    return
+    return -1
   endif
-  call l9#writeFile(a:lines, l9#concatPaths([g:fuf_dataDir] + a:pathSuffixes))
-endfunction
-
-"
-function fuf#loadItems(modeName)
-  let lines = fuf#loadDataLines([a:modeName, 'items'])
-  return map(lines, 'eval(v:val)')
-endfunction
-
-" 
-function fuf#saveItems(modeName, items)
   let lines = map(copy(a:items), 'string(v:val)')
-  call fuf#saveDataLines([a:modeName, 'items'], lines)
-endfunction
-
-"
-function fuf#loadStats(modeName)
-  let lines = fuf#loadDataLines([a:modeName, 'stats'])
-  return map(lines, 'eval(v:val)')
+  return l9#writeFile(lines, l9#concatPaths([g:fuf_dataDir, a:modeName, a:dataName]))
 endfunction
 
 " 
-function fuf#saveStats(modeName, stats)
-  let lines = map(copy(a:stats), 'string(v:val)')
-  call fuf#saveDataLines([a:modeName, 'stats'], lines)
+function fuf#getDataFileTime(modeName, dataName)
+  if !s:dataFileAvailable
+    return -1
+  endif
+  return getftime(expand(l9#concatPaths([g:fuf_dataDir, a:modeName, a:dataName])))
 endfunction
 
 "
-function fuf#editInfoFile()
-  "TODO
-  throw 'TODO'
-  "let lines = l9#readFile(g:fuf_infoFile)
-  "call l9#tempbuffer#open('[fuf-info]', 'vim', lines, 0, 0, 0, 1,
-  "      \                 s:infoBufferListener)
+function s:createDataBufferListener(modeName)
+  let listener = { 'modeName': a:modeName }
+
+  function listener.onWrite(lines)
+    call fuf#saveDataFile(self.modeName, 'items', map(a:lines, 'eval(v:val)'))
+    echo "Data files updated"
+    return 1
+  endfunction
+
+  return listener
+endfunction
+
+"
+function s:createEditDataListener()
+  let listener = {}
+
+  function listener.onComplete(modeName, method)
+    let bufName = '[fuf-info-' . a:modeName . ']'
+    let lines = l9#readFile(l9#concatPaths([g:fuf_dataDir, a:modeName, 'items']))
+    call l9#tempbuffer#open(bufName, 'vim', lines, 0, 0, 0, 1,
+          \                 s:createDataBufferListener(a:modeName))
+  endfunction
+
+  return listener
+endfunction
+
+"
+function fuf#editDataFile()
+  let modes = filter(copy(fuf#getModeNames()), 'fuf#getDataFileTime(v:val, "items") != -1')
+  call fuf#callbackitem#launch('', 0, '>Mode>', s:createEditDataListener(), modes, 0)
 endfunction
 
 " 
@@ -797,7 +840,7 @@ function s:handlerBase.onInsertLeave()
   unlet s:runningHandler
   call l9#tempvariables#swap(s:TEMP_VARIABLES_GROUP)
   call s:deactivateFufBuffer()
-  call fuf#saveStats(self.getModeName(), self.stats)
+  call fuf#saveDataFile(self.getModeName(), 'stats', self.stats)
   execute self.windowRestoringCommand
   let fOpen = exists('s:reservedCommand')
   if fOpen
@@ -879,7 +922,7 @@ endfunction
 
 "
 function s:handlerBase.onSwitchMode(shift)
-  let modes = copy(g:fuf_modes)
+  let modes = copy(fuf#getModeNames())
   call map(modes, '{ "ranks": [ fuf#{v:val}#getSwitchOrder(), v:val ] }')
   call filter(modes, 'v:val.ranks[0] >= 0')
   call sort(modes, 'fuf#compareRanks')
@@ -921,23 +964,6 @@ endfunction
 
 " }}}1
 "=============================================================================
-" s:infoBufferListener {{{1
-
-"
-let s:infoBufferListener = {}
-
-"
-function s:infoBufferListener.onWrite(lines)
-  "TODO
-  throw 'TODO'
-  "call fuf#saveInfoFile('', s:deserializeInfoMap(a:lines))
-  "echo "Information file updated"
-  "return 1
-endfunction
-
-
-" }}}1
-"=============================================================================
 " INITIALIZATION {{{1
 
 augroup FufGlobal
@@ -965,11 +991,11 @@ function s:checkDataFileCompatibility()
     let s:dataFileAvailable = 1
   else
     call fuf#echoWarning(printf(
-          \ "==============================================================\n" .
-          \ "  Existing data files for FuzzyFinder is no longer            \n" .
-          \ "  compatible with this version of FuzzyFinder. Please remove  \n" .
-          \ "  %-60s\n" .
-          \ "==============================================================\n" ,
+          \ "=======================================================\n" .
+          \ "  Existing data files for FuzzyFinder is no longer     \n" .
+          \ "  compatible with this version of FuzzyFinder. Remove  \n" .
+          \ "  %-53s\n" .
+          \ "=======================================================\n" ,
           \ string(g:fuf_dataDir)))
     call l9#inputHl('Question', 'Press Enter')
     let s:dataFileAvailable = 0

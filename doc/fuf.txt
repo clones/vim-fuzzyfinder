@@ -561,15 +561,15 @@ patterns:
 
 and show concatenated search results.
 
-                                                        *fuf-information-file*
-Information File ~
+                                                               *fuf-data-file*
+Data File ~
 
-FuzzyFinder writes completion statistics, MRU data, bookmark, etc to
-|g:fuf_infoFile|.
+FuzzyFinder writes completion statistics, MRU data, bookmark, etc to files
+under |g:fuf_dataDir|.
 
-|:FufEditInfo| command is helpful in editing your information file.
-This command reads the information file in new unnamed buffer. Write the
-buffer and the information file will be updated.
+|:FufEditDataFile| command is helpful in editing your data files. This command
+reads the data file in new unnamed buffer. Write the buffer and the data file
+will be updated.
 
                                                                    *fuf-cache*
 Cache ~
@@ -587,6 +587,12 @@ after a path separator is expanded to "../" sequence.
         /..             /../
         /...            /../../
         /....           /../../../
+
+                                                         *fuf-how-to-add-mode*
+How To Add Mode ~
+
+To add "mymode" mode, put the source file at autoload/fuf/mymode.vim and call
+fuf#addMode("mymode") .
 
                                                                   *fuf-migemo*
 What Is Migemo ~
@@ -749,10 +755,10 @@ See also: |fuf-vimrc-example|
 
         {pattern} will be inserted after launching FuzzyFinder.
 
-                                                                *:FufEditInfo*
-:FufEditInfo
-        Opens a buffer for editing your information file. See
-        |fuf-information-file| for details.
+                                                            *:FufEditDataFile*
+:FufEditDataFile
+        Opens a buffer for editing your data files. See |fuf-data-file| for
+        details.
 
                                                              *:FufAddBookmark*
 :FufAddBookmark [{name}]
@@ -841,11 +847,11 @@ For All Modes ~
 <
         Key mapped to switch between fuzzy matching and partial matching.
 
-                                                           *g:fuf_infoFile*  >
-  let g:fuf_infoFile = '~/.vim-fuf'
+                                                           *g:fuf_dataDir*  >
+  let g:fuf_dataDir = '~/.vim-fuf-data'
 <
-        Filename to write completion statistics, MRU data, bookmark, etc. If
-        empty string, FuzzyFinder does not write to a file.
+        Directory path to which data files is put. If empty string,
+        FuzzyFinder does not write data files.
 
                                                           *g:fuf_abbrevMap*  >
   let g:fuf_abbrevMap = {}
@@ -913,7 +919,7 @@ For All Modes ~
         completion menu.
 
                                                       *g:fuf_previewHeight*  >
-  let g:fuf_previewHeight = 5
+  let g:fuf_previewHeight = 10
 <
         'cmdheight' is set to this when a mode supporting preview is launched.
         Information of selected completion item will be shown on command-line
@@ -922,7 +928,7 @@ For All Modes ~
                                                         *g:fuf_autoPreview*  >
   let g:fuf_autoPreview = 0
 <
-        TODO
+        If non-zero, previews will be shown automatically.
 
                                                           *g:fuf_useMigemo*  >
   let g:fuf_useMigemo = 0
@@ -968,7 +974,7 @@ For File Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                                        *g:fuf_file_exclude*  >
-  let g:fuf_file_exclude = '\v\~$|\.(o|exe|dll|bak|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
+  let g:fuf_file_exclude = '\v\~$|\.(o|exe|dll|bak|orig|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -1008,7 +1014,7 @@ For MRU-File Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                                     *g:fuf_mrufile_exclude*  >
-  let g:fuf_mrufile_exclude = '\v\~$|\.(bak|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
+  let g:fuf_mrufile_exclude = '\v\~$|\.(bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -1033,8 +1039,7 @@ For Around-MRU-File Mode ~
         number, Fuzzyfinder never switches to this mode.
 
                                               *g:fuf_aroundmrufile_exclude*  >
-  let g:fuf_aroundmrufile_exclude = '\v\~$|\.(bak|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
-  let g:fuf_aroundmrufile_exclude = '\v\~$|\.(o|exe|dll|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)'
+  let g:fuf_aroundmrufile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
@@ -1109,12 +1114,6 @@ For Tag Mode ~
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
-                                                      *g:fuf_tag_cache_dir*  >
-  let g:fuf_tag_cache_dir = '~/.vim-fuf-cache/tag'
-<
-        Cache files are created in this directory. If empty, they are not
-        created.
-
                                              *fuf-options-for-taggedfile-mode*
 For Tagged-File Mode ~
 
@@ -1128,12 +1127,6 @@ For Tagged-File Mode ~
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
-
-                                               *g:fuf_taggedfile_cache_dir*  >
-  let g:fuf_taggedfile_cache_dir = '~/.vim-fuf-cache/taggedfile'
-<
-        Cache files are created in this directory. If empty, they are not
-        created.
 
                                                *fuf-options-for-jumplist-mode*
 For Jump-List Mode ~
@@ -1205,12 +1198,6 @@ For Help Mode ~
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
-                                                     *g:fuf_help_cache_dir*  >
-  let g:fuf_help_cache_dir = '~/.vim-fuf-cache/help'
-<
-        Cache files are created in this directory. If empty, they are not
-        created.
-
 
 ==============================================================================
 VIMRC EXAMPLE                                              *fuf-vimrc-example*
@@ -1245,7 +1232,7 @@ VIMRC EXAMPLE                                              *fuf-vimrc-example*
   nnoremap <silent> <C-f><C-h> :FufHelp<CR>
   nnoremap <silent> <C-f><C-b> :FufAddBookmark<CR>
   vnoremap <silent> <C-f><C-b> :FufAddBookmarkAsSelectedText<CR>
-  nnoremap <silent> <C-f><C-e> :FufEditInfo<CR>
+  nnoremap <silent> <C-f><C-e> :FufEditDataFile<CR>
   nnoremap <silent> <C-f><C-r> :FufRenewCache<CR>
 <
 
@@ -1273,7 +1260,10 @@ CHANGELOG                                                      *fuf-changelog*
   - Added g:fuf_dataDir option and removed g:fuf_infoFile,
     g:g:fuf_tag_cache_dir, g:fuf_taggedfile_cache_dir, and
     g:fuf_help_cache_dir options.
+  - Added :FufEditDataFile command and removed :FufEditInfo command.
   - Fixed a bug that FuzzyFinder caused reseting window layout.
+  - Improved speed of changing buffers.
+  - Improved the way to add modes.
 
 3.5:
   - Added Line mode.
