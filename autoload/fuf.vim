@@ -371,6 +371,7 @@ function fuf#launch(modeName, initialPattern, partialMatching)
         \   [ g:fuf_keyOpenTabpage   , 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
         \   [ '<BS>'                 , 'onBs()'                               ],
         \   [ '<C-h>'                , 'onBs()'                               ],
+        \   [ '<C-w>'                , 'onDeleteWord()'                       ],
         \   [ g:fuf_keyPreview       , 'onPreviewBase(1)'                     ],
         \   [ g:fuf_keyNextMode      , 'onSwitchMode(+1)'                     ],
         \   [ g:fuf_keyPrevMode      , 'onSwitchMode(-1)'                     ],
@@ -881,19 +882,25 @@ endfunction
 
 "
 function s:handlerBase.onBs()
-  let pattern = self.removePrompt(getline('.')[ : col('.') - 2])
-  if empty(pattern)
-    let numBs = 0
-  elseif !g:fuf_smartBs
-    let numBs = 1
-  elseif pattern[-len(g:fuf_patternSeparator) : ] ==# g:fuf_patternSeparator
-    let numBs = len(split(pattern, g:fuf_patternSeparator, 1)[-2])
-          \   + len(g:fuf_patternSeparator)
-  elseif self.targetsPath() && pattern[-1 : ] =~# '[/\\]'
-    let numBs = len(matchstr(pattern, '[^/\\]*.$'))
-  else
-    let numBs = 1
+  call feedkeys((pumvisible() ? "\<C-e>\<BS>" : "\<BS>"), 'n')
+endfunction
+
+"
+function s:getLastBlockLength(pattern, patternIsPath)
+  let separatorPos = strridx(a:pattern, g:fuf_patternSeparator)
+  if separatorPos >= 0
+    return len(a:pattern) - separatorPos
   endif
+  if a:patternIsPath && a:pattern =~# '[/\\].'
+    return len(matchstr(a:pattern, '[^/\\]*.$'))
+  endif
+  return len(a:pattern)
+endfunction
+
+"
+function s:handlerBase.onDeleteWord()
+  let pattern = self.removePrompt(getline('.')[ : col('.') - 2])
+  let numBs = s:getLastBlockLength(pattern, 1)
   call feedkeys((pumvisible() ? "\<C-e>" : "") . repeat("\<BS>", numBs), 'n')
 endfunction
 

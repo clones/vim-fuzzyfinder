@@ -123,6 +123,9 @@ highlights the pattern with "Error" group.
 
 The first item in the completion menu will be selected automatically.
 
+Typing <C-w> deletes one block of an entered pattern before the cursor, like a
+directory name.
+
 with <C-s> (|g:fuf_keyPrevPattern|) and <C-^> (|g:fuf_keyNextPattern|), You
 can recall patterns which have been entered before from history.
 
@@ -891,13 +894,6 @@ For All Modes ~
 
         See also: |fuf-search-patterns|
 
-                                                            *g:fuf_smartBs*  >
-  let g:fuf_smartBs = 1
-<
-        If non-zero, pressing <BS> after a path separator deletes one
-        directory name and pressing <BS> after |g:fuf_patternSeparator|
-        deletes one pattern.
-
                                                         *g:fuf_reuseWindow*  >
   let g:fuf_reuseWindow = 1
 <
@@ -1273,6 +1269,7 @@ CHANGELOG                                                      *fuf-changelog*
   - Fixed a bug that FuzzyFinder caused reseting window layout.
   - Improved speed of changing buffers.
   - Improved the way to add modes.
+  - Removed g:fuf_smartBs option. Use <C-w> instead.
 
 3.5:
   - Added Line mode.
@@ -1517,7 +1514,7 @@ CHANGELOG                                                      *fuf-changelog*
 
 2.3:
   - Added a key mapping to open items in a new tab page and
-    g:FuzzyFinderOptions.Base.key_open_tab opton.
+    g:FuzzyFinderOptions.Base.key_open_tab option.
   - Changed to show Fuzzyfinder window above last window even if 'splitbelow'
     was set.
   - Changed to set nocursorline and nocursorcolumn in Fuzzyfinder.
