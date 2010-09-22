@@ -365,19 +365,19 @@ function fuf#launch(modeName, initialPattern, partialMatching)
     autocmd InsertLeave  <buffer> nested call s:runningHandler.onInsertLeave()
   augroup END
   for [key, func] in [
-        \   [ g:fuf_keyOpen          , 'onCr(' . s:OPEN_TYPE_CURRENT . ', 0)' ],
-        \   [ g:fuf_keyOpenSplit     , 'onCr(' . s:OPEN_TYPE_SPLIT   . ', 0)' ],
-        \   [ g:fuf_keyOpenVsplit    , 'onCr(' . s:OPEN_TYPE_VSPLIT  . ', 0)' ],
-        \   [ g:fuf_keyOpenTabpage   , 'onCr(' . s:OPEN_TYPE_TAB     . ', 0)' ],
-        \   [ '<BS>'                 , 'onBs()'                               ],
-        \   [ '<C-h>'                , 'onBs()'                               ],
-        \   [ '<C-w>'                , 'onDeleteWord()'                       ],
-        \   [ g:fuf_keyPreview       , 'onPreviewBase(1)'                     ],
-        \   [ g:fuf_keyNextMode      , 'onSwitchMode(+1)'                     ],
-        \   [ g:fuf_keyPrevMode      , 'onSwitchMode(-1)'                     ],
-        \   [ g:fuf_keySwitchMatching, 'onSwitchMatching()'                   ],
-        \   [ g:fuf_keyPrevPattern   , 'onRecallPattern(+1)'                  ],
-        \   [ g:fuf_keyNextPattern   , 'onRecallPattern(-1)'                  ],
+        \   [ g:fuf_keyOpen          , 'onCr(' . s:OPEN_TYPE_CURRENT . ')' ],
+        \   [ g:fuf_keyOpenSplit     , 'onCr(' . s:OPEN_TYPE_SPLIT   . ')' ],
+        \   [ g:fuf_keyOpenVsplit    , 'onCr(' . s:OPEN_TYPE_VSPLIT  . ')' ],
+        \   [ g:fuf_keyOpenTabpage   , 'onCr(' . s:OPEN_TYPE_TAB     . ')' ],
+        \   [ '<BS>'                 , 'onBs()'                            ],
+        \   [ '<C-h>'                , 'onBs()'                            ],
+        \   [ '<C-w>'                , 'onDeleteWord()'                    ],
+        \   [ g:fuf_keyPreview       , 'onPreviewBase(1)'                  ],
+        \   [ g:fuf_keyNextMode      , 'onSwitchMode(+1)'                  ],
+        \   [ g:fuf_keyPrevMode      , 'onSwitchMode(-1)'                  ],
+        \   [ g:fuf_keySwitchMatching, 'onSwitchMatching()'                ],
+        \   [ g:fuf_keyPrevPattern   , 'onRecallPattern(+1)'               ],
+        \   [ g:fuf_keyNextPattern   , 'onRecallPattern(-1)'               ],
         \ ]
     call fuf#defineKeyMappingInHandler(key, func)
   endfor
@@ -721,9 +721,6 @@ let s:handlerBase = {}
 " "
 " s:handler.getPrompt()
 " 
-" " returns true if the mode deals with file paths.
-" s:handler.targetsPath()
-"
 " "
 " s:handler.getCompleteItems(patternSet)
 " 
@@ -862,16 +859,16 @@ function s:handlerBase.onInsertLeave()
 endfunction
 
 "
-function s:handlerBase.onCr(openType, fCheckDir)
+function s:handlerBase.onCr(openType)
   if pumvisible()
-    call feedkeys(printf("\<C-y>\<C-r>=fuf#getRunningHandler().onCr(%d, %d) ? '' : ''\<CR>",
-          \              a:openType, self.targetsPath()), 'n')
+    call feedkeys(printf("\<C-y>\<C-r>=fuf#getRunningHandler().onCr(%d) ? '' : ''\<CR>",
+          \              a:openType), 'n')
     return
   endif
   if !empty(self.lastPattern)
     call self.addStat(self.lastPattern, self.removePrompt(getline('.')))
   endif
-  if a:fCheckDir && getline('.') =~# '[/\\]$'
+  if !self.isOpenable(getline('.'))
     " To clear i_<C-r> expression (fuf#getRunningHandler().onCr...)
     echo ''
     return

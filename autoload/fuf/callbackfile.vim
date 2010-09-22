@@ -86,8 +86,8 @@ function s:handler.getPreviewHeight()
 endfunction
 
 "
-function s:handler.targetsPath()
-  return 1
+function s:handler.isOpenable(enteredPattern)
+  return a:enteredPattern =~# '[^/\\]$'
 endfunction
 
 "
