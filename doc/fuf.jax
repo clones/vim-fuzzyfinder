@@ -121,6 +121,9 @@ FuzzyFinder は入力されたパターンにマッチするアイテムを検�
 
 補完メニューの最初のアイテムは自動的に選択状態になります。
 
+<C-w> で入力パターンからカーソル前の、ディレクトリ名などのひとかたまりを削除す
+ることができます。
+
 <C-s> (|g:fuf_keyPrevPattern|) と <C-^> (|g:fuf_keyNextPattern|) で、履歴から
 過去に入力したパターンを呼び出すことができます。
 
@@ -857,13 +860,6 @@ See also: |fuf-vimrc-example|
         ッチングが行われます。
 
         See also: |fuf-search-patterns|
-
-                                                            *g:fuf_smartBs*  >
-  let g:fuf_smartBs = 1
-<
-        真なら、パス区切り文字の直後で <BS> を入力するとディレクトリ名1つ分を
-        削除し、|g:fuf_patternSeparator|の直後で <BS> を入力するとパターン1つ分
-        を削除します。
 
                                                         *g:fuf_reuseWindow*  >
   let g:fuf_reuseWindow = 1
