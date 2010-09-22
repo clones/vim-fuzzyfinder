@@ -119,7 +119,7 @@ function s:handler.getPreviewHeight()
 endfunction
 
 "
-function s:handler.targetsPath()
+function s:handler.isOpenable(enteredPattern)
   return 1
 endfunction
 

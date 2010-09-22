@@ -67,7 +67,7 @@ function s:listFilesUsingCache(dir)
           \              split(glob(a:dir . l9#getPathSeparator() . "*" ), "\n") +
           \              split(glob(a:dir . l9#getPathSeparator() . ".*"), "\n")
     call filter(s:cache[a:dir], 'v:val !~ ''\v(^|[/\\])\.\.?$''')
-    call map(s:cache[a:dir], 'fuf#makePathItem(fnamemodify(v:val, ":~"), "", 0)')
+    call map(s:cache[a:dir], 'fuf#makePathItem(fnamemodify(v:val, ":~"), "", 1)')
     if len(g:fuf_aroundmrufile_exclude)
       call filter(s:cache[a:dir], 'v:val.word !~ g:fuf_aroundmrufile_exclude')
     endif
@@ -97,7 +97,7 @@ function s:handler.getPreviewHeight()
 endfunction
 
 "
-function s:handler.targetsPath()
+function s:handler.isOpenable(enteredPattern)
   return 1
 endfunction
 
@@ -121,7 +121,7 @@ endfunction
 function s:handler.onOpen(word, mode)
   if isdirectory(expand(a:word))
     let self.reservedMode = 'file'
-    let self.lastPattern = a:word . l9#getPathSeparator()
+    let self.lastPattern = a:word
   else
     call fuf#openFile(a:word, a:mode, g:fuf_reuseWindow)
   endif
