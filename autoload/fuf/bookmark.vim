@@ -91,9 +91,9 @@ function s:bookmarkHere(word)
     call fuf#echoWarning('Canceled')
     return
   endif
-  let items = fuf#loadItems(s:MODE_NAME)
+  let items = fuf#loadDataFile(s:MODE_NAME, 'items')
   call insert(items, item)
-  call fuf#saveItems(s:MODE_NAME, items)
+  call fuf#saveDataFile(s:MODE_NAME, 'items', items)
 endfunction
 
 "
@@ -140,7 +140,7 @@ endfunction
 
 "
 function s:handler.makePreviewLines(word, count)
-  let item = s:findItem(fuf#loadItems(s:MODE_NAME), a:word)
+  let item = s:findItem(fuf#loadDataFile(s:MODE_NAME, 'items'), a:word)
   let lines = fuf#getFileLines(item.path)
   if empty(lines)
     return []
@@ -158,13 +158,13 @@ endfunction
 "
 function s:handler.onOpen(word, mode)
   if a:mode ==# s:OPEN_TYPE_DELETE
-    let items = fuf#loadItems(s:MODE_NAME)
+    let items = fuf#loadDataFile(s:MODE_NAME, 'items')
     call filter(items, 'v:val.word !=# a:word')
-    call fuf#saveItems(s:MODE_NAME, items)
+    call fuf#saveDataFile(s:MODE_NAME, 'items', items)
     let self.reservedMode = self.getModeName()
     return
   else
-    let item = s:findItem(fuf#loadItems(s:MODE_NAME), a:word)
+    let item = s:findItem(fuf#loadDataFile(s:MODE_NAME, 'items'), a:word)
     if !empty(item)
         call s:jumpToBookmark(item.path, a:mode, item.pattern, item.lnum)
     endif
@@ -179,7 +179,7 @@ endfunction
 function s:handler.onModeEnterPost()
   call fuf#defineKeyMappingInHandler(g:fuf_bookmark_keyDelete,
         \                            'onCr(' . s:OPEN_TYPE_DELETE . ', 0)')
-  let self.items = fuf#loadItems(s:MODE_NAME)
+  let self.items = fuf#loadDataFile(s:MODE_NAME, 'items')
   call map(self.items, 'fuf#makeNonPathItem(v:val.word, strftime(g:fuf_timeFormat, v:val.time))')
   call fuf#mapToSetSerialIndex(self.items, 1)
   call map(self.items, 'fuf#setAbbrWithFormattedWord(v:val, 1)')

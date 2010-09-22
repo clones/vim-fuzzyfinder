@@ -124,7 +124,7 @@ endfunction
 
 "
 function s:handler.onModeLeavePost(opened)
-  if !a:opened
+  if !a:opened && exists('s:listener.onAbort()')
     call s:listener.onAbort()
   endif
 endfunction

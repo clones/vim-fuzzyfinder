@@ -16,13 +16,6 @@ endif
 "
 function s:initialize()
   "---------------------------------------------------------------------------
-  call l9#defineVariableDefault('g:fuf_modes'  , [
-        \   'buffer', 'file', 'dir', 'mrufile', 'aroundmrufile', 'mrucmd',
-        \   'bookmark', 'tag', 'taggedfile',
-        \   'jumplist', 'changelist', 'quickfix', 'line', 'help',
-        \   'givenfile', 'givendir', 'givencmd',
-        \   'callbackfile', 'callbackitem',
-        \ ])
   call l9#defineVariableDefault('g:fuf_modesDisable'     , [ 'mrufile', 'aroundmrufile', 'mrucmd', ])
   call l9#defineVariableDefault('g:fuf_keyOpen'          , '<CR>')
   call l9#defineVariableDefault('g:fuf_keyOpenSplit'     , '<C-j>')
@@ -34,7 +27,6 @@ function s:initialize()
   call l9#defineVariableDefault('g:fuf_keyPrevPattern'   , '<C-s>')
   call l9#defineVariableDefault('g:fuf_keyNextPattern'   , '<C-_>')
   call l9#defineVariableDefault('g:fuf_keySwitchMatching', '<C-\><C-\>')
-  call l9#defineVariableDefault('g:fuf_infoFile'         , '~/.vim-fuf') " TODO
   call l9#defineVariableDefault('g:fuf_dataDir'          , '~/.vim-fuf-data')
   call l9#defineVariableDefault('g:fuf_abbrevMap'        , {})
   call l9#defineVariableDefault('g:fuf_patternSeparator' , ';')
@@ -58,7 +50,7 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_file_prompt'     , '>File[]>')
   call l9#defineVariableDefault('g:fuf_file_switchOrder', 20)
-  call l9#defineVariableDefault('g:fuf_file_exclude'    , '\v\~$|\.(o|exe|dll|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
+  call l9#defineVariableDefault('g:fuf_file_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_dir_prompt'     , '>Dir[]>')
   call l9#defineVariableDefault('g:fuf_dir_switchOrder', 30)
@@ -66,12 +58,12 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_mrufile_prompt'     , '>MRU-File[]>')
   call l9#defineVariableDefault('g:fuf_mrufile_switchOrder', 40)
-  call l9#defineVariableDefault('g:fuf_mrufile_exclude'    , '\v\~$|\.(bak|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)')
+  call l9#defineVariableDefault('g:fuf_mrufile_exclude'    , '\v\~$|\.(bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)')
   call l9#defineVariableDefault('g:fuf_mrufile_maxItem'    , 200)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_aroundmrufile_prompt'     , '>Around-MRU-File[]>')
   call l9#defineVariableDefault('g:fuf_aroundmrufile_switchOrder', 50)
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_exclude'    , '\v\~$|\.(o|exe|dll|bak|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)')
+  call l9#defineVariableDefault('g:fuf_aroundmrufile_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)')
   call l9#defineVariableDefault('g:fuf_aroundmrufile_maxDir'    , 100)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_mrucmd_prompt'     , '>MRU-Cmd[]>')
@@ -86,11 +78,9 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_tag_prompt'     , '>Tag[]>')
   call l9#defineVariableDefault('g:fuf_tag_switchOrder', 80)
-  call l9#defineVariableDefault('g:fuf_tag_cache_dir'  , '~/.vim-fuf-cache/tag') " TODO
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_taggedfile_prompt'     , '>Tagged-File[]>')
   call l9#defineVariableDefault('g:fuf_taggedfile_switchOrder', 90)
-  call l9#defineVariableDefault('g:fuf_taggedfile_cache_dir'  , '~/.vim-fuf-cache/taggedfile') " TODO
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_jumplist_prompt'     , '>Jump-List[]>')
   call l9#defineVariableDefault('g:fuf_jumplist_switchOrder', 100)
@@ -106,57 +96,37 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_help_prompt'     , '>Help[]>')
   call l9#defineVariableDefault('g:fuf_help_switchOrder', 140)
-  call l9#defineVariableDefault('g:fuf_help_cache_dir'  , '~/.vim-fuf-cache/help') " TODO
   "---------------------------------------------------------------------------
-  call filter(g:fuf_modes, 'count(g:fuf_modesDisable, v:val) == 0')
-  for m in g:fuf_modes
-    call fuf#{m}#renewCache()
-    call fuf#{m}#onInit()
-  endfor
+  command! -bang -narg=0 FufEditDataFile call fuf#editDataFile()
+  command! -bang -narg=0 FufRenewCache   call s:renewCachesOfAllModes()
   "---------------------------------------------------------------------------
-  command! -bang -narg=0 FufEditInfo   call fuf#editInfoFile()
-  command! -bang -narg=0 FufRenewCache call s:renewCachesOfAllModes()
-  "---------------------------------------------------------------------------
-  for m in g:fuf_modes
-    if fuf#{m}#requiresOnCommandPre()
-      " cnoremap has a problem, which doesn't expand cabbrev.
-      cmap <silent> <expr> <CR> <SID>onCommandPre()
-      break
-    endif
-  endfor
+  call fuf#addMode('buffer')
+  call fuf#addMode('file')
+  call fuf#addMode('dir')
+  call fuf#addMode('mrufile')
+  call fuf#addMode('aroundmrufile')
+  call fuf#addMode('mrucmd')
+  call fuf#addMode('bookmark')
+  call fuf#addMode('tag')
+  call fuf#addMode('taggedfile')
+  call fuf#addMode('jumplist')
+  call fuf#addMode('changelist')
+  call fuf#addMode('quickfix')
+  call fuf#addMode('line')
+  call fuf#addMode('help')
+  call fuf#addMode('givenfile')
+  call fuf#addMode('givendir')
+  call fuf#addMode('givencmd')
+  call fuf#addMode('callbackfile')
+  call fuf#addMode('callbackitem')
   "---------------------------------------------------------------------------
 endfunction
 
 "
 function s:renewCachesOfAllModes()
-  for m in g:fuf_modes 
+  for m in fuf#getModeNames()
     call fuf#{m}#renewCache()
   endfor
-endfunction
-
-"
-function s:onBufEnter()
-  for m in g:fuf_modes 
-    call fuf#{m}#onBufEnter()
-  endfor
-endfunction
-
-"
-function s:onBufWritePost()
-  for m in g:fuf_modes
-    call fuf#{m}#onBufWritePost()
-  endfor
-endfunction
-
-"
-function s:onCommandPre()
-  for m in filter(copy(g:fuf_modes), 'fuf#{v:val}#requiresOnCommandPre()')
-      call fuf#{m}#onCommandPre(getcmdtype() . getcmdline())
-  endfor
-  " lets last entry become the newest in the history
-  call histadd(getcmdtype(), getcmdline())
-  " this is not mapped again (:help recursive_mapping)
-  return "\<CR>"
 endfunction
 
 " }}}1
