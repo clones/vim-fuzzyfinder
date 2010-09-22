@@ -198,7 +198,7 @@ endfunction
 "
 function fuf#makePathItem(fname, menu, appendsDirSuffix)
   let pathPair = fuf#splitPath(a:fname)
-  let dirSuffix = (a:appendsDirSuffix && isdirectory(a:fname)
+  let dirSuffix = (a:appendsDirSuffix && isdirectory(expand(a:fname))
         \          ? l9#getPathSeparator()
         \          : '')
   return {
