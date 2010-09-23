@@ -13,30 +13,30 @@ endif
 " GLOBAL FUNCTIONS {{{1
 
 "
-function fuf#allfile#createHandler(base)
+function fuf#coveragefile#createHandler(base)
   return a:base.concretize(copy(s:handler))
 endfunction
 
 "
-function fuf#allfile#getSwitchOrder()
-  return g:fuf_allfile_switchOrder
+function fuf#coveragefile#getSwitchOrder()
+  return g:fuf_coveragefile_switchOrder
 endfunction
 
 "
-function fuf#allfile#renewCache()
+function fuf#coveragefile#renewCache()
   let s:cache = {}
 endfunction
 
 "
-function fuf#allfile#requiresOnCommandPre()
+function fuf#coveragefile#requiresOnCommandPre()
   return 0
 endfunction
 
 "
-function fuf#allfile#onInit()
-  call fuf#defineLaunchCommand('FufAllFile', s:MODE_NAME, '""')
-  command! -bang -narg=0        FufAllFileRegisterCoverage call s:registerCoverage()
-  command! -bang -narg=?        FufAllFileChangeCoverage call s:changeCoverage(<q-args>)
+function fuf#coveragefile#onInit()
+  call fuf#defineLaunchCommand('FufCoverageFile', s:MODE_NAME, '""')
+  command! -bang -narg=0        FufCoverageFileRegister call s:registerCoverage()
+  command! -bang -narg=?        FufCoverageFileChange call s:changeCoverage(<q-args>)
 endfunction
 
 " }}}1
@@ -47,15 +47,15 @@ let s:MODE_NAME = expand('<sfile>:t:r')
 
 "
 function s:enumItems()
-  let key = join([getcwd(), g:fuf_ignoreCase, g:fuf_allfile_exclude,
-        \         g:fuf_allfile_globPatterns], "\n")
+  let key = join([getcwd(), g:fuf_ignoreCase, g:fuf_coveragefile_exclude,
+        \         g:fuf_coveragefile_globPatterns], "\n")
   if !exists('s:cache[key]')
-    let s:cache[key] = l9#concat(map(copy(g:fuf_allfile_globPatterns),
+    let s:cache[key] = l9#concat(map(copy(g:fuf_coveragefile_globPatterns),
           \                          'split(glob(v:val), "\n")'))
     call filter(s:cache[key], 'filereadable(v:val)')
     call map(s:cache[key], 'fuf#makePathItem(fnamemodify(v:val, ":~:."), "", 0)')
-    if len(g:fuf_allfile_exclude)
-      call filter(s:cache[key], 'v:val.word !~ g:fuf_allfile_exclude')
+    if len(g:fuf_coveragefile_exclude)
+      call filter(s:cache[key], 'v:val.word !~ g:fuf_coveragefile_exclude')
     endif
     call fuf#mapToSetSerialIndex(s:cache[key], 1)
     call fuf#mapToSetAbbrWithSnippedWordAsPath(s:cache[key])
@@ -114,9 +114,9 @@ function s:changeCoverage(name)
       call fuf#echoError('Coverage not found: ' . name)
     return
   endif
-  call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns',
+  call fuf#setOneTimeVariables(['g:fuf_coveragefile_globPatterns',
         \                       coverages[0].patterns])
-  call feedkeys(":FufAllFile\<CR>", 'n')
+  call feedkeys(":FufCoverageFile\<CR>", 'n')
 endfunction
 
 " }}}1
@@ -132,8 +132,8 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return fuf#formatPrompt(g:fuf_allfile_prompt, self.partialMatching,
-        \                 string(g:fuf_allfile_globPatterns))
+  return fuf#formatPrompt(g:fuf_coveragefile_prompt, self.partialMatching,
+        \                 string(g:fuf_coveragefile_globPatterns))
 endfunction
 
 "
