@@ -65,7 +65,7 @@ endfunction
 
 "
 function fuf#formatPrompt(prompt, partialMatching, otherString)
-  let indicator = (a:partialMatching ? '!' : '') . a:otherString
+  let indicator = escape((a:partialMatching ? '!' : '') . a:otherString, '\')
   return substitute(a:prompt, '[]', indicator, 'g')
 endfunction
 
@@ -441,8 +441,8 @@ function s:createEditDataListener()
   function listener.onComplete(modeName, method)
     let bufName = '[fuf-info-' . a:modeName . ']'
     let lines = l9#readFile(l9#concatPaths([g:fuf_dataDir, a:modeName, 'items']))
-    call l9#tempbuffer#open(bufName, 'vim', lines, 0, 0, 0, 1,
-          \                 s:createDataBufferListener(a:modeName))
+    call l9#tempbuffer#openWritable(bufName, 'vim', lines, 0, 0, 0,
+          \                         s:createDataBufferListener(a:modeName))
   endfunction
 
   return listener
@@ -686,11 +686,10 @@ function s:activateFufBuffer()
   "         if 'autochdir' was set on.
   lcd .
   let cwd = getcwd()
-  call l9#tempbuffer#open(s:FUF_BUF_NAME, 'fuf', [], 1, 0, 1, 1, {})
+  call l9#tempbuffer#openScratch(s:FUF_BUF_NAME, 'fuf', [], 1, 0, 1)
   resize 1 " for issue #21 
   " lcd ... : countermeasure against auto-cd script
   lcd `=cwd`
-  setlocal buftype=nofile
   setlocal nocursorline   " for highlighting
   setlocal nocursorcolumn " for highlighting
   setlocal omnifunc=fuf#onComplete
