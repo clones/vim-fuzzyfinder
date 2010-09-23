@@ -84,7 +84,7 @@ Then update your help tags files to enable the help for this plugin. See
 
 Requirements: ~
 
-- L9 library ( http://bitbucket.org/ns9tks/vim-l9/ )
+- L9 library (vimscript #3252)
 
 
 ==============================================================================
@@ -1351,7 +1351,8 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
-4.0: [TODO]
+4.0:
+  - From this version, L9 library (vimscript #3252) is required.
   - Added All-File mode for users wanting something like TextMate's command-t.
   - Added Around-MRU-File mode. (Too slow. There is room for improvement.)
   - Added new feature which deletes selected buffer with FuzzyFinder and
