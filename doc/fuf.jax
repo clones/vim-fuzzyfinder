@@ -93,7 +93,7 @@ ZIPファイルをランタイムディレクトリに展開します。
          コマンド                  モード ~
         |:FufBuffer|       - Buffer モード (|fuf-buffer-mode|)
         |:FufFile|         - File モード (|fuf-file-mode|)
-        |:FufAllFile|      - All-File モード (|fuf-allfile-mode|)
+        |:FufCoverageFile| - Coverage-File モード (|fuf-coveragefile-mode|)
         |:FufDir|          - Directory モード (|fuf-dir-mode|)
         |:FufMruFile|      - MRU-File モード (|fuf-mrufile-mode|)
         |:FufAroundMruFile|- Around-MRU-File モード (|fuf-aroundmrufile-mode|)
@@ -167,17 +167,17 @@ File モード ~
 このモードはファイルツリーからファイルを検索して開くインターフェースを提供しま
 す。
 
-                                                            *fuf-allfile-mode*
-All-File モード ~
+                                                       *fuf-coveragefile-mode*
+Coverage-File モード ~
 
 このモードはあらかじめ設定した検索対象の全ファイルからファイルを選択して開くイ
 ンターフェースを提供します。
 
 デフォルトではカレントディレクトリ以下の全ファイルを列挙します。
-(|g:fuf_allfile_globPatterns|)
+(|g:fuf_coveragefile_globPatterns|)
 
-他の検索対象を検索したい場合、|FufAllFileRegisterCoverage|コマンドで新しい検索
-対象を登録し、|FufAllFileChangeCoverage|コマンドで検索対象を選択して All-File
+他の検索対象を検索したい場合、|FufCoverageFileRegister|コマンドで新しい検索対
+象を登録し、|FufCoverageFileChange|コマンドで検索対象を選択して Coverage-File
 モードを起動します。
 
 加えて、|fuf#setOneTimeVariables()|関数を使う方法もあります。
@@ -185,13 +185,13 @@ All-File モード ~
 
 例: .hと.cファイルだけ検索する:
 >
-        call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', ['**/*.h', '**/*.c']])
-              \ | FufAllFile
+        call fuf#setOneTimeVariables(['g:fuf_coveragefile_globPatterns', ['**/*.h', '**/*.c']])
+              \ | FufCoverageFile
 <
 例: デフォルトの検索対象に加えてホームディレクトリも検索する:
 >
-        call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', g:fuf_allfile_globPatterns + ['~/**/.*', '~/**/*']])
-              \ | FufAllFile
+        call fuf#setOneTimeVariables(['g:fuf_coveragefile_globPatterns', g:fuf_coveragefile_globPatterns + ['~/**/.*', '~/**/*']])
+              \ | FufCoverageFile
 <
 
                                                                 *fuf-dir-mode*
@@ -771,22 +771,22 @@ See also: |fuf-vimrc-example|
         データファイルを編集するためのバッファを開きます。詳しくは
         |fuf-data-file|を参照してください。
 
-                                                 *:FufAllFileRegisterCoverage*
-:FufAllFileRegisterCoverage
-        All-File モードで検索される、新しい検索対象を登録します。最初に ~/* の
-        ような glob パターンを入力します。 <Esc> を入力するまでパターンを追加
-        することができます。次に対象名を入力します。
+                                                    *:FufCoverageFileRegister*
+:FufCoverageFileRegister
+        Coverage-File モードで検索される、新しい検索対象を登録します。最初に
+        ~/* のような glob パターンを入力します。 <Esc> を入力するまでパターン
+        を追加することができます。次に対象名を入力します。
 
-        See also: |glob()|, |fuf-allfile-mode|
+        See also: |glob()|, |fuf-coveragefile-mode|
 
-                                                   *:FufAllFileChangeCoverage*
-:FufAllFileChangeCoverage [{name}]
-        |FufAllFileRegisterCoverage|コマンドで登録されている中から選択された検
-        索対象でAll-File モードを起動します。
+                                                      *:FufCoverageFileChange*
+:FufCoverageFileChange [{name}]
+        |FufCoverageFileRegister|コマンドで登録されている中から選択された検索
+        対象でCoverage-File モードを起動します。
 
         対象名が与えられた場合、選択プロセスは飛ばされます。
 
-        See also: |fuf-allfile-mode|
+        See also: |fuf-coveragefile-mode|
 
                                                              *:FufAddBookmark*
 :FufAddBookmark [{name}]
@@ -999,27 +999,27 @@ File モード用 ~
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
-                                                *fuf-options-for-allfile-mode*
-All-File モード用 ~
+                                                *fuf-options-for-coveragefile-mode*
+Coverage-File モード用 ~
 
-                                                     *g:fuf_allfile_prompt*  >
-  let g:fuf_allfile_prompt = '>AllFile[]>'
+                                                     *g:fuf_coveragefile_prompt*  >
+  let g:fuf_coveragefile_prompt = '>CoverageFile[]>'
 <
         プロンプト文字列。"[]" はインジケータに置換されます。
 
-                                                *g:fuf_allfile_switchOrder*  >
-  let g:fuf_allfile_switchOrder = 30
+                                                *g:fuf_coveragefile_switchOrder*  >
+  let g:fuf_coveragefile_switchOrder = 30
 <
         次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
         には切り替えません。
 
-                                                    *g:fuf_allfile_exclude*  >
-  let g:fuf_allfile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
+                                                    *g:fuf_coveragefile_exclude*  >
+  let g:fuf_coveragefile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
-                                               *g:fuf_allfile_globPatterns*  >
-  let g:fuf_allfile_globPatterns = ['**/.*', '**/*']
+                                               *g:fuf_coveragefile_globPatterns*  >
+  let g:fuf_coveragefile_globPatterns = ['**/.*', '**/*']
 <
         検索されるファイルパスを得るためのglobパターンのリスト。
 
@@ -1264,8 +1264,8 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-p>      :FufFileWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f><C-p> :FufFileWithFullCwd<CR>
   nnoremap <silent> <C-f>p     :FufFile<CR>
-  nnoremap <silent> <C-f><C-a> :FufAllFileChangeCoverage<CR>
-  nnoremap <silent> <C-f>a     :FufAllFileRegisterCoverage<CR>
+  nnoremap <silent> <C-f><C-a> :FufCoverageFileChange<CR>
+  nnoremap <silent> <C-f>a     :FufCoverageFileRegister<CR>
   nnoremap <silent> <C-f><C-d> :FufDirWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f>d     :FufDirWithFullCwd<CR>
   nnoremap <silent> <C-f>D     :FufDir<CR>

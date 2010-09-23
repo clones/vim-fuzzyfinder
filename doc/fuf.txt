@@ -95,7 +95,7 @@ You can launch FuzzyFinder by the following commands:
          Command           Mode ~
         |:FufBuffer|       - Buffer mode (|fuf-buffer-mode|)
         |:FufFile|         - File mode (|fuf-file-mode|)
-        |:FufAllFile|      - All-File mode (|fuf-allfile-mode|)
+        |:FufCoverageFile| - Coverage-File mode (|fuf-coveragefile-mode|)
         |:FufDir|          - Directory mode (|fuf-dir-mode|)
         |:FufMruFile|      - MRU-File mode (|fuf-mrufile-mode|)
         |:FufAroundMruFile|- Around-MRU-File mode (|fuf-aroundmrufile-mode|)
@@ -169,31 +169,31 @@ File mode ~
 
 This mode provides an interface to search a file tree for a file and open it.
 
-                                                            *fuf-allfile-mode*
-All-File mode ~
+                                                       *fuf-coveragefile-mode*
+Coverage-File mode ~
 
 This mode provides an interface to select a file from all files of preset
 locations and open it.
 
 By default, This mode lists all files under the current working directory
-recursively. (|g:fuf_allfile_globPatterns|)
+recursively. (|g:fuf_coveragefile_globPatterns|)
 
-If you want to search other coverage, execute |FufAllFileRegisterCoverage|
-command to register new search coverage and |FufAllFileChangeCoverage| command
-to choose a search coverage and launch All-File mode.
+If you want to search other coverage, execute |FufCoverageFileRegister|
+command to register new search coverage and |FufCoverageFileChange| command to
+choose a search coverage and launch Coverage-File mode.
 
 In addition, there is another way to change a search coverage with
 |fuf#setOneTimeVariables()| function.
 
 Example: search only .h and .c files:
 >
-        call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', ['**/*.h', '**/*.c']])
-              \ | FufAllFile
+        call fuf#setOneTimeVariables(['g:fuf_coveragefile_globPatterns', ['**/*.h', '**/*.c']])
+              \ | FufCoverageFile
 <
 Example: search your home directory in addition to the default coverage:
 >
-        call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', g:fuf_allfile_globPatterns + ['~/**/.*', '~/**/*']])
-              \ | FufAllFile
+        call fuf#setOneTimeVariables(['g:fuf_coveragefile_globPatterns', g:fuf_coveragefile_globPatterns + ['~/**/.*', '~/**/*']])
+              \ | FufCoverageFile
 <
 
                                                                 *fuf-dir-mode*
@@ -667,9 +667,9 @@ See also: |fuf-vimrc-example|
         Is mostly the same as |:FufFile|, except that initial pattern is a
         path of directory current buffer is in.
 
-                                                                 *:FufAllFile*
-:FufAllFile[!] [{pattern}]
-        Launchs All-File mode.
+                                                            *:FufCoverageFile*
+:FufCoverageFile[!] [{pattern}]
+        Launchs Coverage-File mode.
 
         If a command was executed with a ! modifier, it does partial matching
         instead of fuzzy matching.
@@ -803,22 +803,22 @@ See also: |fuf-vimrc-example|
         Opens a buffer for editing your data files. See |fuf-data-file| for
         details.
 
-                                                 *:FufAllFileRegisterCoverage*
-:FufAllFileRegisterCoverage
-        Registers new search coverage to be searched in All-File mode.
+                                                    *:FufCoverageFileRegister*
+:FufCoverageFileRegister
+        Registers new search coverage to be searched in Coverage-File mode.
         First, input glob patterns, like ~/* . You can add patterns unless
         typing <Esc>. Next, input coverage name.
 
-        See also: |glob()|, |fuf-allfile-mode|
+        See also: |glob()|, |fuf-coveragefile-mode|
 
-                                                   *:FufAllFileChangeCoverage*
-:FufAllFileChangeCoverage [{name}]
-        Launchs All-File mode with a chosen coverage, registered with
-        |FufAllFileRegisterCoverage| command.
+                                                      *:FufCoverageFileChange*
+:FufCoverageFileChange [{name}]
+        Launchs Coverage-File mode with a chosen coverage, registered with
+        |FufCoverageFileRegister| command.
 
         If location name is given, the choise process will be skipped.
 
-        See also: |fuf-allfile-mode|
+        See also: |fuf-coveragefile-mode|
 
                                                              *:FufAddBookmark*
 :FufAddBookmark [{name}]
@@ -1041,28 +1041,28 @@ For File Mode ~
         Regexp pattern for items which you want to exclude from completion
         list.
 
-                                                *fuf-options-for-allfile-mode*
-For All-File Mode ~
+                                                *fuf-options-for-coveragefile-mode*
+For Coverage-File Mode ~
 
-                                                     *g:fuf_allfile_prompt*  >
-  let g:fuf_allfile_prompt = '>AllFile[]>'
+                                                     *g:fuf_coveragefile_prompt*  >
+  let g:fuf_coveragefile_prompt = '>CoverageFile[]>'
 <
         Prompt string. "[]" will be substituted with indicators.
 
-                                                *g:fuf_allfile_switchOrder*  >
-  let g:fuf_allfile_switchOrder = 30
+                                                *g:fuf_coveragefile_switchOrder*  >
+  let g:fuf_coveragefile_switchOrder = 30
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
 
-                                                    *g:fuf_allfile_exclude*  >
-  let g:fuf_allfile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
+                                                    *g:fuf_coveragefile_exclude*  >
+  let g:fuf_coveragefile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
 <
         Regexp pattern for items which you want to exclude from completion
         list.
 
-                                               *g:fuf_allfile_globPatterns*  >
-  let g:fuf_allfile_globPatterns = ['**/.*', '**/*']
+                                               *g:fuf_coveragefile_globPatterns*  >
+  let g:fuf_coveragefile_globPatterns = ['**/.*', '**/*']
 <
         List of glob patterns to get file paths to be searched.
 
@@ -1313,8 +1313,8 @@ VIMRC EXAMPLE                                              *fuf-vimrc-example*
   nnoremap <silent> <C-p>      :FufFileWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f><C-p> :FufFileWithFullCwd<CR>
   nnoremap <silent> <C-f>p     :FufFile<CR>
-  nnoremap <silent> <C-f><C-a> :FufAllFileChangeCoverage<CR>
-  nnoremap <silent> <C-f>a     :FufAllFileRegisterCoverage<CR>
+  nnoremap <silent> <C-f><C-a> :FufCoverageFileChange<CR>
+  nnoremap <silent> <C-f>a     :FufCoverageFileRegister<CR>
   nnoremap <silent> <C-f><C-d> :FufDirWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f>d     :FufDirWithFullCwd<CR>
   nnoremap <silent> <C-f>D     :FufDir<CR>
@@ -1353,7 +1353,8 @@ CHANGELOG                                                      *fuf-changelog*
 
 4.0:
   - From this version, L9 library (vimscript #3252) is required.
-  - Added All-File mode for users wanting something like TextMate's command-t.
+  - Added Coverage-File mode for users wanting something like TextMate's
+    command-t. (But I've never used it.)
   - Added Around-MRU-File mode. (Too slow. There is room for improvement.)
   - Added new feature which deletes selected buffer with FuzzyFinder and
     g:fuf_buffer_keyDelete option.
