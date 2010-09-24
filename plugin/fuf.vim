@@ -53,56 +53,62 @@ function s:initialize()
   call l9#defineVariableDefault('g:fuf_file_switchOrder', 20)
   call l9#defineVariableDefault('g:fuf_file_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
   "---------------------------------------------------------------------------
+  call l9#defineVariableDefault('g:fuf_allfile_prompt'     , '>AllFile[]>')
+  call l9#defineVariableDefault('g:fuf_allfile_switchOrder', 30)
+  call l9#defineVariableDefault('g:fuf_allfile_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])')
+  call l9#defineVariableDefault('g:fuf_allfile_globPatterns', ['**/.*', '**/*'])
+  "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_dir_prompt'     , '>Dir[]>')
-  call l9#defineVariableDefault('g:fuf_dir_switchOrder', 30)
+  call l9#defineVariableDefault('g:fuf_dir_switchOrder', 40)
   call l9#defineVariableDefault('g:fuf_dir_exclude'    , '\v(^|[/\\])\.(hg|git|bzr)($|[/\\])')
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_mrufile_prompt'     , '>MRU-File[]>')
-  call l9#defineVariableDefault('g:fuf_mrufile_switchOrder', 40)
+  call l9#defineVariableDefault('g:fuf_mrufile_switchOrder', 50)
   call l9#defineVariableDefault('g:fuf_mrufile_exclude'    , '\v\~$|\.(bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)')
   call l9#defineVariableDefault('g:fuf_mrufile_maxItem'    , 200)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_aroundmrufile_prompt'     , '>Around-MRU-File[]>')
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_switchOrder', 50)
+  call l9#defineVariableDefault('g:fuf_aroundmrufile_switchOrder', 60)
   call l9#defineVariableDefault('g:fuf_aroundmrufile_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)')
   call l9#defineVariableDefault('g:fuf_aroundmrufile_maxDir'    , 100)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_mrucmd_prompt'     , '>MRU-Cmd[]>')
-  call l9#defineVariableDefault('g:fuf_mrucmd_switchOrder', 60)
+  call l9#defineVariableDefault('g:fuf_mrucmd_switchOrder', 70)
   call l9#defineVariableDefault('g:fuf_mrucmd_exclude'    , '^$')
   call l9#defineVariableDefault('g:fuf_mrucmd_maxItem'    , 200)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_bookmark_prompt'     , '>Bookmark[]>')
-  call l9#defineVariableDefault('g:fuf_bookmark_switchOrder', 70)
+  call l9#defineVariableDefault('g:fuf_bookmark_switchOrder', 80)
   call l9#defineVariableDefault('g:fuf_bookmark_searchRange', 400)
   call l9#defineVariableDefault('g:fuf_bookmark_keyDelete'  , '<C-]>')
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_tag_prompt'     , '>Tag[]>')
-  call l9#defineVariableDefault('g:fuf_tag_switchOrder', 80)
+  call l9#defineVariableDefault('g:fuf_tag_switchOrder', 90)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_taggedfile_prompt'     , '>Tagged-File[]>')
-  call l9#defineVariableDefault('g:fuf_taggedfile_switchOrder', 90)
+  call l9#defineVariableDefault('g:fuf_taggedfile_switchOrder', 100)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_jumplist_prompt'     , '>Jump-List[]>')
-  call l9#defineVariableDefault('g:fuf_jumplist_switchOrder', 100)
+  call l9#defineVariableDefault('g:fuf_jumplist_switchOrder', 110)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_changelist_prompt'     , '>Change-List[]>')
-  call l9#defineVariableDefault('g:fuf_changelist_switchOrder', 110)
+  call l9#defineVariableDefault('g:fuf_changelist_switchOrder', 120)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_quickfix_prompt'     , '>Quickfix[]>')
-  call l9#defineVariableDefault('g:fuf_quickfix_switchOrder', 120)
+  call l9#defineVariableDefault('g:fuf_quickfix_switchOrder', 130)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_line_prompt'     , '>Line[]>')
-  call l9#defineVariableDefault('g:fuf_line_switchOrder', 130)
+  call l9#defineVariableDefault('g:fuf_line_switchOrder', 140)
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_help_prompt'     , '>Help[]>')
-  call l9#defineVariableDefault('g:fuf_help_switchOrder', 140)
+  call l9#defineVariableDefault('g:fuf_help_switchOrder', 150)
   "---------------------------------------------------------------------------
   command! -bang -narg=0 FufEditDataFile call fuf#editDataFile()
   command! -bang -narg=0 FufRenewCache   call s:renewCachesOfAllModes()
   "---------------------------------------------------------------------------
   call fuf#addMode('buffer')
   call fuf#addMode('file')
+  call fuf#addMode('allfile')
   call fuf#addMode('dir')
   call fuf#addMode('mrufile')
   call fuf#addMode('aroundmrufile')
