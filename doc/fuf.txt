@@ -145,9 +145,10 @@ With <C-t> (|g:fuf_keyNextMode|) and <C-y> (|g:fuf_keyPrevMode|), You can
 switch current mode without leaving Insert mode .
 
 You can preview selected item with <C-@> (|g:fuf_keyPreview|) in some modes.
-Repeating the key on the same item might show another information. The height
+Repeating the key on the same item shows another information. The height
 of command-line area is changed to |g:fuf_previewHeight| when you launch a
-mode supporting preview.
+mode supporting preview. This feature is available when |g:fuf_previewHeight|
+is not 0.
 
 
 ==============================================================================
@@ -923,7 +924,7 @@ For All Modes ~
         completion menu.
 
                                                       *g:fuf_previewHeight*  >
-  let g:fuf_previewHeight = 10
+  let g:fuf_previewHeight = 0
 <
         'cmdheight' is set to this when a mode supporting preview is launched.
         Information of selected completion item will be shown on command-line
@@ -1270,6 +1271,9 @@ CHANGELOG                                                      *fuf-changelog*
   - Improved speed of changing buffers.
   - Improved the way to add modes.
   - Removed g:fuf_smartBs option. Use <C-w> instead.
+  - Changed the default value of g:fuf_previewHeight to 0 in order to disable
+    preview feature. There is an unfixable problem which is caused by a Vim's
+    bug.
 
 3.5:
   - Added Line mode.

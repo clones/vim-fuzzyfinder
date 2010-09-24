@@ -40,7 +40,7 @@ function s:initialize()
   call l9#defineVariableDefault('g:fuf_learningLimit'    , 100)
   call l9#defineVariableDefault('g:fuf_enumeratingLimit' , 50)
   call l9#defineVariableDefault('g:fuf_maxMenuWidth'     , 78)
-  call l9#defineVariableDefault('g:fuf_previewHeight'    , 10)
+  call l9#defineVariableDefault('g:fuf_previewHeight'    , 0)
   call l9#defineVariableDefault('g:fuf_autoPreview'      , 0)
   call l9#defineVariableDefault('g:fuf_useMigemo'        , 0)
   "---------------------------------------------------------------------------
