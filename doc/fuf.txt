@@ -90,11 +90,12 @@ Requirements: ~
 ==============================================================================
 USAGE                                                              *fuf-usage*
 
-You can launch FuzzyFinder by following commands:
+You can launch FuzzyFinder by the following commands:
 
          Command           Mode ~
         |:FufBuffer|       - Buffer mode (|fuf-buffer-mode|)
         |:FufFile|         - File mode (|fuf-file-mode|)
+        |:FufAllFile|      - All-File mode (|fuf-allfile-mode|)
         |:FufDir|          - Directory mode (|fuf-dir-mode|)
         |:FufMruFile|      - MRU-File mode (|fuf-mrufile-mode|)
         |:FufAroundMruFile|- Around-MRU-File mode (|fuf-aroundmrufile-mode|)
@@ -166,13 +167,37 @@ buffer will be deleted.
                                                                *fuf-file-mode*
 File mode ~
 
-This mode provides an interface to search a file and open it.
+This mode provides an interface to search a file tree for a file and open it.
+
+                                                            *fuf-allfile-mode*
+All-File mode ~
+
+This mode provides an interface to select a file from all files of preset
+locations and open it.
+
+By default, This mode lists all files under the current working directory
+recursively. You can customize the search location with
+|fuf#setOneTimeVariables()| and |g:fuf_allfile_globPatterns|.
+
+If you want to search only .h and .c files, use the following command:
+>
+        call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', ['**/*.h', '**/*.c']])
+              \ | FufAllFile
+<
+Or, you also want to search your home directory in addition to the default
+locations:
+>
+        call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', g:fuf_allfile_globPatterns + ['~/**/.*', '~/**/*']])
+              \ | FufAllFile
+<
+To change the default search location, set |g:fuf_allfile_globPatterns| option
+directly, without |fuf#setOneTimeVariables()|.
 
                                                                 *fuf-dir-mode*
 Directory mode ~
 
-This mode provides an interface to search a directory and change the current
-directory.
+This mode provides an interface to search a file tree for a directory and
+change the current directory.
 
                                                             *fuf-mrufile-mode*
 MRU-File mode ~
@@ -452,7 +477,7 @@ If you want to set one-time options only for the next FuzzyFinder,
 |fuf#setOneTimeVariables()| function will be of help. This function is used as
 follows:
 >
-        fuf#setOneTimeVariables(['g:fuf_ignoreCase', 0], ['&lines', 50])
+        call fuf#setOneTimeVariables(['g:fuf_ignoreCase', 0], ['&lines', 50])
 <
 This function takes 0 or more arguments and each of them is a pair of a
 variable name and its value. Specified options will be set practically next
@@ -557,7 +582,7 @@ For example, set as below:
               \   ],
               \ }
 <
-and enter "doc:txt" in File mode, then FuzzyFinder searches by following
+and enter "doc:txt" in File mode, then FuzzyFinder searches by the following
 patterns:
 
         "~/project/**/doc/*t*x*t*"
@@ -636,6 +661,15 @@ See also: |fuf-vimrc-example|
 :FufFileWithCurrentBufferDir[!] [{pattern}]
         Is mostly the same as |:FufFile|, except that initial pattern is a
         path of directory current buffer is in.
+
+                                                                 *:FufAllFile*
+:FufAllFile[!] [{pattern}]
+        Launchs All-File mode.
+
+        If a command was executed with a ! modifier, it does partial matching
+        instead of fuzzy matching.
+
+        {pattern} will be inserted after launching FuzzyFinder.
 
                                                                      *:FufDir*
 :FufDir[!] [{pattern}]
@@ -984,6 +1018,33 @@ For File Mode ~
         Regexp pattern for items which you want to exclude from completion
         list.
 
+                                                *fuf-options-for-allfile-mode*
+For All-File Mode ~
+
+                                                     *g:fuf_allfile_prompt*  >
+  let g:fuf_allfile_prompt = '>AllFile[]>'
+<
+        Prompt string. "[]" will be substituted with indicators.
+
+                                                *g:fuf_allfile_switchOrder*  >
+  let g:fuf_allfile_switchOrder = 30
+<
+        Number of order for switching to the next/previous mode. If negative
+        number, Fuzzyfinder never switches to this mode.
+
+                                                    *g:fuf_allfile_exclude*  >
+  let g:fuf_allfile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|swp)$|(^|[/\\])\.(hg|git|bzr)($|[/\\])'
+<
+        Regexp pattern for items which you want to exclude from completion
+        list.
+
+                                               *g:fuf_allfile_globPatterns*  >
+  let g:fuf_allfile_globPatterns = ['**/.*', '**/*']
+<
+        List of glob patterns to get file paths to be searched.
+
+        See also: |glob()|
+
                                                     *fuf-options-for-dir-mode*
 For Directory Mode ~
 
@@ -993,7 +1054,7 @@ For Directory Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                     *g:fuf_dir_switchOrder*  >
-  let g:fuf_dir_switchOrder = 30
+  let g:fuf_dir_switchOrder = 40
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1013,7 +1074,7 @@ For MRU-File Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                 *g:fuf_mrufile_switchOrder*  >
-  let g:fuf_mrufile_switchOrder = 40
+  let g:fuf_mrufile_switchOrder = 50
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1038,7 +1099,7 @@ For Around-MRU-File Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                           *g:fuf_aroundmrufile_switchOrder*  >
-  let g:fuf_aroundmrufile_switchOrder = 50
+  let g:fuf_aroundmrufile_switchOrder = 60
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1064,7 +1125,7 @@ For MRU-Cmd Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                  *g:fuf_mrucmd_switchOrder*  >
-  let g:fuf_mrucmd_switchOrder = 60
+  let g:fuf_mrucmd_switchOrder = 70
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1089,7 +1150,7 @@ For Bookmark Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                *g:fuf_bookmark_switchOrder*  >
-  let g:fuf_bookmark_switchOrder = 70
+  let g:fuf_bookmark_switchOrder = 80
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1114,7 +1175,7 @@ For Tag Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                     *g:fuf_tag_switchOrder*  >
-  let g:fuf_tag_switchOrder = 80
+  let g:fuf_tag_switchOrder = 90
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1128,7 +1189,7 @@ For Tagged-File Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                              *g:fuf_taggedfile_switchOrder*  >
-  let g:fuf_taggedfile_switchOrder = 90
+  let g:fuf_taggedfile_switchOrder = 100
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1142,7 +1203,7 @@ For Jump-List Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                *g:fuf_jumplist_switchOrder*  >
-  let g:fuf_jumplist_switchOrder = 100
+  let g:fuf_jumplist_switchOrder = 110
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1156,7 +1217,7 @@ For Change-List Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                              *g:fuf_changelist_switchOrder*  >
-  let g:fuf_changelist_switchOrder = 110
+  let g:fuf_changelist_switchOrder = 120
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1170,7 +1231,7 @@ For Quickfix Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                              *g:fuf_quickfix_switchOrder*  >
-  let g:fuf_quickfix_switchOrder = 120
+  let g:fuf_quickfix_switchOrder = 130
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1184,7 +1245,7 @@ For Line Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                    *g:fuf_line_switchOrder*  >
-  let g:fuf_line_switchOrder = 130
+  let g:fuf_line_switchOrder = 140
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1198,7 +1259,7 @@ For Help Mode ~
         Prompt string. "[]" will be substituted with indicators.
 
                                                    *g:fuf_help_switchOrder*  >
-  let g:fuf_help_switchOrder = 140
+  let g:fuf_help_switchOrder = 150
 <
         Number of order for switching to the next/previous mode. If negative
         number, Fuzzyfinder never switches to this mode.
@@ -1256,6 +1317,7 @@ SPECIAL THANKS                                                    *fuf-thanks*
 CHANGELOG                                                      *fuf-changelog*
 
 4.0: [TODO]
+  - Added All-File mode for users wanting something like TextMate's command-t.
   - Added Around-MRU-File mode.
   - Added new feature which is auto-preview and g:fuf_autoPreview option.
   - Added new feature which deletes selected buffer with FuzzyFinder and
@@ -1267,13 +1329,13 @@ CHANGELOG                                                      *fuf-changelog*
     g:fuf_help_cache_dir options.
   - Added :FufEditDataFile command and removed :FufEditInfo command.
   - Added g:fuf_fuzzyRefining option.
-  - Fixed a bug that FuzzyFinder caused reseting window layout.
+  - Changed the default value of g:fuf_previewHeight to 0 in order to disable
   - Improved speed of changing buffers.
   - Improved the way to add modes.
-  - Removed g:fuf_smartBs option. Use <C-w> instead.
-  - Changed the default value of g:fuf_previewHeight to 0 in order to disable
     preview feature. There is an unfixable problem which is caused by a Vim's
     bug.
+  - Fixed a bug that FuzzyFinder caused reseting window layout.
+  - Removed g:fuf_smartBs option. Use <C-w> instead.
 
 3.5:
   - Added Line mode.
