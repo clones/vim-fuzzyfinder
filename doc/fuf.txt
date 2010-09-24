@@ -38,7 +38,7 @@ You will be happy when:
         "./OhLongLongLongLongLongFile.txt"
         "./OhLongLongLongLongLongName.txt" <- you want :O
 
-Type "ON" and "OhLongLongLongLongLongName.txt" will be select. :D
+Type "ON" and "OhLongLongLongLongLongName.txt" will be selected. :D
 
 FuzzyFinder can search:
 
@@ -161,8 +161,8 @@ Buffer mode ~
 This mode provides an interface to select a buffer from a list of existing
 buffers and open it.
 
-Press <C-]> (|g:fuf_buffer_keyDelete|) in Buffer mode and selected
-buffer will be deleted.
+Press <C-]> (|g:fuf_buffer_keyDelete|) in Buffer mode and selected buffer will
+be deleted.
 
                                                                *fuf-file-mode*
 File mode ~
@@ -176,22 +176,25 @@ This mode provides an interface to select a file from all files of preset
 locations and open it.
 
 By default, This mode lists all files under the current working directory
-recursively. You can customize the search location with
-|fuf#setOneTimeVariables()| and |g:fuf_allfile_globPatterns|.
+recursively. (|g:fuf_allfile_globPatterns|)
 
-If you want to search only .h and .c files, use the following command:
+If you want to search other coverage, execute |FufAllFileRegisterCoverage|
+command to register new search coverage and |FufAllFileChangeCoverage| command
+to choose a search coverage and launch All-File mode.
+
+In addition, there is another way to change a search coverage with
+|fuf#setOneTimeVariables()| function.
+
+Example: search only .h and .c files:
 >
         call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', ['**/*.h', '**/*.c']])
               \ | FufAllFile
 <
-Or, you also want to search your home directory in addition to the default
-locations:
+Example: search your home directory in addition to the default coverage:
 >
         call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', g:fuf_allfile_globPatterns + ['~/**/.*', '~/**/*']])
               \ | FufAllFile
 <
-To change the default search location, set |g:fuf_allfile_globPatterns| option
-directly, without |fuf#setOneTimeVariables()|.
 
                                                                 *fuf-dir-mode*
 Directory mode ~
@@ -798,10 +801,28 @@ See also: |fuf-vimrc-example|
         Opens a buffer for editing your data files. See |fuf-data-file| for
         details.
 
+                                                 *:FufAllFileRegisterCoverage*
+:FufAllFileRegisterCoverage
+        Registers new search coverage to be searched in All-File mode.
+        First, input glob patterns, like ~/* . You can add patterns unless
+        typing <Esc>. Next, input coverage name.
+
+        See also: |glob()|, |fuf-allfile-mode|
+
+                                                   *:FufAllFileChangeCoverage*
+:FufAllFileChangeCoverage [{name}]
+        Launchs All-File mode with a chosen coverage, registered with
+        |FufAllFileRegisterCoverage| command.
+
+        If location name is given, the choise process will be skipped.
+
+        See also: |fuf-allfile-mode|
+
                                                              *:FufAddBookmark*
 :FufAddBookmark [{name}]
-        Adds a cursor line to bookmarks. See |fuf-adding-bookmark| for
-        details.
+        Adds a cursor line to bookmarks.
+
+        See also: |fuf-bookmark-mode|
 
                                                *:FufAddBookmarkAsSelectedText*
 :FufAddBookmarkAsSelectedText

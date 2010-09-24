@@ -64,8 +64,8 @@ function fuf#expandTailDotSequenceToParentDir(pattern)
 endfunction
 
 "
-function fuf#formatPrompt(prompt, partialMatching)
-  let indicator = (a:partialMatching ? '!' : '')
+function fuf#formatPrompt(prompt, partialMatching, otherString)
+  let indicator = (a:partialMatching ? '!' : '') . a:otherString
   return substitute(a:prompt, '[]', indicator, 'g')
 endfunction
 
@@ -115,7 +115,12 @@ endfunction
 
 "
 function fuf#echoWarning(msg)
-  call l9#echoHl('WarningMsg', a:msg, '[FuzzyFinder] ', 1)
+  call l9#echoHl('WarningMsg', a:msg, '[fuf] ', 1)
+endfunction
+
+"
+function fuf#echoError(msg)
+  call l9#echoHl('ErrorMsg', a:msg, '[fuf] ', 1)
 endfunction
 
 "
@@ -420,7 +425,8 @@ function s:createDataBufferListener(modeName)
   let listener = { 'modeName': a:modeName }
 
   function listener.onWrite(lines)
-    call fuf#saveDataFile(self.modeName, 'items', map(a:lines, 'eval(v:val)'))
+    let items = map(filter(a:lines, '!empty(v:val)'), 'eval(v:val)')
+    call fuf#saveDataFile(self.modeName, 'items', items)
     echo "Data files updated"
     return 1
   endfunction
@@ -618,7 +624,7 @@ endfunction
 "
 function s:highlightPrompt(prompt)
   syntax clear
-  execute printf('syntax match %s /^\V%s/', g:fuf_promptHighlight, escape(a:prompt, '\'))
+  execute printf('syntax match %s /^\V%s/', g:fuf_promptHighlight, escape(a:prompt, '\/'))
 endfunction
 
 "

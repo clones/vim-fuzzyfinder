@@ -86,7 +86,7 @@ function s:bookmarkHere(word)
         \   'pattern' : s:getLinePattern(line('.')),
         \   'time' : localtime(),
         \ }
-  let item.word = l9#inputHl('Question', '[FuzzyFinder] Bookmark as:', item.word)
+  let item.word = l9#inputHl('Question', '[fuf] Bookmark as:', item.word)
   if item.word !~ '\S'
     call fuf#echoWarning('Canceled')
     return
@@ -119,7 +119,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return fuf#formatPrompt(g:fuf_bookmark_prompt, self.partialMatching)
+  return fuf#formatPrompt(g:fuf_bookmark_prompt, self.partialMatching, '')
 endfunction
 
 "

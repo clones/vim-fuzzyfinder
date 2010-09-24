@@ -82,7 +82,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return fuf#formatPrompt(g:fuf_quickfix_prompt, self.partialMatching)
+  return fuf#formatPrompt(g:fuf_quickfix_prompt, self.partialMatching, '')
 endfunction
 
 "

@@ -170,26 +170,29 @@ File モード ~
                                                             *fuf-allfile-mode*
 All-File モード ~
 
-このモードはあらかじめ設定した場所にある全ファイルからファイルを選択して開くイ
+このモードはあらかじめ設定した検索対象の全ファイルからファイルを選択して開くイ
 ンターフェースを提供します。
 
 デフォルトではカレントディレクトリ以下の全ファイルを列挙します。
-|fuf#setOneTimeVariables()|と|g:fuf_allfile_globPatterns|を使って検索場所をカ
-スタマイズすることができます。
+(|g:fuf_allfile_globPatterns|)
+
+他の検索対象を検索したい場合、|FufAllFileRegisterCoverage|コマンドで新しい検索
+対象を登録し、|FufAllFileChangeCoverage|コマンドで検索対象を選択して All-File
+モードを起動します。
+
+加えて、|fuf#setOneTimeVariables()|関数を使う方法もあります。
 
 
-.hと.cファイルだけ検索したい場合は、次のコマンドを使います:
+例: .hと.cファイルだけ検索する:
 >
         call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', ['**/*.h', '**/*.c']])
               \ | FufAllFile
 <
-または、デフォルトの検索場所に加えてホームディレクトリも検索したい場合:
+例: デフォルトの検索対象に加えてホームディレクトリも検索する:
 >
         call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns', g:fuf_allfile_globPatterns + ['~/**/.*', '~/**/*']])
               \ | FufAllFile
 <
-デフォルトの検索場所を変更したい場合は、|g:fuf_allfile_globPatterns|オプション
-を、|fuf#setOneTimeVariables()|を使わずに直接設定してください。
 
                                                                 *fuf-dir-mode*
 Directory モード ~
@@ -764,6 +767,23 @@ See also: |fuf-vimrc-example|
 :FufEditDataFile
         データファイルを編集するためのバッファを開きます。詳しくは
         |fuf-data-file|を参照してください。
+
+                                                 *:FufAllFileRegisterCoverage*
+:FufAllFileRegisterCoverage
+        All-File モードで検索される、新しい検索対象を登録します。最初に ~/* の
+        ような glob パターンを入力します。 <Esc> を入力するまでパターンを追加
+        することができます。次に対象名を入力します。
+
+        See also: |glob()|, |fuf-allfile-mode|
+
+                                                   *:FufAllFileChangeCoverage*
+:FufAllFileChangeCoverage [{name}]
+        |FufAllFileRegisterCoverage|コマンドで登録されている中から選択された検
+        索対象でAll-File モードを起動します。
+
+        対象名が与えられた場合、選択プロセスは飛ばされます。
+
+        See also: |fuf-allfile-mode|
 
                                                              *:FufAddBookmark*
 :FufAddBookmark [{name}]
