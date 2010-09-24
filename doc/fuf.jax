@@ -212,7 +212,10 @@ MRU-File モード ~
 Around-MRU-File モード ~
 
 このモードは最近使ったファイルの付近にあるファイルを選択して開くインターフェー
-スを提供します。ディレクトリを選択した場合、そこからFile モードを開始します。
+スを提供します。
+
+Around-MRU-File モード中に <C-]> (|g:fuf_aroundmrufile_keyExpand|) を押すと、
+ディレクトリツリーの検索範囲を広げます。(|g:fuf_aroundmrufile_searchLevel|)
 
 |BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
 で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
@@ -1087,6 +1090,17 @@ Around-MRU-File モード用 ~
 <
         保持するMRUアイテムの親ディレクトリの上限値。
 
+                                          *g:fuf_aroundmrufile_searchLevel*  >
+  let g:fuf_aroundmrufile_searchLevel = 0
+<
+        検索するディレクトリツリーの上下の階層数。
+
+
+                                            *g:fuf_aroundmrufile_keyExpand*  >
+  let g:fuf_aroundmrufile_keyExpand = '<C-]>'
+<
+        |g:fuf_aroundmrufile_searchLevel|を1増やすキー。
+
                                                  *fuf-options-for-mrucmd-mode*
 MRU-Cmd モード用 ~
 
@@ -1250,6 +1264,8 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> <C-p>      :FufFileWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f><C-p> :FufFileWithFullCwd<CR>
   nnoremap <silent> <C-f>p     :FufFile<CR>
+  nnoremap <silent> <C-f><C-a> :FufAllFileChangeCoverage<CR>
+  nnoremap <silent> <C-f>a     :FufAllFileRegisterCoverage<CR>
   nnoremap <silent> <C-f><C-d> :FufDirWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f>d     :FufDirWithFullCwd<CR>
   nnoremap <silent> <C-f>D     :FufDir<CR>

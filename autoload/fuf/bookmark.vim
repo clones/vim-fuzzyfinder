@@ -178,7 +178,7 @@ endfunction
 "
 function s:handler.onModeEnterPost()
   call fuf#defineKeyMappingInHandler(g:fuf_bookmark_keyDelete,
-        \                            'onCr(' . s:OPEN_TYPE_DELETE . ', 0)')
+        \                            'onCr(' . s:OPEN_TYPE_DELETE . ')')
   let self.items = fuf#loadDataFile(s:MODE_NAME, 'items')
   call map(self.items, 'fuf#makeNonPathItem(v:val.word, strftime(g:fuf_timeFormat, v:val.time))')
   call fuf#mapToSetSerialIndex(self.items, 1)
