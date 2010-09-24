@@ -161,7 +161,7 @@ Buffer mode ~
 This mode provides an interface to select a buffer from a list of existing
 buffers and open it.
 
-Press <C-]> (|g:fuf_buffer_keyDelete|) in Buffer mode and selected buffer will
+Press <C-]> (|g:fuf_buffer_keyDelete|) in this mode and selected buffer will
 be deleted.
 
                                                                *fuf-file-mode*
@@ -216,8 +216,10 @@ Performance issue.
 Around-MRU-File mode ~
 
 This mode provides an interface to select a file around the most recently used
-files and open it. If a directory is selected, File mode will be launched from
-there.
+files and open it.
+
+Press <C-]> (|g:fuf_aroundmrufile_keyExpand|) in this mode and search range of
+the directory tree are expanded. (|g:fuf_aroundmrufile_searchLevel|)
 
 This mode is set to disable in |g:fuf_modesDisable| by default because
 processes for this mode in |BufEnter| and |BufWritePost| could cause
@@ -248,8 +250,8 @@ line even if the line is out of bookmarked position. If you want to jump to
 bookmarked line number without the adjustment, set
 |g:fuf_bookmark_searchRange| option to 0.
 
-Press <C-]> (|g:fuf_bookmark_keyDelete|) in Bookmark mode and selected
-bookmark will be deleted.
+Press <C-]> (|g:fuf_bookmark_keyDelete|) in this mode and selected bookmark
+will be deleted.
 
                                                                 *fuf-tag-mode*
 Tag mode ~
@@ -1137,6 +1139,16 @@ For Around-MRU-File Mode ~
         Ceiling for the number of parent directories of MRU items to be
         stored.
 
+                                          *g:fuf_aroundmrufile_searchLevel*  >
+  let g:fuf_aroundmrufile_searchLevel = 0
+<
+        Level number of the directory tree to search upward/downward.
+
+                                            *g:fuf_aroundmrufile_keyExpand*  >
+  let g:fuf_aroundmrufile_keyExpand = '<C-]>'
+<
+        Key mapped to increase |g:fuf_aroundmrufile_searchLevel| by 1.
+
                                                  *fuf-options-for-mrucmd-mode*
 For MRU-Cmd Mode ~
 
@@ -1301,6 +1313,8 @@ VIMRC EXAMPLE                                              *fuf-vimrc-example*
   nnoremap <silent> <C-p>      :FufFileWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f><C-p> :FufFileWithFullCwd<CR>
   nnoremap <silent> <C-f>p     :FufFile<CR>
+  nnoremap <silent> <C-f><C-a> :FufAllFileChangeCoverage<CR>
+  nnoremap <silent> <C-f>a     :FufAllFileRegisterCoverage<CR>
   nnoremap <silent> <C-f><C-d> :FufDirWithCurrentBufferDir<CR>
   nnoremap <silent> <C-f>d     :FufDirWithFullCwd<CR>
   nnoremap <silent> <C-f>D     :FufDir<CR>
@@ -1351,6 +1365,8 @@ CHANGELOG                                                      *fuf-changelog*
   - Added :FufEditDataFile command and removed :FufEditInfo command.
   - Added g:fuf_fuzzyRefining option.
   - Changed the default value of g:fuf_previewHeight to 0 in order to disable
+  - Changed the default value of g:fuf_modesDisable option.
+  - Changed the default value of g:fuf_*_switchOrder options.
   - Improved speed of changing buffers.
   - Improved the way to add modes.
     preview feature. There is an unfixable problem which is caused by a Vim's

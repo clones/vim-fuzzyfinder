@@ -61,13 +61,33 @@ function s:updateInfo()
 endfunction
 
 "
+function s:expandSearchDir(dir, level)
+  let dirs = [a:dir]
+  let dirPrev = a:dir
+  for i in range(a:level)
+    let dirPrev = l9#concatPaths([dirPrev, '*'])
+    call add(dirs, dirPrev)
+  endfor
+  let dirPrev = a:dir
+  for i in range(a:level)
+    let dirPrevPrev = dirPrev
+    let dirPrev = fnamemodify(dirPrev, ':h')
+    if dirPrevPrev ==# dirPrev
+      break
+    endif
+    call add(dirs, dirPrev)
+  endfor
+  return dirs
+endfunction
+
+"
 function s:listFilesUsingCache(dir)
   if !exists('s:cache[a:dir]')
     let s:cache[a:dir] = [a:dir] +
           \              split(glob(a:dir . l9#getPathSeparator() . "*" ), "\n") +
           \              split(glob(a:dir . l9#getPathSeparator() . ".*"), "\n")
-    call filter(s:cache[a:dir], 'v:val !~ ''\v(^|[/\\])\.\.?$''')
-    call map(s:cache[a:dir], 'fuf#makePathItem(fnamemodify(v:val, ":~"), "", 1)')
+    call filter(s:cache[a:dir], 'filereadable(v:val)')
+    call map(s:cache[a:dir], 'fuf#makePathItem(fnamemodify(v:val, ":~"), "", 0)')
     if len(g:fuf_aroundmrufile_exclude)
       call filter(s:cache[a:dir], 'v:val.word !~ g:fuf_aroundmrufile_exclude')
     endif
@@ -80,6 +100,7 @@ endfunction
 " s:handler {{{1
 
 let s:handler = {}
+let s:OPEN_TYPE_EXPAND = -1
 
 "
 function s:handler.getModeName()
@@ -88,7 +109,8 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return fuf#formatPrompt(g:fuf_aroundmrufile_prompt, self.partialMatching, '')
+  let levelString = '[' . g:fuf_aroundmrufile_searchLevel . ']'
+  return fuf#formatPrompt(g:fuf_aroundmrufile_prompt, self.partialMatching, levelString)
 endfunction
 
 "
@@ -119,9 +141,11 @@ endfunction
 
 "
 function s:handler.onOpen(word, mode)
-  if isdirectory(expand(a:word))
-    let self.reservedMode = 'file'
-    let self.lastPattern = a:word
+  if a:mode ==# s:OPEN_TYPE_EXPAND
+    call fuf#setOneTimeVariables(['g:fuf_aroundmrufile_searchLevel',
+          \                       self.searchLevel + 1])
+    let self.reservedMode = self.getModeName()
+    return
   else
     call fuf#openFile(a:word, a:mode, g:fuf_reuseWindow)
   endif
@@ -133,10 +157,16 @@ endfunction
 
 "
 function s:handler.onModeEnterPost()
+  let self.searchLevel = g:fuf_aroundmrufile_searchLevel
+  call fuf#defineKeyMappingInHandler(g:fuf_aroundmrufile_keyExpand,
+        \                            'onCr(' . s:OPEN_TYPE_EXPAND . ')')
   " NOTE: Comparing filenames is faster than bufnr('^' . fname . '$')
   let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':p:~')
   let self.items = fuf#loadDataFile(s:MODE_NAME, 'items')
-  call map(self.items, 's:listFilesUsingCache(v:val.word)')
+  call map(self.items, 's:expandSearchDir(v:val.word, g:fuf_aroundmrufile_searchLevel)')
+  let self.items = l9#concat(self.items)
+  let self.items = l9#unique(self.items)
+  call map(self.items, 's:listFilesUsingCache(v:val)')
   let self.items = l9#concat(self.items)
   call filter(self.items, '!empty(v:val) && v:val.word !=# bufNamePrev')
   call fuf#mapToSetSerialIndex(self.items, 1)

@@ -164,7 +164,7 @@ endfunction
 "
 function s:handler.onModeEnterPost()
   call fuf#defineKeyMappingInHandler(g:fuf_buffer_keyDelete,
-        \                            'onCr(' . s:OPEN_TYPE_DELETE . ', 0)')
+        \                            'onCr(' . s:OPEN_TYPE_DELETE . ')')
   let self.items = range(1, bufnr('$'))
   call filter(self.items, 'buflisted(v:val) && v:val != self.bufNrPrev && v:val != bufnr("%")')
   call map(self.items, 's:makeItem(v:val)')
