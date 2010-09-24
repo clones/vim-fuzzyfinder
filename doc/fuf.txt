@@ -1353,8 +1353,7 @@ CHANGELOG                                                      *fuf-changelog*
 
 4.0: [TODO]
   - Added All-File mode for users wanting something like TextMate's command-t.
-  - Added Around-MRU-File mode.
-  - Added new feature which is auto-preview and g:fuf_autoPreview option.
+  - Added Around-MRU-File mode. (Too slow. There is room for improvement.)
   - Added new feature which deletes selected buffer with FuzzyFinder and
     g:fuf_buffer_keyDelete option.
   - Added new feature which allows to set one-time options/variables with
@@ -1364,13 +1363,14 @@ CHANGELOG                                                      *fuf-changelog*
     g:fuf_help_cache_dir options.
   - Added :FufEditDataFile command and removed :FufEditInfo command.
   - Added g:fuf_fuzzyRefining option.
+  - Added new feature which is auto-preview and g:fuf_autoPreview option.
   - Changed the default value of g:fuf_previewHeight to 0 in order to disable
+    preview feature. There is an unfixable problem which is caused by a Vim's
+    bug.
   - Changed the default value of g:fuf_modesDisable option.
   - Changed the default value of g:fuf_*_switchOrder options.
   - Improved speed of changing buffers.
-  - Improved the way to add modes.
-    preview feature. There is an unfixable problem which is caused by a Vim's
-    bug.
+  - Improved the way to add user-defined mode.
   - Fixed a bug that FuzzyFinder caused reseting window layout.
   - Removed g:fuf_smartBs option. Use <C-w> instead.
 
