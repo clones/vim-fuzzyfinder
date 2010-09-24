@@ -19,7 +19,7 @@ endfunction
 
 "
 function fuf#allfile#getSwitchOrder()
-  return g:fuf_file_switchOrder
+  return g:fuf_allfile_switchOrder
 endfunction
 
 "
@@ -35,6 +35,8 @@ endfunction
 "
 function fuf#allfile#onInit()
   call fuf#defineLaunchCommand('FufAllFile', s:MODE_NAME, '""')
+  command! -bang -narg=0        FufAllFileRegisterCoverage call s:registerCoverage()
+  command! -bang -narg=?        FufAllFileChangeCoverage call s:changeCoverage(<q-args>)
 endfunction
 
 " }}}1
@@ -62,7 +64,59 @@ function s:enumItems()
 endfunction
 
 "
-function s:enumNonCurrentItems(dir, bufNrPrev, cache)
+function s:registerCoverage()
+  let patterns = []
+  while 1
+    let pattern = l9#inputHl('Question', '[fuf] Glob pattern for coverage (<Esc> and end):')
+    if pattern !~ '\S'
+      break
+    endif
+    call add(patterns, pattern)
+  endwhile
+  if empty(patterns)
+    call fuf#echoWarning('Canceled')
+    return
+  endif
+  echo '[fuf] patterns: ' . string(patterns)
+  let name = l9#inputHl('Question', '[fuf] Coverage name:')
+  if name !~ '\S'
+    call fuf#echoWarning('Canceled')
+    return
+  endif
+  let coverages = fuf#loadDataFile(s:MODE_NAME, 'items')
+  call insert(coverages, {'name': name, 'patterns': patterns})
+  call fuf#saveDataFile(s:MODE_NAME, 'items', coverages)
+endfunction
+
+"
+function s:createChangeCoverageListener()
+  let listener = {}
+
+  function listener.onComplete(name, method)
+    call s:changeCoverage(a:name)
+  endfunction
+
+  return listener
+endfunction
+
+"
+function s:changeCoverage(name)
+  let coverages = fuf#loadDataFile(s:MODE_NAME, 'items')
+  if a:name !~ '\S'
+    let names = map(copy(coverages), 'v:val.name')
+    call fuf#callbackitem#launch('', 0, '>Coverage>', s:createChangeCoverageListener(), names, 0)
+    return
+  else
+    let name = a:name
+  endif
+  call filter(coverages, 'v:val.name ==# name')
+  if empty(coverages)
+      call fuf#echoError('Coverage not found: ' . name)
+    return
+  endif
+  call fuf#setOneTimeVariables(['g:fuf_allfile_globPatterns',
+        \                       coverages[0].patterns])
+  call feedkeys(":FufAllFile\<CR>", 'n')
 endfunction
 
 " }}}1
@@ -78,7 +132,8 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return fuf#formatPrompt(g:fuf_file_prompt, self.partialMatching)
+  return fuf#formatPrompt(g:fuf_allfile_prompt, self.partialMatching,
+        \                 string(g:fuf_allfile_globPatterns))
 endfunction
 
 "

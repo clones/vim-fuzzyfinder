@@ -64,7 +64,7 @@ endfunction
 
 "
 function s:handler.getPrompt()
-  return fuf#formatPrompt(s:prompt, self.partialMatching)
+  return fuf#formatPrompt(s:prompt, self.partialMatching, '')
 endfunction
 
 "
