@@ -172,8 +172,8 @@ This mode provides an interface to search a file tree for a file and open it.
                                                        *fuf-coveragefile-mode*
 Coverage-File mode ~
 
-This mode provides an interface to select a file from all files of preset
-locations and open it.
+This mode provides an interface to select a file from all files of a preset
+coverage and open it.
 
 By default, This mode lists all files under the current working directory
 recursively. (|g:fuf_coveragefile_globPatterns|)
