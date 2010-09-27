@@ -97,7 +97,6 @@ ZIPファイルをランタイムディレクトリに展開します。
         |:FufCoverageFile| - Coverage-File モード (|fuf-coveragefile-mode|)
         |:FufDir|          - Directory モード (|fuf-dir-mode|)
         |:FufMruFile|      - MRU-File モード (|fuf-mrufile-mode|)
-        |:FufAroundMruFile|- Around-MRU-File モード (|fuf-aroundmrufile-mode|)
         |:FufMruCmd|       - MRU-Command モード (|fuf-mrucmd-mode|)
         |:FufBookmarkFile| - Bookmark-File モード (|fuf-bookmarkfile-mode|)
         |:FufBookmarkDir|  - Bookmark-Dir モード (|fuf-bookmarkdir-mode|)
@@ -207,20 +206,12 @@ MRU-File モード ~
 
 このモードは最近使ったファイルを選択して開くインターフェースを提供します。
 
-|BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
-で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
-
-                                                      *fuf-aroundmrufile-mode*
-Around-MRU-File モード ~
-
-このモードは最近使ったファイルの付近にあるファイルを選択して開くインターフェー
-スを提供します。
-
-Around-MRU-File モード中に <C-]> (|g:fuf_aroundmrufile_keyExpand|) を押すと、
-ディレクトリツリーの検索範囲を広げます。(|g:fuf_aroundmrufile_searchLevel|)
+このモード中に <C-]> (|g:fuf_mrufile_keyExpand|) を押すと、最近使ったファイル
+の付近にあるファイルを検索します。このキーを押す毎に、検索範囲をディレクトリツ
+リーの上下に1階層ずつ広げます。
 
 |BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
-で、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
+で、デフォルトでは無効化するモードに指定されています。(|g:fuf_modesDisable|)
 
                                                              *fuf-mrucmd-mode*
 MRU-Command モード ~
@@ -228,7 +219,7 @@ MRU-Command モード ~
 このモードは最近使ったコマンドラインを選択して開くインターフェースを提供します
 。
 このモードに必要な、コマンドラインモードの <CR> のマッピングに副作用があるので、
-、デフォルトでは|g:fuf_modesDisable|で無効化するモードに指定されています。
+、デフォルトでは無効化するモードに指定されています。(|g:fuf_modesDisable|)
 
                                                        *fuf-bookmarkfile-mode*
 Bookmark-File モード ~
@@ -686,15 +677,6 @@ See also: |fuf-vimrc-example|
 
         FuzzyFinder 起動後に {pattern} が挿入されます。
 
-                                                           *:FufAroundMruFile*
-:FufAroundMruFile [{pattern}]
-        Around-MRU-File モードを起動します。
-
-        ! 修飾子を付けて実行した場合、あいまい検索ではなく部分一致検索を行うよ
-        うになります。
-
-        FuzzyFinder 起動後に {pattern} が挿入されます。
-
                                                                   *:FufMruCmd*
 :FufMruCmd [{pattern}]
         MRU-Command モードを起動します。
@@ -841,7 +823,7 @@ See also: |fuf-vimrc-example|
 全モード用 ~
 
                                                        *g:fuf_modesDisable*  >
-  let g:fuf_modesDisable = [ 'mrufile', 'aroundmrufile', 'mrucmd', ]
+  let g:fuf_modesDisable = [ 'mrufile', 'mrucmd', ]
 <
         無効にするモード名のリスト。これに含まれるモードは初期化されず、イベン
         トの処理も行われません。
@@ -1087,7 +1069,7 @@ MRU-File モード用 ~
         には切り替えません。
 
                                                     *g:fuf_mrufile_exclude*  >
-  let g:fuf_mrufile_exclude = '\v\~$|\.(bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
+  let g:fuf_mrufile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)'
 <
         補完リストから除外したいアイテムの正規表現パターン。
 
@@ -1096,40 +1078,15 @@ MRU-File モード用 ~
 <
         保持するMRUアイテムの上限値。
 
-                                          *fuf-options-for-aroundmrufile-mode*
-Around-MRU-File モード用 ~
-
-                                               *g:fuf_aroundmrufile_prompt*  >
-  let g:fuf_aroundmrufile_prompt = '>MRU-File[]>'
+                                                 *g:fuf_mrufile_maxItemDir*  >
+  let g:fuf_mrufile_maxItemDir = 50
 <
-        プロンプト文字列。"[]" はインジケータに置換されます。
+        保持するMRUアイテムの親ディレクトリ(周辺検索で使われる)の上限値。
 
-                                          *g:fuf_aroundmrufile_switchOrder*  >
-  let g:fuf_aroundmrufile_switchOrder = 60
+                                                  *g:fuf_mrufile_keyExpand*  >
+  let g:fuf_mrufile_keyExpand = '<C-]>'
 <
-        次/前のモードに切り替えるときの、モードの順位です。負数ならこのモード
-        には切り替えません。
-
-                                              *g:fuf_aroundmrufile_exclude*  >
-  let g:fuf_aroundmrufile_exclude = '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)'
-<
-        補完リストから除外したいアイテムの正規表現パターン。
-
-                                              *g:fuf_aroundmrufile_maxDir*  >
-  let g:fuf_aroundmrufile_maxDir = 100
-<
-        保持するMRUアイテムの親ディレクトリの上限値。
-
-                                          *g:fuf_aroundmrufile_searchLevel*  >
-  let g:fuf_aroundmrufile_searchLevel = 0
-<
-        検索するディレクトリツリーの上下の階層数。
-
-
-                                            *g:fuf_aroundmrufile_keyExpand*  >
-  let g:fuf_aroundmrufile_keyExpand = '<C-]>'
-<
-        |g:fuf_aroundmrufile_searchLevel|を1増やすキー。
+        検索する範囲を広げるキー。
 
                                                  *fuf-options-for-mrucmd-mode*
 MRU-Cmd モード用 ~
@@ -1309,34 +1266,35 @@ vimrc の例                                                 *fuf-vimrc-example*
         \ }
   let g:fuf_mrufile_maxItem = 500
   let g:fuf_mrucmd_maxItem = 500
-  nnoremap <silent> <C-n>      :FufBuffer<CR>
-  nnoremap <silent> <C-p>      :FufFileWithCurrentBufferDir<CR>
-  nnoremap <silent> <C-f><C-p> :FufFileWithFullCwd<CR>
-  nnoremap <silent> <C-f>p     :FufFile<CR>
-  nnoremap <silent> <C-f><C-a> :FufCoverageFileChange<CR>
-  nnoremap <silent> <C-f>a     :FufCoverageFileRegister<CR>
-  nnoremap <silent> <C-f><C-d> :FufDirWithCurrentBufferDir<CR>
-  nnoremap <silent> <C-f>d     :FufDirWithFullCwd<CR>
-  nnoremap <silent> <C-f>D     :FufDir<CR>
-  nnoremap <silent> <C-j>      :FufMruFile<CR>
-  nnoremap <silent> <C-k>      :FufAroundMruFile<CR>
-  nnoremap <silent> <C-f><C-k> :FufMruCmd<CR>
-  nnoremap <silent> <C-b><C-b> :FufBookmarkFile<CR>
-  nnoremap <silent> <C-b>b     :FufBookmarkDir<CR>
-  nnoremap <silent> <C-f><C-t> :FufTag<CR>
-  nnoremap <silent> <C-f>t     :FufTag!<CR>
-  noremap  <silent> g]         :FufTagWithCursorWord!<CR>
-  nnoremap <silent> <C-f><C-f> :FufTaggedFile<CR>
-  nnoremap <silent> <C-f><C-j> :FufJumpList<CR>
-  nnoremap <silent> <C-f><C-g> :FufChangeList<CR>
-  nnoremap <silent> <C-f><C-q> :FufQuickfix<CR>
-  nnoremap <silent> <C-f><C-l> :FufLine<CR>
-  nnoremap <silent> <C-f><C-h> :FufHelp<CR>
-  nnoremap <silent> <C-f><C-b> :FufBookmarkFileAdd<CR>
-  vnoremap <silent> <C-f><C-b> :FufBookmarkFileAddAsSelectedText<CR>
-  nnoremap <silent> <C-f>b     :FufBookmarkDirAdd<CR>
-  nnoremap <silent> <C-f><C-e> :FufEditDataFile<CR>
-  nnoremap <silent> <C-f><C-r> :FufRenewCache<CR>
+  nnoremap <silent> sj     :FufBuffer<CR>
+  nnoremap <silent> sk     :FufFileWithCurrentBufferDir<CR>
+  nnoremap <silent> sK     :FufFileWithFullCwd<CR>
+  nnoremap <silent> s<C-k> :FufFile<CR>
+  nnoremap <silent> sl     :FufCoverageFileChange<CR>
+  nnoremap <silent> sL     :FufCoverageFileChange<CR>
+  nnoremap <silent> s<C-l> :FufCoverageFileRegister<CR>
+  nnoremap <silent> sd     :FufDirWithCurrentBufferDir<CR>
+  nnoremap <silent> sD     :FufDirWithFullCwd<CR>
+  nnoremap <silent> s<C-d> :FufDir<CR>
+  nnoremap <silent> sn     :FufMruFile<CR>
+  nnoremap <silent> sm     :FufMruCmd<CR>
+  nnoremap <silent> su     :FufBookmarkFile<CR>
+  nnoremap <silent> s<C-u> :FufBookmarkFileAdd<CR>
+  vnoremap <silent> s<C-u> :FufBookmarkFileAddAsSelectedText<CR>
+  nnoremap <silent> si     :FufBookmarkDir<CR>
+  nnoremap <silent> s<C-i> :FufBookmarkDirAdd<CR>
+  nnoremap <silent> st     :FufTag<CR>
+  nnoremap <silent> sT     :FufTag!<CR>
+  noremap  <silent> s]     :FufTagWithCursorWord!<CR>
+  nnoremap <silent> sg     :FufTaggedFile<CR>
+  nnoremap <silent> sG     :FufTaggedFile!<CR>
+  nnoremap <silent> so     :FufJumpList<CR>
+  nnoremap <silent> sp     :FufChangeList<CR>
+  nnoremap <silent> sq     :FufQuickfix<CR>
+  nnoremap <silent> sy     :FufLine<CR>
+  nnoremap <silent> sh     :FufHelp<CR>
+  nnoremap <silent> se     :FufEditDataFile<CR>
+  nnoremap <silent> sr     :FufRenewCache<CR>
 <
 
 ==============================================================================

@@ -21,7 +21,7 @@ endtry
 "
 function s:initialize()
   "---------------------------------------------------------------------------
-  call l9#defineVariableDefault('g:fuf_modesDisable'     , [ 'mrufile', 'aroundmrufile', 'mrucmd', ])
+  call l9#defineVariableDefault('g:fuf_modesDisable'     , [ 'mrufile', 'mrucmd', ])
   call l9#defineVariableDefault('g:fuf_keyOpen'          , '<CR>')
   call l9#defineVariableDefault('g:fuf_keyOpenSplit'     , '<C-j>')
   call l9#defineVariableDefault('g:fuf_keyOpenVsplit'    , '<C-k>')
@@ -69,15 +69,11 @@ function s:initialize()
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_mrufile_prompt'     , '>MRU-File[]>')
   call l9#defineVariableDefault('g:fuf_mrufile_switchOrder', 50)
-  call l9#defineVariableDefault('g:fuf_mrufile_exclude'    , '\v\~$|\.(bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)')
+  call l9#defineVariableDefault('g:fuf_mrufile_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|^(\/\/|\\\\|\/mnt\/|\/media\/)')
   call l9#defineVariableDefault('g:fuf_mrufile_maxItem'    , 200)
-  "---------------------------------------------------------------------------
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_prompt'     , '>Around-MRU-File[]>')
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_switchOrder', 60)
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_exclude'    , '\v\~$|\.(o|exe|dll|bak|orig|sw[po])$|(^|[/\\])\.(hg|git|bzr)($|[/\\])|^(\/\/|\\\\|\/mnt\/|\/media\/)')
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_maxDir'     , 100)
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_searchLevel', 0)
-  call l9#defineVariableDefault('g:fuf_aroundmrufile_keyExpand'  , '<C-]>')
+  call l9#defineVariableDefault('g:fuf_mrufile_maxItemDir' , 50)
+  call l9#defineVariableDefault('g:fuf_mrufile_keyExpand'  , '<C-]>')
+  call l9#defineVariableDefault('g:fuf_mrufile_searchAroundLevel', -1) " private option
   "---------------------------------------------------------------------------
   call l9#defineVariableDefault('g:fuf_mrucmd_prompt'     , '>MRU-Cmd[]>')
   call l9#defineVariableDefault('g:fuf_mrucmd_switchOrder', 70)
@@ -122,7 +118,6 @@ function s:initialize()
   call fuf#addMode('coveragefile')
   call fuf#addMode('dir')
   call fuf#addMode('mrufile')
-  call fuf#addMode('aroundmrufile')
   call fuf#addMode('mrucmd')
   call fuf#addMode('bookmarkfile')
   call fuf#addMode('bookmarkdir')
