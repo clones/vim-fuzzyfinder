@@ -421,12 +421,13 @@ function fuf#getDataFileTime(modeName, dataName)
 endfunction
 
 "
-function s:createDataBufferListener(modeName)
-  let listener = { 'modeName': a:modeName }
+function s:createDataBufferListener(dataFile)
+  let listener = { 'dataFile': a:dataFile }
 
   function listener.onWrite(lines)
+    let [modeName, dataName] = split(self.dataFile, l9#getPathSeparator())
     let items = map(filter(a:lines, '!empty(v:val)'), 'eval(v:val)')
-    call fuf#saveDataFile(self.modeName, 'items', items)
+    call fuf#saveDataFile(modeName, dataName, items)
     echo "Data files updated"
     return 1
   endfunction
