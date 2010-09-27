@@ -1365,6 +1365,8 @@ CHANGELOG                                                      *fuf-changelog*
   - Changed the filename to store data of Coverage-File mode, from
     '~/.vim-fuf-data/coveragefile/items' to
     '~/.vim-fuf-data/coveragefile/coverages' .
+  - Fixed a bug that floating point numbers weren't evaluated correctly and
+    caused errors on some non-English locales.
   - Removed Around-MRU-File mode and integrated its feature to MRU-File mode.
 
 4.0:
