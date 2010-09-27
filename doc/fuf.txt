@@ -1405,6 +1405,9 @@ CHANGELOG                                                      *fuf-changelog*
 4.1:
   - Added Bookmark-Dir mode.
   - Added Bookmark-File mode and removed Bookmark mode.
+  - Changed the filename to store data of Coverage-File mode, from
+    '~/.vim-fuf-data/coveragefile/items' to
+    '~/.vim-fuf-data/coveragefile/coverages' .
 
 4.0:
   - From this version, L9 library (vimscript #3252) is required.
