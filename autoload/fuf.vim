@@ -608,25 +608,25 @@ endfunction
 " range of return value is [0.0, 1.0]
 function s:scoreSequentialMatching(word, pattern)
   if empty(a:pattern)
-    return 0.0
+    return str2float('0.0')
   endif
   let pos = stridx(a:word, a:pattern)
   if pos < 0
-    return 0.0
+    return str2float('0.0')
   endif
   let lenRest = len(a:word) - len(a:pattern) - pos
-  return (pos == 0 ? 0.5 : 0.0) + 0.5 / (lenRest + 1)
+  return str2float(pos == 0 ? '0.5' : '0.0') + str2float('0.5') / (lenRest + 1)
 endfunction
 
 " range of return value is [0.0, 1.0]
 function s:scoreBoundaryMatching(wordForBoundary, pattern, exprBoundary)
   if empty(a:pattern)
-    return 0.0
+    return str2float('0.0')
   endif
   if !eval(a:exprBoundary)
     return 0
   endif
-  return 0.5 + 0.5 * s:scoreSequentialMatching(a:wordForBoundary, a:pattern)
+  return (s:scoreSequentialMatching(a:wordForBoundary, a:pattern) + 1) / 2
 endfunction
 
 "
