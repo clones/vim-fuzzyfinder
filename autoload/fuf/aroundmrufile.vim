@@ -23,6 +23,11 @@ function fuf#aroundmrufile#getSwitchOrder()
 endfunction
 
 "
+function fuf#aroundmrufile#getEditableDataNames()
+  return ['items']
+endfunction
+
+"
 function fuf#aroundmrufile#renewCache()
   let s:cache = {}
 endfunction

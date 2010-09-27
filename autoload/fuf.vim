@@ -438,20 +438,28 @@ endfunction
 function s:createEditDataListener()
   let listener = {}
 
-  function listener.onComplete(modeName, method)
-    let bufName = '[fuf-info-' . a:modeName . ']'
-    let lines = l9#readFile(l9#concatPaths([g:fuf_dataDir, a:modeName, 'items']))
+  function listener.onComplete(dataFile, method)
+    let bufName = '[fuf-info]'
+    let lines = l9#readFile(l9#concatPaths([g:fuf_dataDir, a:dataFile]))
     call l9#tempbuffer#openWritable(bufName, 'vim', lines, 0, 0, 0,
-          \                         s:createDataBufferListener(a:modeName))
+          \                         s:createDataBufferListener(a:dataFile))
   endfunction
 
   return listener
 endfunction
 
 "
+function s:getEditableDataFiles(modeName)
+  let dataFiles = fuf#{a:modeName}#getEditableDataNames()
+  call filter(dataFiles, 'fuf#getDataFileTime(a:modeName, v:val) != -1')
+  return map(dataFiles, 'l9#concatPaths([a:modeName, v:val])')
+endfunction
+
+"
 function fuf#editDataFile()
-  let modes = filter(copy(fuf#getModeNames()), 'fuf#getDataFileTime(v:val, "items") != -1')
-  call fuf#callbackitem#launch('', 0, '>Mode>', s:createEditDataListener(), modes, 0)
+  let dataFiles = map(copy(fuf#getModeNames()), 's:getEditableDataFiles(v:val)')
+  let dataFiles = l9#concat(dataFiles)
+  call fuf#callbackitem#launch('', 0, '>Mode>', s:createEditDataListener(), dataFiles, 0)
 endfunction
 
 " 

@@ -23,6 +23,11 @@ function fuf#bookmarkdir#getSwitchOrder()
 endfunction
 
 "
+function fuf#bookmarkdir#getEditableDataNames()
+  return ['items']
+endfunction
+
+"
 function fuf#bookmarkdir#renewCache()
 endfunction
 
