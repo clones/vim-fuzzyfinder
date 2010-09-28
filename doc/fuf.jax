@@ -214,6 +214,8 @@ MRU-File モード ~
 |BufEnter| と |BufWritePost| で行う処理がパフォーマンス上の問題を起こしうるの
 で、デフォルトでは無効化するモードに指定されています。(|g:fuf_modesDisable|)
 
+See also: |FufMruFileInCwd|
+
                                                              *fuf-mrucmd-mode*
 MRU-Command モード ~
 
@@ -702,6 +704,11 @@ See also: |fuf-vimrc-example|
         うになります。
 
         FuzzyFinder 起動後に {pattern} が挿入されます。
+
+                                                            *:FufMruFileInCwd*
+:FufMruFileInCwd [{pattern}]
+        カレントディレクトリ内のファイルのみを対象とする以外は
+        |:FufMruFile|と同じです。
 
                                                                   *:FufMruCmd*
 :FufMruCmd [{pattern}]
@@ -1351,6 +1358,7 @@ vimrc の例                                                 *fuf-vimrc-example*
   nnoremap <silent> sD     :FufDirWithFullCwd<CR>
   nnoremap <silent> s<C-d> :FufDir<CR>
   nnoremap <silent> sn     :FufMruFile<CR>
+  nnoremap <silent> sN     :FufMruFileInCwd<CR>
   nnoremap <silent> sm     :FufMruCmd<CR>
   nnoremap <silent> su     :FufBookmarkFile<CR>
   nnoremap <silent> s<C-u> :FufBookmarkFileAdd<CR>

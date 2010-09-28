@@ -218,6 +218,8 @@ This mode is set to disable by default (|g:fuf_modesDisable|) because
 processes for this mode in |BufEnter| and |BufWritePost| could cause
 Performance issue.
 
+See also: |FufMruFileInCwd|
+
                                                              *fuf-mrucmd-mode*
 MRU-Command mode ~
 
@@ -732,6 +734,11 @@ See also: |fuf-vimrc-example|
         instead of fuzzy matching.
 
         {pattern} will be inserted after launching FuzzyFinder.
+
+                                                            *:FufMruFileInCwd*
+:FufMruFileInCwd[!] [{pattern}]
+        Is mostly the same as |:FufMruFile|, except that files
+        only in current working directory are listed.
 
                                                                   *:FufMruCmd*
 :FufMruCmd[!] [{pattern}]
@@ -1399,6 +1406,7 @@ VIMRC EXAMPLE                                              *fuf-vimrc-example*
   nnoremap <silent> sD     :FufDirWithFullCwd<CR>
   nnoremap <silent> s<C-d> :FufDir<CR>
   nnoremap <silent> sn     :FufMruFile<CR>
+  nnoremap <silent> sN     :FufMruFileInCwd<CR>
   nnoremap <silent> sm     :FufMruCmd<CR>
   nnoremap <silent> su     :FufBookmarkFile<CR>
   nnoremap <silent> s<C-u> :FufBookmarkFileAdd<CR>
@@ -1443,6 +1451,7 @@ CHANGELOG                                                      *fuf-changelog*
 4.2:
   - L9 library (vimscript #3252) version 1.1 is required.
   - Added Buffer-Tag mode, inspired by taglist.vim (vimscript #273).
+  - Added :FufMruFileInCwd command.
 
 4.1.1:
   - Fixed a bug causing a error in MRU-File mode.
