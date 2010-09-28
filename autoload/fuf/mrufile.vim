@@ -41,6 +41,9 @@ endfunction
 "
 function fuf#mrufile#onInit()
   call fuf#defineLaunchCommand('FufMruFile', s:MODE_NAME, '""', [])
+  call fuf#defineLaunchCommand('FufMruFileInCwd', s:MODE_NAME,
+        \                      '""', [['g:fuf_mrufile_underCwd', 1]])
+  call l9#defineVariableDefault('g:fuf_mrufile_underCwd', 0) " private option
   call l9#defineVariableDefault('g:fuf_mrufile_searchAroundLevel', -1) " private option
   augroup fuf#mrufile
     autocmd!
@@ -147,9 +150,10 @@ endfunction
 
 "
 function s:handler.getPrompt()
+  let cwdString = (g:fuf_mrufile_underCwd ? '[CWD]' : '')
   let levelString = (g:fuf_mrufile_searchAroundLevel < 0 ? ''
         \            : '[Around:' . g:fuf_mrufile_searchAroundLevel . ']')
-  return fuf#formatPrompt(g:fuf_mrufile_prompt, self.partialMatching, levelString)
+  return fuf#formatPrompt(g:fuf_mrufile_prompt, self.partialMatching, cwdString . levelString)
 endfunction
 
 "
@@ -199,8 +203,6 @@ function s:handler.onModeEnterPost()
   let self.searchAroundLevel = g:fuf_mrufile_searchAroundLevel
   call fuf#defineKeyMappingInHandler(g:fuf_mrufile_keyExpand,
         \                            'onCr(' . s:OPEN_TYPE_EXPAND . ')')
-  " NOTE: Comparing filenames is faster than bufnr('^' . fname . '$')
-  let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':p:~')
   if self.searchAroundLevel < 0
     let self.items = fuf#loadDataFile(s:MODE_NAME, 'items')
     call map(self.items, 's:formatItemUsingCache(v:val)')
@@ -212,7 +214,13 @@ function s:handler.onModeEnterPost()
     call map(self.items, 's:listAroundFiles(v:val)')
     let self.items = l9#concat(self.items)
   endif
+  " NOTE: Comparing filenames is faster than bufnr('^' . fname . '$')
+  let bufNamePrev = fnamemodify(bufname(self.bufNrPrev), ':p:~')
   call filter(self.items, '!empty(v:val) && v:val.word !=# bufNamePrev')
+  if g:fuf_mrufile_underCwd
+    let cwd = fnamemodify(getcwd(), ':p:~')
+    call filter(self.items, 'stridx(v:val.word, cwd) == 0')
+  endif
   call fuf#mapToSetSerialIndex(self.items, 1)
   call fuf#mapToSetAbbrWithSnippedWordAsPath(self.items)
 endfunction
