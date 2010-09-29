@@ -1449,6 +1449,7 @@ SPECIAL THANKS                                                    *fuf-thanks*
 CHANGELOG                                                      *fuf-changelog*
 
 4.2.1:
+  - Improved response of Buffer-Tag mode.
   - Fixed a bug that buffers which had been opened weren't listed in
     Coverage-File mode
   - Fixed a bug that tag entries including tab characters weren't parsed
