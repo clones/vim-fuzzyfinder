@@ -56,7 +56,7 @@ function s:enumItems()
         \         g:fuf_coveragefile_globPatterns], "\n")
   if !exists('s:cache[key]')
     let s:cache[key] = l9#concat(map(copy(g:fuf_coveragefile_globPatterns),
-          \                          'split(glob(v:val), "\n")'))
+          \                          'fuf#glob(v:val)'))
     call filter(s:cache[key], 'filereadable(v:val)')
     call map(s:cache[key], 'fuf#makePathItem(fnamemodify(v:val, ":~:."), "", 0)')
     if len(g:fuf_coveragefile_exclude)
