@@ -239,7 +239,8 @@ endfunction
 "
 function s:handler.onOpen(word, mode)
   if !exists('self.itemMap[a:word][0]')
-    throw "buffertag"
+    call fuf#echoError('Definition not found:' . a:word)
+    return
   elseif len(self.itemMap[a:word]) == 1
     let i = 0
   else
