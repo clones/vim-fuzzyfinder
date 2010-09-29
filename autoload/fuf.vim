@@ -369,9 +369,14 @@ function fuf#launch(modeName, initialPattern, partialMatching)
   let s:runningHandler.lastCol = -1
   let s:runningHandler.windowRestoringCommand = winrestcmd()
   call s:runningHandler.onModeEnterPre()
+  " NOTE: updatetime is set, because in Buffer-Tag mode on Vim 7.3 on Windows,
+  " Vim keeps from triggering CursorMovedI for updatetime after system() is
+  " called. I don't know why.
   call fuf#setOneTimeVariables(
-        \ ['&completeopt', 'menuone'],
-        \ ['&ignorecase', 0],)
+        \  ['&completeopt', 'menuone'],
+        \  ['&ignorecase', 0],
+        \  ['&updatetime', 10],
+        \ )
   if s:runningHandler.getPreviewHeight() > 0
     call fuf#setOneTimeVariables(
           \ ['&cmdheight', s:runningHandler.getPreviewHeight() + 1])
