@@ -40,6 +40,7 @@ endfunction
 "
 function fuf#coveragefile#onInit()
   call fuf#defineLaunchCommand('FufCoverageFile', s:MODE_NAME, '""', [])
+  call l9#defineVariableDefault('g:fuf_coveragefile_name', '') " private option
   command! -bang -narg=0        FufCoverageFileRegister call s:registerCoverage()
   command! -bang -narg=?        FufCoverageFileChange call s:changeCoverage(<q-args>)
 endfunction
@@ -120,8 +121,10 @@ function s:changeCoverage(name)
       call fuf#echoError('Coverage not found: ' . name)
     return
   endif
-  call fuf#setOneTimeVariables(['g:fuf_coveragefile_globPatterns',
-        \                       coverages[0].patterns])
+  call fuf#setOneTimeVariables(
+        \   ['g:fuf_coveragefile_globPatterns', coverages[0].patterns],
+        \   ['g:fuf_coveragefile_name'        , a:name]
+        \ )
   FufCoverageFile
 endfunction
 
@@ -138,8 +141,10 @@ endfunction
 
 "
 function s:handler.getPrompt()
+  let nameString = (empty(g:fuf_coveragefile_name) ? ''
+        \           : '[' . g:fuf_coveragefile_name . ']')
   return fuf#formatPrompt(g:fuf_coveragefile_prompt, self.partialMatching,
-        \                 string(g:fuf_coveragefile_globPatterns))
+        \                 nameString)
 endfunction
 
 "
