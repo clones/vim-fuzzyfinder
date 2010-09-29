@@ -333,7 +333,7 @@ function fuf#defineLaunchCommand(CmdName, modeName, prefixInitialPattern, tempVa
     let preCmd = printf('call l9#tempvariables#setList(%s, %s) | ',
           \             string(s:TEMP_VARIABLES_GROUP), string(a:tempVars))
   endif
-  execute printf('command! -bang -narg=? %s %s call fuf#launch(%s, %s . <q-args>, len(<q-bang>))',
+  execute printf('command! -range -bang -narg=? %s %s call fuf#launch(%s, %s . <q-args>, len(<q-bang>))',
         \        a:CmdName, preCmd, string(a:modeName), a:prefixInitialPattern)
 endfunction
 
