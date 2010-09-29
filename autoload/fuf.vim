@@ -13,6 +13,14 @@ endif
 " GLOBAL FUNCTIONS {{{1
 
 
+" returns list of paths.
+" An argument for glob() is normalized in order to avoid a bug on Windows.
+function fuf#glob(expr)
+  " Substitutes "\", because on Windows, "**\" doesn't include ".\",
+  " but "**/" include "./". I don't know why.
+  return split(glob(substitute(a:expr, '\', '/', 'g')), "\n")
+endfunction
+
 "
 function fuf#countModifiedFiles(files, time)
   return len(filter(copy(a:files), 'getftime(expand(v:val)) > a:time'))
@@ -253,11 +261,7 @@ endfunction
 
 "
 function fuf#enumExpandedDirsEntries(dir, exclude)
-  " Substitutes "\" because on Windows, "**\" doesn't include ".\",
-  " but "**/" include "./". I don't know why.
-  let dirNormalized = substitute(a:dir, '\', '/', 'g')
-  let entries = split(glob(dirNormalized . "*" ), "\n") +
-        \       split(glob(dirNormalized . ".*"), "\n")
+  let entries = fuf#glob(a:dir . '*') + fuf#glob(a:dir . '.*')
   " removes "*/." and "*/.."
   call filter(entries, 'v:val !~ ''\v(^|[/\\])\.\.?$''')
   call map(entries, 'fuf#makePathItem(v:val, "", 1)')
