@@ -1448,6 +1448,10 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
+4.2.1:
+  - Fixed a bug that tag entries including tab characters weren't parsed
+    correctly in Coverage-File mode
+
 4.2:
   - L9 library (vimscript #3252) version 1.1 is required.
   - Added Buffer-Tag mode, inspired by taglist.vim (vimscript #273).
