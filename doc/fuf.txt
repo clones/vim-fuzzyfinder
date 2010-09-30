@@ -1451,6 +1451,9 @@ SPECIAL THANKS                                                    *fuf-thanks*
 ==============================================================================
 CHANGELOG                                                      *fuf-changelog*
 
+4.2.2:
+  - Fixed a bug that unloaded buffers weren't covered by FufBufferTagAll.
+
 4.2.1:
   - Improved response of Buffer-Tag mode.
   - Fixed a bug that buffers which had been opened weren't listed in
